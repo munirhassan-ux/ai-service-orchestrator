@@ -1,0 +1,340 @@
+[
+  {
+    "timestamp": "2026-05-17T14:39:56.527Z",
+    "step": 1,
+    "agent": "IntentParser",
+    "model": "gemini-2.0-flash",
+    "confidence": 0.9,
+    "input": "AC Repair",
+    "output": {
+      "service_type": "ac_repair",
+      "service_raw": "AC Repair",
+      "location": null,
+      "urgency": "medium",
+      "preferred_time": null,
+      "budget_sensitivity": false,
+      "job_complexity_hint": "intermediate",
+      "language": "english",
+      "confidence": 0.9,
+      "clarification_needed": true,
+      "clarification_question": "Sure, I can help you with AC repair! Could you please tell me your area and what time would be convenient for the technician to visit?",
+      "reasoning": "The user identified the service but failed to provide a location or a preferred time for the service visit."
+    }
+  },
+  {
+    "timestamp": "2026-05-17T14:40:14.513Z",
+    "step": 1,
+    "agent": "IntentParser",
+    "model": "gemini-2.0-flash",
+    "confidence": 0.2,
+    "input": "Aaj shaam",
+    "output": {
+      "service_type": null,
+      "service_raw": null,
+      "location": null,
+      "urgency": "high",
+      "preferred_time": "Aaj shaam",
+      "budget_sensitivity": false,
+      "job_complexity_hint": "basic",
+      "language": "roman_urdu",
+      "confidence": 0.2,
+      "clarification_needed": true,
+      "clarification_question": "Ji, zaroor. Aap ko kis service ki zaroorat hai aur aap kis area mein rehte hain?",
+      "reasoning": "The user provided a time but failed to specify the service required or their specific location."
+    }
+  },
+  {
+    "timestamp": "2026-05-17T14:40:32.669Z",
+    "step": 1,
+    "agent": "IntentParser",
+    "model": "gemini-2.0-flash",
+    "confidence": 0.95,
+    "input": "AC repair johar town kl subha",
+    "output": {
+      "service_type": "ac_repair",
+      "service_raw": "AC repair",
+      "location": "johar town",
+      "urgency": "medium",
+      "preferred_time": "kal subha",
+      "budget_sensitivity": false,
+      "job_complexity_hint": "intermediate",
+      "language": "roman_urdu",
+      "confidence": 0.95,
+      "clarification_needed": false,
+      "clarification_question": null,
+      "reasoning": "User clearly specified the service type, specific location, and a preferred time frame."
+    }
+  },
+  {
+    "timestamp": "2026-05-17T14:40:33.931Z",
+    "step": 2,
+    "agent": "ProviderMatcher",
+    "gemini_decision": "Matched 3 providers",
+    "output": {
+      "top_providers": [
+        {
+          "id": "p001",
+          "name": "Ali AC Services",
+          "service_types": [
+            "ac_repair",
+            "ac_installation",
+            "ac_maintenance"
+          ],
+          "skill_level": "intermediate",
+          "certifications": [
+            "AC Technician Level 2"
+          ],
+          "rating": 4.7,
+          "review_recency_days": 3,
+          "on_time_score": 0.94,
+          "cancellation_rate": 0.04,
+          "risk_score": 0.08,
+          "price_per_hour": 800,
+          "capacity_per_day": 3,
+          "jobs_completed": 142,
+          "available": true,
+          "city_area": "G-13",
+          "city": "Islamabad",
+          "lat": 33.6844,
+          "lng": 73.0479,
+          "distance_km": 0,
+          "score": 0.96,
+          "score_breakdown": {
+            "proximity": 1,
+            "rating_recency": 0.85,
+            "on_time": 0.94,
+            "skill_match": 1,
+            "price_fit": 1,
+            "availability": 1
+          }
+        },
+        {
+          "id": "p020",
+          "name": "Faisal AC & Refrigeration",
+          "service_types": [
+            "ac_repair",
+            "fridge_repair",
+            "ac_installation"
+          ],
+          "skill_level": "complex",
+          "certifications": [
+            "AC Technician Level 3"
+          ],
+          "rating": 4.6,
+          "review_recency_days": 5,
+          "on_time_score": 0.91,
+          "cancellation_rate": 0.05,
+          "risk_score": 0.09,
+          "price_per_hour": 950,
+          "capacity_per_day": 3,
+          "jobs_completed": 215,
+          "available": true,
+          "city_area": "G-13",
+          "city": "Islamabad",
+          "lat": 33.6789,
+          "lng": 73.0467,
+          "distance_km": 0.6,
+          "score": 0.9,
+          "score_breakdown": {
+            "proximity": 0.97,
+            "rating_recency": 0.77,
+            "on_time": 0.91,
+            "skill_match": 0.9,
+            "price_fit": 0.91,
+            "availability": 1
+          }
+        },
+        {
+          "id": "p017",
+          "name": "Khalid AC Expert",
+          "service_types": [
+            "ac_repair",
+            "ac_gas_refill",
+            "ac_maintenance"
+          ],
+          "skill_level": "intermediate",
+          "certifications": [
+            "AC Technician Level 2"
+          ],
+          "rating": 4.4,
+          "review_recency_days": 8,
+          "on_time_score": 0.84,
+          "cancellation_rate": 0.1,
+          "risk_score": 0.17,
+          "price_per_hour": 750,
+          "capacity_per_day": 4,
+          "jobs_completed": 103,
+          "available": true,
+          "city_area": "G-13",
+          "city": "Islamabad",
+          "lat": 33.6821,
+          "lng": 73.0498,
+          "distance_km": 0.3,
+          "score": 0.89,
+          "score_breakdown": {
+            "proximity": 0.98,
+            "rating_recency": 0.65,
+            "on_time": 0.84,
+            "skill_match": 1,
+            "price_fit": 0.97,
+            "availability": 1
+          }
+        }
+      ],
+      "reasoning": "Ali AC Services ko aapke liye top pick isliye kiya gaya hai kyunki woh bilkul aapke qareeb (0 km) maujood hain aur unka on-time record bohot shandaar hai. Baaqi options ke muqablay mein, unki 4.7 star rating aur fori availability unhein aapke AC repair ke liye sab se behtareen choice banati hai.",
+      "fallback_used": false,
+      "matching_trace": "Matched 4 eligible providers → scored on 6 factors → top 3 returned. Best: Ali AC Services (score: 0.96)"
+    }
+  },
+  {
+    "timestamp": "2026-05-17T14:40:33.933Z",
+    "step": 1,
+    "agent": "PricingEngine",
+    "output": {
+      "base_rate": 800,
+      "distance_fee": 0,
+      "urgency_surcharge": 100,
+      "complexity_premium": 150,
+      "loyalty_discount": 0,
+      "surge_multiplier": 1,
+      "surge_active": false,
+      "visit_fee": 200,
+      "hours_min": 1.5,
+      "hours_max": 2,
+      "min_total": 1410,
+      "max_total": 2050,
+      "total": 2050,
+      "min_rate_total": 1410,
+      "floor_min": 2000,
+      "floor_max": 2600,
+      "industry_standard_min": 1500,
+      "industry_standard_max": 4000,
+      "currency": "PKR",
+      "breakdown_text": "Visit fee: Rs. 200\nLabour: Rs. 640-800/hr × 1.5–2 hrs\nUrgency: Rs. 100\nComplexity (intermediate): Rs. 150\n─────────────────────────────\nEstimated total: Rs. 1410 – Rs. 2050",
+      "fairness_note": "Standard market rate for this service."
+    }
+  },
+  {
+    "timestamp": "2026-05-17T14:40:33.936Z",
+    "agent": "NegotiationAgent",
+    "gemini_decision": "Soft-locking provider p001 slot for preferred time kal subha",
+    "slot_soft_locked": {
+      "provider_id": "p001",
+      "slot_time": "2026-05-18T15:00:00.000Z"
+    }
+  },
+  {
+    "timestamp": "2026-05-17T14:47:38.765Z",
+    "agent": "Orchestrator",
+    "provider_timeout": {
+      "provider_id": "p001",
+      "timeout_seconds": 30
+    },
+    "gemini_decision": "Simulated timeout triggered for provider Ali AC Services"
+  },
+  {
+    "timestamp": "2026-05-17T14:47:38.766Z",
+    "agent": "Orchestrator",
+    "provider_skipped": {
+      "provider_id": "p001",
+      "reason": "Decline or timeout"
+    },
+    "warm_restart": {
+      "restart_count": 1
+    }
+  },
+  {
+    "timestamp": "2026-05-17T14:47:38.769Z",
+    "step": 1,
+    "agent": "PricingEngine",
+    "output": {
+      "base_rate": 950,
+      "distance_fee": 0,
+      "urgency_surcharge": 100,
+      "complexity_premium": 150,
+      "loyalty_discount": 0,
+      "surge_multiplier": 1,
+      "surge_active": false,
+      "visit_fee": 200,
+      "hours_min": 1.5,
+      "hours_max": 2,
+      "min_total": 1590,
+      "max_total": 2350,
+      "total": 2350,
+      "min_rate_total": 1590,
+      "floor_min": 2000,
+      "floor_max": 2600,
+      "industry_standard_min": 1500,
+      "industry_standard_max": 4000,
+      "currency": "PKR",
+      "breakdown_text": "Visit fee: Rs. 200\nLabour: Rs. 760-950/hr × 1.5–2 hrs\nUrgency: Rs. 100\nComplexity (intermediate): Rs. 150\n─────────────────────────────\nEstimated total: Rs. 1590 – Rs. 2350",
+      "fairness_note": "Standard market rate for this service."
+    }
+  },
+  {
+    "timestamp": "2026-05-17T14:47:38.772Z",
+    "agent": "NegotiationAgent",
+    "gemini_decision": "Soft-locking provider p020 slot for preferred time kal subha",
+    "slot_soft_locked": {
+      "provider_id": "p020",
+      "slot_time": "2026-05-18T07:00:00.000Z"
+    }
+  },
+  {
+    "timestamp": "2026-05-17T14:54:43.564Z",
+    "agent": "Orchestrator",
+    "provider_timeout": {
+      "provider_id": "p020",
+      "timeout_seconds": 30
+    },
+    "gemini_decision": "Simulated timeout triggered for provider Faisal AC & Refrigeration"
+  },
+  {
+    "timestamp": "2026-05-17T14:54:43.564Z",
+    "agent": "Orchestrator",
+    "provider_skipped": {
+      "provider_id": "p020",
+      "reason": "Decline or timeout"
+    },
+    "warm_restart": {
+      "restart_count": 2
+    }
+  },
+  {
+    "timestamp": "2026-05-17T14:54:43.567Z",
+    "step": 1,
+    "agent": "PricingEngine",
+    "output": {
+      "base_rate": 750,
+      "distance_fee": 0,
+      "urgency_surcharge": 100,
+      "complexity_premium": 150,
+      "loyalty_discount": 0,
+      "surge_multiplier": 1,
+      "surge_active": false,
+      "visit_fee": 200,
+      "hours_min": 1.5,
+      "hours_max": 2,
+      "min_total": 1350,
+      "max_total": 1950,
+      "total": 1950,
+      "min_rate_total": 1350,
+      "floor_min": 2000,
+      "floor_max": 2600,
+      "industry_standard_min": 1500,
+      "industry_standard_max": 4000,
+      "currency": "PKR",
+      "breakdown_text": "Visit fee: Rs. 200\nLabour: Rs. 600-750/hr × 1.5–2 hrs\nUrgency: Rs. 100\nComplexity (intermediate): Rs. 150\n─────────────────────────────\nEstimated total: Rs. 1350 – Rs. 1950",
+      "fairness_note": "Standard market rate for this service."
+    }
+  },
+  {
+    "timestamp": "2026-05-17T14:54:43.570Z",
+    "agent": "NegotiationAgent",
+    "gemini_decision": "Soft-locking provider p017 slot for preferred time kal subha",
+    "slot_soft_locked": {
+      "provider_id": "p017",
+      "slot_time": "2026-05-18T05:00:00.000Z"
+    }
+  }
+]

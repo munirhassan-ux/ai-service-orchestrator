@@ -1,0 +1,182 @@
+[
+  {
+    "timestamp": "2026-05-17T08:42:02.690Z",
+    "step": 1,
+    "agent": "IntentParser",
+    "model": "gemini-2.0-flash",
+    "confidence": 0.95,
+    "input": "AC repair. AC ke pipe se Paani nikal raha. Johar town me kl subah",
+    "output": {
+      "service_type": "ac_repair",
+      "service_raw": "AC repair. AC ke pipe se Paani nikal raha",
+      "location": "Johar Town",
+      "urgency": "medium",
+      "preferred_time": "tomorrow morning",
+      "budget_sensitivity": false,
+      "job_complexity_hint": "intermediate",
+      "language": "roman_urdu",
+      "confidence": 0.95,
+      "clarification_needed": false,
+      "clarification_question": null,
+      "reasoning": "The user provided the service type, a specific location in Lahore (Johar Town), and a preferred time (tomorrow morning). The intent is clear."
+    }
+  },
+  {
+    "timestamp": "2026-05-17T08:42:08.346Z",
+    "step": 2,
+    "agent": "ProviderMatcher",
+    "gemini_decision": "Matched 3 providers",
+    "output": {
+      "top_providers": [
+        {
+          "id": "p001",
+          "name": "Ali AC Services",
+          "service_types": [
+            "ac_repair",
+            "ac_installation",
+            "ac_maintenance"
+          ],
+          "skill_level": "intermediate",
+          "certifications": [
+            "AC Technician Level 2"
+          ],
+          "rating": 4.7,
+          "review_recency_days": 3,
+          "on_time_score": 0.94,
+          "cancellation_rate": 0.04,
+          "risk_score": 0.08,
+          "price_per_hour": 800,
+          "capacity_per_day": 3,
+          "jobs_completed": 142,
+          "available": true,
+          "city_area": "G-13",
+          "city": "Islamabad",
+          "lat": 33.6844,
+          "lng": 73.0479,
+          "distance_km": 0,
+          "score": 0.96,
+          "score_breakdown": {
+            "proximity": 1,
+            "rating_recency": 0.85,
+            "on_time": 0.94,
+            "skill_match": 1,
+            "price_fit": 1,
+            "availability": 1
+          }
+        },
+        {
+          "id": "p020",
+          "name": "Faisal AC & Refrigeration",
+          "service_types": [
+            "ac_repair",
+            "fridge_repair",
+            "ac_installation"
+          ],
+          "skill_level": "complex",
+          "certifications": [
+            "AC Technician Level 3"
+          ],
+          "rating": 4.6,
+          "review_recency_days": 5,
+          "on_time_score": 0.91,
+          "cancellation_rate": 0.05,
+          "risk_score": 0.09,
+          "price_per_hour": 950,
+          "capacity_per_day": 3,
+          "jobs_completed": 215,
+          "available": true,
+          "city_area": "G-13",
+          "city": "Islamabad",
+          "lat": 33.6789,
+          "lng": 73.0467,
+          "distance_km": 0.6,
+          "score": 0.9,
+          "score_breakdown": {
+            "proximity": 0.97,
+            "rating_recency": 0.77,
+            "on_time": 0.91,
+            "skill_match": 0.9,
+            "price_fit": 0.91,
+            "availability": 1
+          }
+        },
+        {
+          "id": "p017",
+          "name": "Khalid AC Expert",
+          "service_types": [
+            "ac_repair",
+            "ac_gas_refill",
+            "ac_maintenance"
+          ],
+          "skill_level": "intermediate",
+          "certifications": [
+            "AC Technician Level 2"
+          ],
+          "rating": 4.4,
+          "review_recency_days": 8,
+          "on_time_score": 0.84,
+          "cancellation_rate": 0.1,
+          "risk_score": 0.17,
+          "price_per_hour": 750,
+          "capacity_per_day": 4,
+          "jobs_completed": 103,
+          "available": true,
+          "city_area": "G-13",
+          "city": "Islamabad",
+          "lat": 33.6821,
+          "lng": 73.0498,
+          "distance_km": 0.3,
+          "score": 0.89,
+          "score_breakdown": {
+            "proximity": 0.98,
+            "rating_recency": 0.65,
+            "on_time": 0.84,
+            "skill_match": 1,
+            "price_fit": 0.97,
+            "availability": 1
+          }
+        }
+      ],
+      "reasoning": "Ali AC Services ko aapke liye top-pick isliye kiya gaya hai kyunki yeh bilkul aapke qareeb (0 km) maujood hain aur inka on-time record behtareen hai. Inka 4.7 star rating aur Rs. 800/hr ka affordable rate inhe baaki providers se best option banata hai.",
+      "fallback_used": false,
+      "matching_trace": "Matched 4 eligible providers → scored on 6 factors → top 3 returned. Best: Ali AC Services (score: 0.96)"
+    }
+  },
+  {
+    "timestamp": "2026-05-17T08:42:08.349Z",
+    "step": 1,
+    "agent": "PricingEngine",
+    "output": {
+      "base_rate": 800,
+      "distance_fee": 0,
+      "urgency_surcharge": 100,
+      "complexity_premium": 150,
+      "loyalty_discount": 0,
+      "surge_multiplier": 1,
+      "surge_active": false,
+      "visit_fee": 200,
+      "hours_min": 1.5,
+      "hours_max": 2,
+      "min_total": 1410,
+      "max_total": 2050,
+      "total": 2050,
+      "min_rate_total": 1410,
+      "floor_min": 2000,
+      "floor_max": 2600,
+      "industry_standard_min": 1500,
+      "industry_standard_max": 4000,
+      "currency": "PKR",
+      "breakdown_text": "Visit fee: Rs. 200\nLabour: Rs. 640-800/hr × 1.5–2 hrs\nUrgency: Rs. 100\nComplexity (intermediate): Rs. 150\n─────────────────────────────\nEstimated total: Rs. 1410 – Rs. 2050",
+      "fairness_note": "Standard market rate for this service."
+    }
+  },
+  {
+    "timestamp": "2026-05-17T08:42:08.350Z",
+    "agent": "NegotiationAgent",
+    "gemini_decision": "Soft-locking provider p001 slot for preferred time tomorrow morning",
+    "slot_soft_locked": {
+      "provider_id": "p001",
+      "slot_time": "2026-05-18T11:00:00.000Z"
+    }
+  }
+]

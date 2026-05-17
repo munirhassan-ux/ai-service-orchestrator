@@ -1,0 +1,142 @@
+[
+  {
+    "timestamp": "2026-05-17T08:48:23.823Z",
+    "step": 1,
+    "agent": "IntentParser",
+    "model": "gemini-2.0-flash",
+    "confidence": 0.95,
+    "input": "g11 me plumber dhundo pipe leakage hogaya hai. kl subah chaheeye",
+    "output": {
+      "service_type": "plumber",
+      "service_raw": "pipe leakage",
+      "location": "G-11",
+      "urgency": "medium",
+      "preferred_time": "tomorrow morning",
+      "budget_sensitivity": false,
+      "job_complexity_hint": "intermediate",
+      "language": "roman_urdu",
+      "confidence": 0.95,
+      "clarification_needed": false,
+      "clarification_question": null,
+      "reasoning": "User clearly specified the service (plumber/pipe leakage), location (G-11), and preferred time (tomorrow morning)."
+    }
+  },
+  {
+    "timestamp": "2026-05-17T08:48:41.633Z",
+    "step": 2,
+    "agent": "ProviderMatcher",
+    "gemini_decision": "Matched 2 providers",
+    "output": {
+      "top_providers": [
+        {
+          "id": "p004",
+          "name": "Hassan Plumbing Works",
+          "service_types": [
+            "plumber",
+            "pipe_repair",
+            "drainage"
+          ],
+          "skill_level": "intermediate",
+          "certifications": [],
+          "rating": 4.5,
+          "review_recency_days": 5,
+          "on_time_score": 0.88,
+          "cancellation_rate": 0.06,
+          "risk_score": 0.12,
+          "price_per_hour": 750,
+          "capacity_per_day": 3,
+          "jobs_completed": 201,
+          "available": true,
+          "city_area": "I-8",
+          "city": "Islamabad",
+          "lat": 33.6715,
+          "lng": 73.0837,
+          "distance_km": 3.6,
+          "score": 0.89,
+          "score_breakdown": {
+            "proximity": 0.82,
+            "rating_recency": 0.75,
+            "on_time": 0.88,
+            "skill_match": 1,
+            "price_fit": 0.97,
+            "availability": 1
+          }
+        },
+        {
+          "id": "p019",
+          "name": "Usman Fast Plumbing",
+          "service_types": [
+            "plumber",
+            "pipe_repair",
+            "tap_repair"
+          ],
+          "skill_level": "intermediate",
+          "certifications": [],
+          "rating": 4.3,
+          "review_recency_days": 11,
+          "on_time_score": 0.81,
+          "cancellation_rate": 0.12,
+          "risk_score": 0.21,
+          "price_per_hour": 650,
+          "capacity_per_day": 4,
+          "jobs_completed": 78,
+          "available": true,
+          "city_area": "G-11",
+          "city": "Islamabad",
+          "lat": 33.6921,
+          "lng": 73.0537,
+          "distance_km": 0.2,
+          "score": 0.85,
+          "score_breakdown": {
+            "proximity": 0.99,
+            "rating_recency": 0.54,
+            "on_time": 0.81,
+            "skill_match": 1,
+            "price_fit": 0.91,
+            "availability": 1
+          }
+        }
+      ],
+      "reasoning": "Hassan Plumbing Works ko G-11 mein aapke liye top-rated select kiya gaya hai kyunke ye market rate par best expert skill aur 88% on-time record ka perfect combination offer karte hain. Inki proximity aur recent positive reviews inhein doosre providers ke muqable mein sab se reliable option banate hain.",
+      "fallback_used": false,
+      "matching_trace": "Matched 2 eligible providers → scored on 6 factors → top 3 returned. Best: Hassan Plumbing Works (score: 0.89)"
+    }
+  },
+  {
+    "timestamp": "2026-05-17T08:48:41.637Z",
+    "step": 1,
+    "agent": "PricingEngine",
+    "output": {
+      "base_rate": 750,
+      "distance_fee": 10,
+      "urgency_surcharge": 100,
+      "complexity_premium": 150,
+      "loyalty_discount": 0,
+      "surge_multiplier": 1,
+      "surge_active": false,
+      "visit_fee": 200,
+      "hours_min": 1.5,
+      "hours_max": 2,
+      "min_total": 1360,
+      "max_total": 1960,
+      "total": 1960,
+      "min_rate_total": 1360,
+      "floor_min": 1100,
+      "floor_max": 1400,
+      "industry_standard_min": 800,
+      "industry_standard_max": 2000,
+      "currency": "PKR",
+      "breakdown_text": "Visit fee: Rs. 200\nLabour: Rs. 600-750/hr × 1.5–2 hrs\nDistance (3.6km): Rs. 10\nUrgency: Rs. 100\nComplexity (intermediate): Rs. 150\n─────────────────────────────\nEstimated total: Rs. 1360 – Rs. 1960",
+      "fairness_note": "Standard market rate for this service."
+    }
+  },
+  {
+    "timestamp": "2026-05-17T08:48:41.639Z",
+    "agent": "NegotiationAgent",
+    "gemini_decision": "Soft-locking provider p004 slot for preferred time tomorrow morning",
+    "slot_soft_locked": {
+      "provider_id": "p004",
+      "slot_time": "2026-05-18T13:00:00.000Z"
+    }
+  }
+]

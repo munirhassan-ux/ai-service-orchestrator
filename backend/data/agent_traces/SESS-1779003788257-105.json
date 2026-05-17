@@ -1,0 +1,230 @@
+[
+  {
+    "timestamp": "2026-05-17T07:43:13.557Z",
+    "step": 1,
+    "agent": "IntentParser",
+    "model": "gemini-3.1-flash-lite",
+    "gemini_decision": "Intent extracted successfully",
+    "confidence": 0.95,
+    "input": "AC Plumber needed G-11 right now",
+    "output": {
+      "service_type": "plumber",
+      "service_raw": "AC Plumber",
+      "location": "G-11",
+      "urgency": "high",
+      "preferred_time": "now",
+      "budget_sensitivity": false,
+      "job_complexity_hint": "basic",
+      "language": "roman_urdu",
+      "confidence": 0.95,
+      "clarification_needed": false,
+      "clarification_question": null,
+      "reasoning": "The user clearly specified the service type (plumber), location (G-11), and urgency (now). I have interpreted 'AC Plumber' as a plumber request for AC-related drainage or connection."
+    },
+    "phase_after": "thinking"
+  },
+  {
+    "timestamp": "2026-05-17T07:43:24.444Z",
+    "step": 2,
+    "agent": "ProviderMatcher",
+    "gemini_decision": "Matched 3 providers",
+    "output": {
+      "top_providers": [
+        {
+          "id": "p004",
+          "name": "Hassan Plumbing Works",
+          "service_types": [
+            "plumber",
+            "pipe_repair",
+            "drainage"
+          ],
+          "skill_level": "intermediate",
+          "certifications": [],
+          "rating": 4.5,
+          "review_recency_days": 5,
+          "on_time_score": 0.88,
+          "cancellation_rate": 0.06,
+          "risk_score": 0.12,
+          "price_per_hour": 750,
+          "capacity_per_day": 3,
+          "jobs_completed": 201,
+          "available": true,
+          "city_area": "I-8",
+          "city": "Islamabad",
+          "lat": 33.6715,
+          "lng": 73.0837,
+          "distance_km": 3.6,
+          "score": 0.87,
+          "score_breakdown": {
+            "proximity": 0.82,
+            "rating_recency": 0.75,
+            "on_time": 0.88,
+            "skill_match": 0.9,
+            "price_fit": 0.97,
+            "availability": 1
+          }
+        },
+        {
+          "id": "p019",
+          "name": "Usman Fast Plumbing",
+          "service_types": [
+            "plumber",
+            "pipe_repair",
+            "tap_repair"
+          ],
+          "skill_level": "intermediate",
+          "certifications": [],
+          "rating": 4.3,
+          "review_recency_days": 11,
+          "on_time_score": 0.81,
+          "cancellation_rate": 0.12,
+          "risk_score": 0.21,
+          "price_per_hour": 650,
+          "capacity_per_day": 4,
+          "jobs_completed": 78,
+          "available": true,
+          "city_area": "G-11",
+          "city": "Islamabad",
+          "lat": 33.6921,
+          "lng": 73.0537,
+          "distance_km": 0.2,
+          "score": 0.84,
+          "score_breakdown": {
+            "proximity": 0.99,
+            "rating_recency": 0.54,
+            "on_time": 0.81,
+            "skill_match": 0.9,
+            "price_fit": 0.91,
+            "availability": 1
+          }
+        },
+        {
+          "id": "p011",
+          "name": "Rizwan Mistri Works",
+          "service_types": [
+            "plumber",
+            "pipe_repair",
+            "tap_repair",
+            "drainage"
+          ],
+          "skill_level": "basic",
+          "certifications": [],
+          "rating": 4,
+          "review_recency_days": 18,
+          "on_time_score": 0.72,
+          "cancellation_rate": 0.15,
+          "risk_score": 0.28,
+          "price_per_hour": 550,
+          "capacity_per_day": 5,
+          "jobs_completed": 45,
+          "available": true,
+          "city_area": "G-15",
+          "city": "Islamabad",
+          "lat": 33.6601,
+          "lng": 73.0219,
+          "distance_km": 4.8,
+          "score": 0.75,
+          "score_breakdown": {
+            "proximity": 0.76,
+            "rating_recency": 0.4,
+            "on_time": 0.72,
+            "skill_match": 1,
+            "price_fit": 0.84,
+            "availability": 1
+          }
+        }
+      ],
+      "reasoning": "Hassan Plumbing Works ko unke 0.87 ke overall score aur pocket-friendly Rs. 750/hr rate ki wajah se top pick select kiya gaya hai. G-11 ke qareeb hone ke sath-sath, unka 88% on-time record unhe dosre providers se behtar aur reliable choice banata hai.",
+      "fallback_used": false,
+      "matching_trace": "Matched 3 eligible providers → scored on 6 factors → top 3 returned. Best: Hassan Plumbing Works (score: 0.87)"
+    },
+    "phase_after": "quoting"
+  },
+  {
+    "timestamp": "2026-05-17T07:43:24.447Z",
+    "step": 3,
+    "agent": "PricingEngine",
+    "budget_floor_check_triggered": false,
+    "min_amount": 1310,
+    "max_amount": 1910,
+    "gemini_decision": "Standard price calculated",
+    "output": {
+      "base_rate": 750,
+      "distance_fee": 10,
+      "urgency_surcharge": 200,
+      "complexity_premium": 0,
+      "loyalty_discount": 0,
+      "surge_multiplier": 1,
+      "surge_active": false,
+      "min_total": 1310,
+      "max_total": 1910,
+      "total": 1910,
+      "currency": "PKR",
+      "breakdown_text": "Visit fee: Rs. 200 | Labour rate: Rs. 600-750/hr | Distance (3.6km): Rs. 10 | Urgency surcharge: Rs. 200 | Estimated Total: Rs. 1310 - Rs. 1910",
+      "fairness_note": "Standard market rate for this service."
+    }
+  },
+  {
+    "timestamp": "2026-05-17T07:43:24.448Z",
+    "agent": "NegotiationAgent",
+    "gemini_decision": "Soft-locking provider p004 slot for preferred time now",
+    "slot_soft_locked": {
+      "provider_id": "p004",
+      "slot_time": "2026-05-18T07:00:00.000Z"
+    }
+  },
+  {
+    "timestamp": "2026-05-17T07:43:24.467Z",
+    "agent": "Orchestrator",
+    "provider_timeout": {
+      "provider_id": "p004",
+      "timeout_seconds": 30
+    },
+    "gemini_decision": "Simulated timeout triggered for provider Hassan Plumbing Works"
+  },
+  {
+    "timestamp": "2026-05-17T07:43:24.468Z",
+    "agent": "Orchestrator",
+    "provider_skipped": {
+      "provider_id": "p004",
+      "reason": "Decline or timeout"
+    },
+    "warm_restart": {
+      "restart_count": 1,
+      "reason": "Moving to next matched provider"
+    }
+  },
+  {
+    "timestamp": "2026-05-17T07:43:24.469Z",
+    "step": 1,
+    "agent": "PricingEngine",
+    "budget_floor_check_triggered": false,
+    "min_amount": 1180,
+    "max_amount": 1700,
+    "gemini_decision": "Standard price calculated",
+    "output": {
+      "base_rate": 650,
+      "distance_fee": 0,
+      "urgency_surcharge": 200,
+      "complexity_premium": 0,
+      "loyalty_discount": 0,
+      "surge_multiplier": 1,
+      "surge_active": false,
+      "min_total": 1180,
+      "max_total": 1700,
+      "total": 1700,
+      "currency": "PKR",
+      "breakdown_text": "Visit fee: Rs. 200 | Labour rate: Rs. 520-650/hr | Urgency surcharge: Rs. 200 | Estimated Total: Rs. 1180 - Rs. 1700",
+      "fairness_note": "Standard market rate for this service."
+    }
+  },
+  {
+    "timestamp": "2026-05-17T07:43:24.469Z",
+    "agent": "NegotiationAgent",
+    "gemini_decision": "Soft-locking provider p019 slot for preferred time now",
+    "slot_soft_locked": {
+      "provider_id": "p019",
+      "slot_time": "2026-05-18T05:00:00.000Z"
+    }
+  }
+]
