@@ -1735,6 +1735,29 @@
       "updated_at": "2026-05-17T14:54:43.571Z",
       "expires_at": "2026-05-17T15:24:43.571Z",
       "active_booking_id": null
+    },
+    {
+      "session_id": "SESS-1779112446604-811",
+      "customer_id": "customer_001",
+      "role": "customer",
+      "phase": "intake",
+      "parsed_intent": null,
+      "matched_providers": [],
+      "providers_tried": [],
+      "current_provider_index": 0,
+      "price_quote": null,
+      "negotiation_thread_id": null,
+      "equipment_acknowledged": false,
+      "restart_count": 0,
+      "agreed_price_range": null,
+      "negotiation_round": 1,
+      "budget_floor_warned": false,
+      "provider_profile": null,
+      "provider_setup_step": 0,
+      "created_at": "2026-05-18T13:54:06.604Z",
+      "updated_at": "2026-05-18T13:54:06.877Z",
+      "expires_at": "2026-05-18T14:24:06.877Z",
+      "active_booking_id": null
     }
   ]
 }

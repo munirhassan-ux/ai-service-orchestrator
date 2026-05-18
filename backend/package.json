@@ -5,7 +5,7 @@
   "description": "AI Service Orchestrator backend for Khedmatgar",
   "main": "dist/index.js",
   "scripts": {
-    "dev": "nodemon --exec ts-node src/index.ts",
+    "dev": "tsx watch src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js"
   },
@@ -21,6 +21,7 @@
     "@types/node": "^20.11.5",
     "nodemon": "^3.0.3",
     "ts-node": "^10.9.2",
+    "tsx": "^4.22.1",
     "typescript": "^5.3.3"
   }
 }
