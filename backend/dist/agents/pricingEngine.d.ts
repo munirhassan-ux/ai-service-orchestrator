@@ -20,15 +20,6 @@ export interface PriceQuote {
     industry_standard_min: number;
     industry_standard_max: number;
     currency: "PKR";
-    budget_alternative?: {
-        provider_id: string;
-        provider_name: string;
-        min_total: number;
-        max_total: number;
-        total: number;
-        distance_km: number;
-        rating: number;
-    };
     breakdown_text: string;
     fairness_note: string;
 }

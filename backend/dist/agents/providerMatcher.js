@@ -4,7 +4,10 @@ import * as path from "path";
 import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const providers = JSON.parse(fs.readFileSync(path.join(__dirname, "../../data/mock_providers.json"), "utf-8"));
+function getProvidersData() {
+    const filePath = path.join(__dirname, "../../data/mock_providers.json");
+    return JSON.parse(fs.readFileSync(filePath, "utf-8"));
+}
 // Haversine formula — distance between two lat/lng points in km
 function haversine(lat1, lng1, lat2, lng2) {
     const R = 6371;
@@ -17,7 +20,6 @@ function haversine(lat1, lng1, lat2, lng2) {
             Math.sin(dLng / 2);
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
-// Area to approximate coordinates (Islamabad areas)
 const areaCoords = {
     "g-13": { lat: 33.6844, lng: 73.0479 },
     "g-11": { lat: 33.6938, lng: 73.0551 },
@@ -44,114 +46,179 @@ function getAreaCoords(location) {
     }
     return { lat: 33.6844, lng: 73.0479 }; // Default: G-13
 }
-function skillLevelValue(level) {
-    const map = { basic: 1, intermediate: 2, complex: 3 };
-    return map[level] || 1;
-}
-function complexityToSkillRequired(hint) {
-    const map = { basic: 1, intermediate: 2, complex: 3 };
-    return map[hint] || 1;
-}
-function isBlacklisted(provider) {
-    return provider.cancellation_rate > 0.3 || provider.risk_score > 0.7;
-}
-export async function matchProviders(intent) {
+export async function matchProviders(intent, excludedIds = []) {
+    const providersData = getProvidersData();
     const userCoords = getAreaCoords(intent.location);
-    const requiredSkill = complexityToSkillRequired(intent.job_complexity_hint);
-    // Filter: service type + not blacklisted + skill level sufficient
-    let eligible = providers.filter((p) => {
-        const hasService = p.service_types.some((s) => s === intent.service_type ||
-            s.startsWith(intent.service_type.split("_")[0]));
-        const skillOk = skillLevelValue(p.skill_level) >= requiredSkill;
-        return hasService && skillOk && !isBlacklisted(p);
+    // STEP 2 - Provider Matching Filters
+    // Filter providers who:
+    // - Are online
+    // - Have active jobs under capacity
+    // - Match the service type
+    let eligible = providersData.filter((p) => {
+        const pId = p.provider_id || p.id;
+        if (excludedIds.includes(pId))
+            return false;
+        const isOnline = p.availability_status === "online";
+        const capacityOk = p.active_jobs < p.capacity;
+        const matchesService = p.service_expertise.some((s) => s.toLowerCase() === intent.service_type.toLowerCase() ||
+            s.toLowerCase().startsWith(intent.service_type.toLowerCase().split("_")[0]));
+        return isOnline && capacityOk && matchesService;
     });
     let fallback_used = false;
     let fallback_reason;
-    if (eligible.length === 0) {
-        // Fallback: relax skill constraint
-        eligible = providers.filter((p) => {
-            const hasService = p.service_types.some((s) => s.startsWith(intent.service_type.split("_")[0]));
-            return hasService && !isBlacklisted(p);
-        });
+    // Waitlist Fallback if fewer than 3 qualify:
+    // Fill with offline or over-capacity matching providers and flag them.
+    let isWaitlistedIncluded = false;
+    if (eligible.length < 3) {
         fallback_used = true;
-        fallback_reason = `No ${intent.job_complexity_hint}-level providers found. Showing all available skill levels.`;
+        fallback_reason = "Fewer than 3 active online providers found. Filling with waitlisted/offline options.";
+        const extraProviders = providersData.filter((p) => {
+            const isAlreadyIncluded = eligible.some((e) => e.provider_id === p.provider_id);
+            const matchesService = p.service_expertise.some((s) => s.toLowerCase() === intent.service_type.toLowerCase() ||
+                s.toLowerCase().startsWith(intent.service_type.toLowerCase().split("_")[0]));
+            return !isAlreadyIncluded && matchesService;
+        });
+        // Mark them as waitlisted and append
+        const waitlistedAdded = extraProviders.map((ep) => ({
+            ...ep,
+            is_waitlisted: true,
+        }));
+        eligible = [...eligible, ...waitlistedAdded];
+        isWaitlistedIncluded = true;
     }
     if (eligible.length === 0) {
         return {
             top_providers: [],
-            reasoning: `No providers found for ${intent.service_type} in ${intent.location}.`,
+            reasoning: `Hum maazrat chahte hain, is waqt ${intent.service_type} ke liye koi provider available nahi hai.`,
             fallback_used: true,
-            fallback_reason: "No providers available for this service in your area.",
-            matching_trace: "0 providers matched after all filters.",
+            fallback_reason: "No providers matched.",
+            matching_trace: "0 eligible providers matched.",
         };
     }
-    // Score each provider on 6 factors
-    const maxDistance = 20;
+    // Find min and max rates among eligible to score Price Fit
+    const rates = eligible.map((p) => p.charges.base_rate);
+    const minRate = rates.length > 0 ? Math.min(...rates) : 400;
+    const maxRate = rates.length > 0 ? Math.max(...rates) : 1500;
+    const rateRange = maxRate - minRate || 100;
+    // Score each provider using 8-factor system
     const scored = eligible.map((p) => {
-        const distance = haversine(userCoords.lat, userCoords.lng, p.lat, p.lng);
-        // Factor 1: Proximity (0-1, closer = higher)
-        const proximityScore = Math.max(0, 1 - distance / maxDistance);
-        // Factor 2: Rating + recency (recency decay: older reviews weight less)
-        const recencyWeight = Math.max(0.5, 1 - p.review_recency_days / 30);
-        const ratingScore = (p.rating / 5) * recencyWeight;
-        // Factor 3: On-time score (0-1)
-        const onTimeScore = p.on_time_score;
-        // Factor 4: Skill match (exact level = 1.0, over-qualified = 0.9, under = 0)
-        const providerSkill = skillLevelValue(p.skill_level);
-        const skillMatchScore = providerSkill === requiredSkill ? 1.0 : providerSkill > requiredSkill ? 0.9 : 0;
-        // Factor 5: Price fit (budget sensitive = prefer cheaper, else neutral)
-        const avgPrice = 800;
-        const priceScore = intent.budget_sensitivity
-            ? Math.max(0, 1 - (p.price_per_hour - 400) / 800)
-            : 1 - Math.abs(p.price_per_hour - avgPrice) / avgPrice / 2;
-        // Factor 6: Availability (available = 1, offline = 0.2)
-        const availScore = p.available ? 1.0 : 0.2;
-        // Weighted total
-        const total = 0.20 * proximityScore +
-            0.20 * ratingScore +
-            0.20 * onTimeScore +
-            0.15 * skillMatchScore +
-            0.15 * priceScore +
-            0.10 * availScore;
+        const distance = haversine(userCoords.lat, userCoords.lng, p.location.latitude, p.location.longitude);
+        // 1. Travel Time (15%): Score = 100 - (travel_mins / 60 * 100), preferring under 20 mins (10km)
+        const travel_mins = distance * 2; // assume 2 mins/km
+        const travel_time_score = Math.max(0, 100 - (travel_mins / 60) * 100);
+        // 2. Availability Match (15%): Exact = 100, +/-1hr = 70, +/-2hr = 40
+        // We assume slot matches closely unless booked up
+        let availability_match_score = 100;
+        if (p.is_waitlisted) {
+            availability_match_score = 40; // Penalty since offline/waitlisted
+        }
+        // 3. Specialization (20%): Exact = 100, Related = 60, Generic = 30
+        const exactMatch = p.service_expertise.some((s) => s.toLowerCase() === intent.service_type.toLowerCase());
+        let specialization_score = 30;
+        if (exactMatch) {
+            specialization_score = 100;
+        }
+        else if (p.service_expertise.some((s) => s.toLowerCase().startsWith(intent.service_type.toLowerCase().split("_")[0]))) {
+            specialization_score = 60;
+        }
+        // 4. On-Time Score (15%): on_time_score * 100
+        const on_time_score = (p.on_time_score || 0.9) * 100;
+        // 5. Review Sentiment (10%): rating-based sentiment + 20% penalty if recent negative spike (rating < 4.3)
+        let review_sentiment_score = (p.rating / 5) * 100;
+        if (p.rating < 4.3) {
+            review_sentiment_score *= 0.8; // 20% penalty
+        }
+        // 6. Rate (10%): Lower rate scores higher for low budgets; reduce weight to 5% for flexible budgets
+        const budgetIsFlexible = intent.budget_sensitivity === "flexible";
+        const rate_score = ((maxRate - p.charges.base_rate) / rateRange) * 100;
+        // Weights Adjustment
+        const wRate = budgetIsFlexible ? 0.05 : 0.10;
+        const wSpec = budgetIsFlexible ? 0.25 : 0.20; // Reallocate weight to Specialization
+        // 7. Cancellation Risk (10%): (1 - cancellation_risk) * 100
+        const cancellation_risk_score = (1 - (p.cancellation_risk || 0)) * 100;
+        // 8. Capacity (5%): (capacity - active_jobs) / capacity * 100
+        const capacity_score = p.capacity > 0 ? ((p.capacity - p.active_jobs) / p.capacity) * 100 : 100;
+        // Weighted Score
+        const totalScore = 0.15 * travel_time_score +
+            0.15 * availability_match_score +
+            wSpec * specialization_score +
+            0.15 * on_time_score +
+            0.10 * review_sentiment_score +
+            wRate * rate_score +
+            0.10 * cancellation_risk_score +
+            0.05 * capacity_score;
         return {
-            ...p,
+            provider_id: p.provider_id,
+            name: p.name,
+            shop_name: p.shop_name,
+            location: p.location,
+            city: p.city,
+            city_area: p.city_area,
+            availability_status: p.availability_status,
+            charges: p.charges,
+            job_role: p.job_role,
+            service_expertise: p.service_expertise,
+            rating: p.rating,
+            on_time_score: p.on_time_score,
+            cancellation_risk: p.cancellation_risk,
+            capacity: p.capacity,
+            active_jobs: p.active_jobs,
+            total_reviews: p.total_reviews,
+            total_jobs: p.total_jobs,
             distance_km: Math.round(distance * 10) / 10,
-            score: Math.round(total * 100) / 100,
+            score: Math.round(totalScore * 100) / 100,
             score_breakdown: {
-                proximity: Math.round(proximityScore * 100) / 100,
-                rating_recency: Math.round(ratingScore * 100) / 100,
-                on_time: Math.round(onTimeScore * 100) / 100,
-                skill_match: Math.round(skillMatchScore * 100) / 100,
-                price_fit: Math.round(priceScore * 100) / 100,
-                availability: availScore,
+                travel_time: Math.round(travel_time_score),
+                availability_match: Math.round(availability_match_score),
+                specialization: Math.round(specialization_score),
+                on_time: Math.round(on_time_score),
+                review_sentiment: Math.round(review_sentiment_score),
+                rate: Math.round(rate_score),
+                cancellation_risk: Math.round(cancellation_risk_score),
+                capacity: Math.round(capacity_score),
             },
+            is_waitlisted: p.is_waitlisted || false,
         };
     });
-    // Sort by score descending, take top 3
-    const top3 = scored.sort((a, b) => b.score - a.score).slice(0, 3);
-    // Generate reasoning using Claude
-    const reasoningPrompt = `You are an AI matching agent for a Pakistani home services app.
-Explain in 2 sentences (mix of English and Roman Urdu is fine) why ${top3[0]?.name} was selected as the top provider for a ${intent.service_type} job in ${intent.location}.
-
-Top provider score breakdown:
-- Proximity: ${top3[0]?.score_breakdown.proximity} (${top3[0]?.distance_km} km away)
-- Rating+Recency: ${top3[0]?.score_breakdown.rating_recency} (${top3[0]?.rating}★, last review ${providers.find((p) => p.id === top3[0]?.id)?.review_recency_days} days ago)
-- On-time score: ${top3[0]?.score_breakdown.on_time} (${Math.round((top3[0]?.on_time_score || 0) * 100)}%)
-- Skill match: ${top3[0]?.score_breakdown.skill_match} (${top3[0]?.skill_level} level)
-- Price fit: ${top3[0]?.score_breakdown.price_fit} (Rs. ${top3[0]?.price_per_hour}/hr)
-- Total score: ${top3[0]?.score}
-
-Be concise and specific. Mention the key differentiator vs other options.`;
-    const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
-    const model = genAI.getGenerativeModel({
-        model: "gemini-3.1-flash-lite",
-        generationConfig: { maxOutputTokens: 200 }
+    // TIEBREAKER logic: sort primarily by score descending.
+    // If scores are within 3 points of each other, apply:
+    // 1. Higher on_time_score
+    // 2. More recent positive review (represented by higher rating here)
+    // 3. Lower cancellation_risk
+    const sorted = scored.sort((a, b) => {
+        const diff = Math.abs(a.score - b.score);
+        if (diff <= 3) {
+            if (a.on_time_score !== b.on_time_score) {
+                return b.on_time_score - a.on_time_score;
+            }
+            if (a.rating !== b.rating) {
+                return b.rating - a.rating;
+            }
+            return a.cancellation_risk - b.cancellation_risk;
+        }
+        return b.score - a.score;
     });
-    const reasoningResult = await model.generateContent(reasoningPrompt);
-    const reasoningResp = await reasoningResult.response;
-    const reasoning = reasoningResp.text().trim() || `${top3[0]?.name} selected based on best combined score for proximity, rating, and reliability.`;
-    const trace = `Matched ${eligible.length} eligible providers → scored on 6 factors → top 3 returned. Best: ${top3[0]?.name} (score: ${top3[0]?.score})`;
-    console.log(`[ProviderMatcher] ${trace}`);
+    const top3 = sorted.slice(0, 3);
+    // Generate Reasoning
+    let reasoning = "";
+    try {
+        const reasoningPrompt = `You are the matching AI for Khedmatgar, a home services platform.
+Explain in 2 sentences in Urdu/Roman Urdu why ${top3[0].name} (Score: ${top3[0].score}%, ${top3[0].distance_km}km door) is the best match for ${intent.service_type} in ${intent.location}.
+Primary strengths:
+- Distance: ${top3[0].distance_km}km
+- Rating: ${top3[0].rating}★
+- On-Time: ${Math.round(top3[0].on_time_score * 100)}%
+- Specialization: Exact matches service.
+Be extremely concise.`;
+        const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
+        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+        const response = await model.generateContent(reasoningPrompt);
+        reasoning = response.response.text().trim();
+    }
+    catch {
+        reasoning = `${top3[0].name} selected based on high composite score of ${top3[0].score}%, proximity of ${top3[0].distance_km}km, and excellent rating.`;
+    }
+    const trace = `Matched ${eligible.length} eligible providers using 8 weighted factors and tiebreaker rules. Top Match: ${top3[0]?.name}`;
     return {
         top_providers: top3,
         reasoning,

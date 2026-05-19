@@ -446,3 +446,292 @@ class _RatingBubbleState extends State<RatingBubble> {
     );
   }
 }
+
+class Top3ProvidersBubble extends StatelessWidget {
+  final List<dynamic> providers;
+  final String reasoning;
+  final Function(String providerId) onSelect;
+  final VoidCallback onMoreOptions;
+
+  const Top3ProvidersBubble({
+    super.key,
+    required this.providers,
+    required this.reasoning,
+    required this.onSelect,
+    required this.onMoreOptions,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      width: double.infinity,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.05),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(20),
+                topRight: Radius.circular(20),
+                bottomRight: Radius.circular(20),
+              ),
+              border: Border.all(color: Colors.white10),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.psychology_rounded, color: Color(0xFF00C853), size: 20),
+                    const SizedBox(width: 8),
+                    const Text(
+                      "Khedmatgar AI Matcher",
+                      style: TextStyle(
+                        color: Color(0xFF00C853),
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  reasoning,
+                  style: const TextStyle(
+                    color: Color(0xFFE2E8F0),
+                    fontSize: 13,
+                    height: 1.5,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            height: 310,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: providers.length,
+              itemBuilder: (context, idx) {
+                final p = providers[idx] as Map<String, dynamic>;
+                final pId = p['provider_id'] as String? ?? p['id'] as String? ?? '';
+                final name = p['name'] as String? ?? 'Provider';
+                final shopName = p['shop_name'] as String? ?? 'Workshop';
+                final rating = p['rating']?.toString() ?? '4.5';
+                final distanceKm = p['distance_km']?.toString() ?? '2.0';
+                final onTimeScore = p['on_time_score']?.toString() ?? '0.9';
+                final score = p['score']?.toString() ?? '90';
+                
+                final charges = p['charges'] as Map<String, dynamic>? ?? {};
+                final baseRate = charges['base_rate']?.toString() ?? '500';
+                
+                final priceQuote = p['price_quote'] as Map<String, dynamic>? ?? {};
+                final total = priceQuote['total']?.toString() ?? '1500';
+                
+                final isWaitlisted = p['is_waitlisted'] as bool? ?? false;
+                
+                double otVal = double.tryParse(onTimeScore) ?? 0.9;
+                if (otVal <= 1.0) otVal *= 100;
+                final onTimePercent = otVal.round().toString();
+
+                return Container(
+                  width: 270,
+                  margin: const EdgeInsets.only(right: 12),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Colors.white.withOpacity(0.08),
+                        Colors.white.withOpacity(0.03),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(
+                      color: isWaitlisted 
+                          ? Colors.amber.withOpacity(0.3)
+                          : const Color(0xFF00C853).withOpacity(0.2),
+                      width: 1.5,
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF00C853).withOpacity(0.15),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.flash_on_rounded, size: 12, color: Color(0xFF00C853)),
+                                const SizedBox(width: 4),
+                                Text(
+                                  "$score% Match",
+                                  style: const TextStyle(
+                                    color: Color(0xFF00C853),
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          if (isWaitlisted)
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: Colors.amber.withOpacity(0.15),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Text(
+                                "Waitlist",
+                                style: TextStyle(
+                                  color: Colors.amber,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        "👷 $name",
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        shopName,
+                        style: const TextStyle(
+                          color: Colors.white38,
+                          fontSize: 11,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          const Icon(Icons.star_rounded, size: 14, color: Colors.amber),
+                          Text(" $rating", style: const TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold)),
+                          const SizedBox(width: 8),
+                          const Icon(Icons.location_on, size: 13, color: Colors.white38),
+                          Text(" ${distanceKm}km", style: const TextStyle(color: Colors.white54, fontSize: 11)),
+                          const SizedBox(width: 8),
+                          const Icon(Icons.timer_outlined, size: 13, color: Colors.white38),
+                          Text(" $onTimePercent% on-time", style: const TextStyle(color: Colors.white54, fontSize: 11)),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Container(height: 1, color: Colors.white10),
+                      const SizedBox(height: 12),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text("EST. TOTAL", style: TextStyle(color: Colors.white38, fontSize: 9, fontWeight: FontWeight.w600)),
+                              const SizedBox(height: 2),
+                              Text(
+                                "Rs. $total",
+                                style: const TextStyle(
+                                  color: Color(0xFF00C853),
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              const Text("HOURLY RATE", style: TextStyle(color: Colors.white38, fontSize: 9, fontWeight: FontWeight.w600)),
+                              const SizedBox(height: 2),
+                              Text(
+                                "Rs. $baseRate/hr",
+                                style: const TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      const Spacer(),
+                      GestureDetector(
+                        onTap: () => onSelect(pId),
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF00C853),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: const Center(
+                            child: Text(
+                              "Select Provider",
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              GestureDetector(
+                onTap: onMoreOptions,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.05),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Colors.white10),
+                  ),
+                  child: Row(
+                    children: [
+                      const Text(
+                        "More Options",
+                        style: TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(width: 4),
+                      const Icon(Icons.arrow_forward_rounded, size: 12, color: Colors.white70),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}

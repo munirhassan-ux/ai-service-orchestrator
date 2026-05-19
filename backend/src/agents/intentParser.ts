@@ -14,9 +14,9 @@ export interface ParsedIntent {
   service_type: string;
   service_raw: string;
   location: string;
-  urgency: "low" | "medium" | "high";
+  urgency: "low" | "medium" | "high" | "emergency";
   preferred_time: string;
-  budget_sensitivity: boolean;
+  budget_sensitivity: "low" | "medium" | "flexible";
   job_complexity_hint: "basic" | "intermediate" | "complex";
   language: "english" | "urdu" | "roman_urdu" | "mixed";
   confidence: number;
@@ -38,9 +38,9 @@ Return this JSON:
   "service_type": "string",
   "service_raw": "string",
   "location": "string",
-  "urgency": "low|medium|high",
+  "urgency": "low|medium|high|emergency",
   "preferred_time": "string",
-  "budget_sensitivity": boolean,
+  "budget_sensitivity": "low|medium|flexible",
   "job_complexity_hint": "basic|intermediate|complex",
   "language": "english|urdu|roman_urdu|mixed",
   "confidence": number,
@@ -103,7 +103,7 @@ export async function parseIntent(userInput: string, history: any[] = []): Promi
       location: "unknown",
       urgency: "medium",
       preferred_time: "flexible",
-      budget_sensitivity: false,
+      budget_sensitivity: "medium",
       job_complexity_hint: "basic",
       language: "mixed",
       confidence: 0.4,

@@ -2,9 +2,9 @@ export interface ParsedIntent {
     service_type: string;
     service_raw: string;
     location: string;
-    urgency: "low" | "medium" | "high";
+    urgency: "low" | "medium" | "high" | "emergency";
     preferred_time: string;
-    budget_sensitivity: boolean;
+    budget_sensitivity: "low" | "medium" | "flexible";
     job_complexity_hint: "basic" | "intermediate" | "complex";
     language: "english" | "urdu" | "roman_urdu" | "mixed";
     confidence: number;

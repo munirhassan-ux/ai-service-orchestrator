@@ -59,6 +59,14 @@ class ApiService {
     return jsonDecode(response.body);
   }
 
+  // Generic GET
+  static Future<dynamic> get(String endpoint) async {
+    final path = endpoint.startsWith('/') ? endpoint : '/$endpoint';
+    final response = await http.get(Uri.parse('$baseUrl$path'));
+    return jsonDecode(response.body);
+  }
+
+
   // Status Updates
   static Future<Map<String, dynamic>> updateStatus(String bookingId, String status) async {
     final response = await http.post(
@@ -75,6 +83,16 @@ class ApiService {
       Uri.parse('$baseUrl/negotiate/timeout'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'session_id': sessionId}),
+    );
+    return jsonDecode(response.body);
+  }
+
+  // Generic POST helper
+  static Future<Map<String, dynamic>> post(String path, Map<String, dynamic> body) async {
+    final response = await http.post(
+      Uri.parse(path.startsWith('http') ? path : '$baseUrl$path'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(body),
     );
     return jsonDecode(response.body);
   }

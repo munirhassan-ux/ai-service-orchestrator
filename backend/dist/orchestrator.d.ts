@@ -9,7 +9,6 @@ export interface AgentTraceStep {
     output: any;
     duration_ms: number;
     reasoning?: string;
-    fallback?: boolean;
 }
 export interface OrchestrationResult {
     success: boolean;

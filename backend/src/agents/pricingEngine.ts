@@ -14,39 +14,16 @@ export interface PriceQuote {
   hours_max: number;
   min_total: number;
   max_total: number;
-  total: number; // backward compat = max_total
-  // Negotiation Round 1: recalculated at minimum provider rate
+  total: number; 
   min_rate_total: number;
-  // Negotiation Round 2: absolute floor (industry standard min)
   floor_min: number;
   floor_max: number;
-  // Industry standard for comparison
   industry_standard_min: number;
   industry_standard_max: number;
   currency: "PKR";
-  budget_alternative?: {
-    provider_id: string;
-    provider_name: string;
-    min_total: number;
-    max_total: number;
-    total: number;
-    distance_km: number;
-    rating: number;
-  };
   breakdown_text: string;
   fairness_note: string;
 }
-
-// Industry standard rates per service type (PKR)
-const INDUSTRY_STANDARDS: Record<string, { min: number; max: number; min_rate: number }> = {
-  plumber:      { min: 800,  max: 2000, min_rate: 600 },
-  electrician:  { min: 1000, max: 2500, min_rate: 700 },
-  ac_repair:    { min: 1500, max: 4000, min_rate: 1200 },
-  cleaning:     { min: 1500, max: 3000, min_rate: 1200 },
-  carpenter:    { min: 1000, max: 3000, min_rate: 800 },
-  painter:      { min: 5000, max: 15000, min_rate: 4000 },
-  default:      { min: 800,  max: 2500, min_rate: 600 },
-};
 
 export function calculatePrice(
   intent: ParsedIntent,
@@ -56,125 +33,69 @@ export function calculatePrice(
 ): PriceQuote {
   const roundToNearest10 = (n: number) => Math.round(n / 10) * 10;
 
-  const visit_fee = 200;
-  const hours_min = 1.5;
-  const hours_max = 2.0;
+  // Exact Charge Calculations:
+  // travel_distance_km = haversine(provider.lat, provider.lng, customer.lat, customer.lng)
+  // travel_charges = travel_distance_km * provider.charges.travel_rate
+  // on_demand_charges = service_fee * (0.15 for high / 0.30 for emergency)
+  // total = service_fee + travel_charges + on_demand_charges
 
-  // Base rate from provider
-  const base_rate = roundToNearest10(provider.price_per_hour);
-  const minimum_price_per_hour = roundToNearest10(base_rate * 0.8);
+  // Base rate (PKR per hour)
+  const base_rate = provider.charges.base_rate;
+  const travel_rate = provider.charges.travel_rate || 30;
 
-  // Distance fee: Rs. 20 per km over 3km
-  const distance_fee = provider.distance_km > 3
-    ? roundToNearest10((provider.distance_km - 3) * 20)
-    : 0;
+  // Let's assume estimated duration of 2 hours for all calculations.
+  const estimated_hours = 2.0;
+  const service_fee = roundToNearest10(base_rate * estimated_hours);
 
-  // Urgency surcharge
-  const urgency_surcharge =
-    intent.urgency === "high" ? 200 :
-    intent.urgency === "medium" ? 100 : 0;
+  // Travel charges
+  const travel_distance_km = provider.distance_km;
+  const travel_charges = roundToNearest10(travel_distance_km * travel_rate);
 
-  // Complexity premium
-  const complexity_premium =
-    intent.job_complexity_hint === "complex" ? 200 :
-    intent.job_complexity_hint === "intermediate" ? 150 : 0;
-
-  const loyalty_discount = 0;
-
-  // Surge: if fewer than 2 available providers, apply 1.2x
-  const availableCount = allProviders.filter((p) => p.available).length;
-  const surge_active = availableCount < 2;
-  const surge_multiplier = surge_active ? 1.2 : 1.0;
-
-  const extras = distance_fee + urgency_surcharge + complexity_premium;
-
-  const min_labour = minimum_price_per_hour * hours_min;
-  const max_labour = base_rate * hours_max;
-
-  const min_total = roundToNearest10((visit_fee + min_labour + extras) * surge_multiplier);
-  const max_total = roundToNearest10((visit_fee + max_labour + extras) * surge_multiplier);
-
-  // ── Round 1 Quote: at provider's minimum rate ─────────────────────────
-  const min_rate_total = roundToNearest10(
-    (visit_fee + minimum_price_per_hour * hours_min + extras) * surge_multiplier
-  );
-
-  // ── Industry Standard for comparison ──────────────────────────────────
-  const serviceKey = intent.service_type?.toLowerCase().replace(/\s+/g, "_") || "default";
-  const std = INDUSTRY_STANDARDS[serviceKey] || INDUSTRY_STANDARDS["default"];
-  const industry_standard_min = std.min;
-  const industry_standard_max = std.max;
-
-  // ── Floor (Round 2 = industry standard minimum) ───────────────────────
-  const floor_min = roundToNearest10(visit_fee + std.min_rate * hours_min);
-  const floor_max = roundToNearest10(visit_fee + std.min_rate * hours_max);
-
-  // ── Budget Alternative ────────────────────────────────────────────────
-  const budgetAlt = intent.budget_sensitivity
-    ? [...allProviders]
-        .filter((p) => p.id !== provider.id && p.available)
-        .sort((a, b) => a.price_per_hour - b.price_per_hour)[0]
-    : undefined;
-
-  let budgetAltQuote: PriceQuote["budget_alternative"] | undefined;
-  if (budgetAlt) {
-    const altBase = roundToNearest10(budgetAlt.price_per_hour);
-    const altMinBase = roundToNearest10(altBase * 0.8);
-    const altDist = budgetAlt.distance_km > 3
-      ? roundToNearest10((budgetAlt.distance_km - 3) * 20)
-      : 0;
-    const altExtras = altDist + urgency_surcharge + complexity_premium;
-    const altMin = roundToNearest10((visit_fee + altMinBase * hours_min + altExtras) * surge_multiplier);
-    const altMax = roundToNearest10((visit_fee + altBase * hours_max + altExtras) * surge_multiplier);
-    budgetAltQuote = {
-      provider_id: budgetAlt.id,
-      provider_name: budgetAlt.name,
-      min_total: altMin,
-      max_total: altMax,
-      total: altMax,
-      distance_km: budgetAlt.distance_km,
-      rating: budgetAlt.rating,
-    };
+  // On demand charges based on urgency
+  let on_demand_charges = 0;
+  const lowerUrgency = (intent.urgency || "low").toLowerCase();
+  if (lowerUrgency === "high" || lowerUrgency === "emergency") {
+    const multiplier = lowerUrgency === "emergency" ? 0.30 : 0.15;
+    on_demand_charges = roundToNearest10(service_fee * multiplier);
   }
 
+  // Total calculation
+  const total = roundToNearest10(service_fee + travel_charges + on_demand_charges);
+
+  // Ranges for backward-compatibility with UI
+  const min_total = roundToNearest10(total * 0.95);
+  const max_total = roundToNearest10(total * 1.05);
+
   const breakdown_text = [
-    `Visit fee: Rs. ${visit_fee}`,
-    `Labour: Rs. ${minimum_price_per_hour}-${base_rate}/hr × ${hours_min}–${hours_max} hrs`,
-    distance_fee > 0 ? `Distance (${provider.distance_km}km): Rs. ${distance_fee}` : null,
-    urgency_surcharge > 0 ? `Urgency: Rs. ${urgency_surcharge}` : null,
-    complexity_premium > 0 ? `Complexity (${intent.job_complexity_hint}): Rs. ${complexity_premium}` : null,
-    surge_active ? `Surge (×${surge_multiplier}): applied` : null,
+    `Base Service Fee: Rs. ${service_fee} (Estimated 2 hours)`,
+    `Travel Charges (${provider.distance_km}km): Rs. ${travel_charges}`,
+    on_demand_charges > 0 ? `On-demand Surcharge: Rs. ${on_demand_charges}` : null,
     `─────────────────────────────`,
-    `Estimated total: Rs. ${min_total} – Rs. ${max_total}`,
+    `Total Charges: Rs. ${total}`,
   ].filter(Boolean).join("\n");
 
-  const fairness_note = surge_active
-    ? "High demand in your area. Price includes a small surge."
-    : "Standard market rate for this service.";
-
-  console.log(`[PricingEngine] ${provider.name} | Range: Rs. ${min_total}-${max_total} | Industry Std: Rs. ${industry_standard_min}-${industry_standard_max} | Floor: Rs. ${floor_min}-${floor_max}`);
+  const fairness_note = "Standard flat-rate pricing applied, incorporating travel rate and urgency surge.";
 
   return {
     base_rate,
-    distance_fee,
-    urgency_surcharge,
-    complexity_premium,
-    loyalty_discount,
-    surge_multiplier,
-    surge_active,
-    visit_fee,
-    hours_min,
-    hours_max,
+    distance_fee: travel_charges,
+    urgency_surcharge: on_demand_charges,
+    complexity_premium: 0,
+    loyalty_discount: 0,
+    surge_multiplier: 1.0,
+    surge_active: false,
+    visit_fee: 0,
+    hours_min: estimated_hours,
+    hours_max: estimated_hours,
     min_total,
     max_total,
-    total: max_total,
-    min_rate_total,
-    floor_min,
-    floor_max,
-    industry_standard_min,
-    industry_standard_max,
+    total,
+    min_rate_total: min_total,
+    floor_min: roundToNearest10(total * 0.9),
+    floor_max: roundToNearest10(total * 1.1),
+    industry_standard_min: roundToNearest10(service_fee * 0.8),
+    industry_standard_max: roundToNearest10(service_fee * 1.3),
     currency: "PKR",
-    budget_alternative: budgetAltQuote,
     breakdown_text,
     fairness_note,
   };

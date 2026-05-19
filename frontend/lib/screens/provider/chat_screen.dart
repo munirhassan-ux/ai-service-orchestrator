@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import '../../services/api_service.dart';
 
 class ProviderChatScreen extends StatefulWidget {
-  const ProviderChatScreen({super.key});
+  final String? bookingId;
+  const ProviderChatScreen({super.key, this.bookingId});
   @override
   State<ProviderChatScreen> createState() => _ProviderChatScreenState();
 }
@@ -31,11 +33,54 @@ class _ProviderChatScreenState extends State<ProviderChatScreen> {
 
   final List<Map<String, dynamic>> _messages = [];
   bool _loading = false;
+  Map<String, dynamic>? _bookingData;
 
   @override
   void initState() {
     super.initState();
-    _messages.add({'text': "Assalam o Alaikum! Khedmatgar mein khush aamdeed.\nMain aap ka profile set karta hoon. Pehle batayein — aap ka naam kya hai?", 'isUser': false, 'chips': null});
+    if (widget.bookingId != null) {
+      _fetchBooking();
+    } else {
+      _messages.add({'text': "Assalam o Alaikum! Khedmatgar mein khush aamdeed.\nMain aap ka profile set karta hoon. Pehle batayein — aap ka naam kya hai?", 'isUser': false, 'chips': null});
+    }
+  }
+
+  Future<void> _fetchBooking() async {
+    setState(() => _loading = true);
+    try {
+      final res = await ApiService.get('bookings');
+      if (res is List) {
+        final b = res.firstWhere((x) => x['booking_id'] == widget.bookingId, orElse: () => null);
+        if (b != null) {
+          setState(() {
+            _bookingData = b;
+            final status = b['status'];
+            if (status == 'PENDING_PROVIDER') {
+              _jobOffered = true;
+              _messages.add({
+                'text': null, 'isUser': false, 'type': 'job_offer',
+                'job': {
+                  'service': b['service_type'],
+                  'problem': b['location'], // Using location as mock problem if not available
+                  'location': b['location'],
+                  'distance': b['distance_meters']?.toString() ?? '1.2',
+                  'time': b['scheduled_time'],
+                  'urgency': 'Medium',
+                  'min': b['final_price'], 'max': b['final_price'],
+                }
+              });
+            } else if (status == 'ACCEPTED' || status == 'ARRIVING' || status == 'ARRIVED' || status == 'IN_PROGRESS') {
+              _jobAccepted = true;
+              _messages.add({'text': "Current Status: $status", 'isUser': false});
+              _messages.add({'text': null, 'isUser': false, 'type': 'checklist'});
+            }
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint(e.toString());
+    }
+    setState(() => _loading = false);
   }
 
   @override
@@ -105,7 +150,10 @@ class _ProviderChatScreenState extends State<ProviderChatScreen> {
     _scrollBottom();
   }
 
-  void _acceptJob() {
+  void _acceptJob() async {
+    if (widget.bookingId != null) {
+      await ApiService.post('booking/status', {'booking_id': widget.bookingId, 'status': 'ACCEPTED'});
+    }
     setState(() {
       _jobOffered = false;
       _jobAccepted = true;
@@ -126,8 +174,11 @@ class _ProviderChatScreenState extends State<ProviderChatScreen> {
     _scrollBottom();
   }
 
-  void _markComplete() {
+  void _markComplete() async {
     if (_checkedItems.length < _checklistItems.length) return;
+    if (widget.bookingId != null) {
+      await ApiService.post('booking/status', {'booking_id': widget.bookingId, 'status': 'COMPLETED'});
+    }
     setState(() {
       _messages.add({
         'text': "✅ Job complete ho gayi!\nCustomer ko rate karne ka request bhej diya gaya.\n\n📊 Aaj ka summary:\nJobs complete: 1\nEarnings: Rs. 1,400\nRating: 4.5★\n\nAgle kaam ka intezaar karein! 🙏",
