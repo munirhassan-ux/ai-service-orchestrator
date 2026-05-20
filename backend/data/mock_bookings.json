@@ -1,120 +1,44 @@
 {
   "bookings": [
     {
-      "booking_id": "SVC-20260518-0001",
-      "provider_id": "p019",
-      "provider_name": "Usman Fast Plumbing",
+      "booking_id": "SVC-20260520-0001",
+      "provider_id": "p001",
+      "provider_name": "Ali AC Services",
       "customer_id": "customer_001",
-      "service_type": "plumber",
-      "location": "G-11",
-      "scheduled_time": "2026-05-19T05:00:00.000Z",
+      "service_type": "ac_repair",
+      "location": "Park View, Lahore",
+      "scheduled_time": "2026-05-21T19:00:00.000Z",
       "status": "COMPLETED",
-      "final_price": 1510,
+      "final_price": 1750,
       "price_quote": {
-        "base_rate": 650,
-        "distance_fee": 10,
-        "urgency_surcharge": 200,
-        "complexity_premium": 0,
-        "loyalty_discount": 0,
-        "surge_multiplier": 1,
-        "surge_active": false,
-        "visit_fee": 0,
-        "hours_min": 2,
-        "hours_max": 2,
-        "min_total": 1430,
-        "max_total": 1590,
-        "total": 1510,
-        "min_rate_total": 1430,
-        "floor_min": 1360,
-        "floor_max": 1660,
-        "industry_standard_min": 1040,
-        "industry_standard_max": 1690,
-        "currency": "PKR",
-        "breakdown_text": "Base Service Fee: Rs. 1300 (Estimated 2 hours)\nTravel Charges (0.2km): Rs. 10\nOn-demand Surcharge: Rs. 200\n─────────────────────────────\nTotal Charges: Rs. 1510",
-        "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
-      },
-      "negotiation_thread_id": "thread_1779118671492",
-      "confirmation_message": "Booking confirm ho gayi! Usman Fast Plumbing aap ke paas G-11 mein 19/05/2026, 10:00:00 am ko pohunchen ge. Booking ID: SVC-20260518-0001. Total: Rs. 1510.",
-      "reminder_scheduled_at": "2026-05-19T04:00:00.000Z",
-      "checklist": [
-        {
-          "item": "Diagnose leak/blockage",
-          "completed": false
-        },
-        {
-          "item": "Complete repair",
-          "completed": false
-        },
-        {
-          "item": "Test water flow",
-          "completed": false
-        },
-        {
-          "item": "Clean up area",
-          "completed": false
-        }
-      ],
-      "created_at": "2026-05-18T15:37:51.494Z",
-      "updated_at": "2026-05-18T15:37:51.537Z",
-      "state_history": [
-        {
-          "status": "PENDING_PROVIDER",
-          "timestamp": "2026-05-18T15:37:51.494Z"
-        },
-        {
-          "status": "CANCELLED_PROVIDER",
-          "timestamp": "2026-05-18T15:37:51.535Z"
-        },
-        {
-          "status": "COMPLETED",
-          "timestamp": "2026-05-18T15:37:51.537Z"
-        }
-      ],
-      "current_lat": 33.6921,
-      "current_lng": 73.0537,
-      "customer_lat": 33.6938,
-      "customer_lng": 73.0551,
-      "distance_meters": 200
-    },
-    {
-      "booking_id": "SVC-20260518-0002",
-      "provider_id": "p019",
-      "provider_name": "Usman Fast Plumbing",
-      "customer_id": "customer_001",
-      "service_type": "plumber",
-      "location": "G-11",
-      "scheduled_time": "2026-05-19T07:00:00.000Z",
-      "status": "COMPLETED",
-      "final_price": 1310,
-      "price_quote": {
-        "base_rate": 650,
-        "distance_fee": 10,
+        "base_rate": 800,
+        "distance_fee": 0,
         "urgency_surcharge": 0,
         "complexity_premium": 0,
         "loyalty_discount": 0,
         "surge_multiplier": 1,
         "surge_active": false,
-        "visit_fee": 0,
+        "visit_fee": 150,
         "hours_min": 2,
         "hours_max": 2,
-        "min_total": 1240,
-        "max_total": 1380,
-        "total": 1310,
-        "min_rate_total": 1240,
-        "floor_min": 1180,
-        "floor_max": 1440,
-        "industry_standard_min": 1040,
-        "industry_standard_max": 1690,
+        "min_total": 1660,
+        "max_total": 1840,
+        "total": 1750,
+        "min_rate_total": 1660,
+        "floor_min": 1580,
+        "floor_max": 1930,
+        "industry_standard_min": 1280,
+        "industry_standard_max": 2080,
         "currency": "PKR",
-        "breakdown_text": "Base Service Fee: Rs. 1300 (Estimated 2 hours)\nTravel Charges (0.2km): Rs. 10\n─────────────────────────────\nTotal Charges: Rs. 1310",
+        "breakdown_text": "Visit Fee (non-refundable): Rs. 150\nLabour (Rs. 800/hr × 2hrs): Rs. 1600\n─────────────────────────────\nTotal: Rs. 1750",
         "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
       },
       "negotiation_thread_id": null,
-      "confirmation_message": "Booking confirm ho gayi! Usman Fast Plumbing aap ke paas G-11 mein 19/05/2026, 12:00:00 pm ko pohunchen ge. Booking ID: SVC-20260518-0002. Total: Rs. 1310.",
-      "reminder_scheduled_at": "2026-05-19T06:00:00.000Z",
+      "confirmation_message": "Booking confirm ho gayi! Ali AC Services aap ke paas Park View, Lahore mein 22/05/2026, 12:00:00 am ko pohunchen ge. Booking ID: SVC-20260520-0001. Total: Rs. 1750.",
+      "reminder_scheduled_at": "2026-05-21T18:00:00.000Z",
       "checklist": [
         {
-          "item": "Diagnose leak/blockage",
+          "item": "Diagnose the issue",
           "completed": true
         },
         {
@@ -122,87 +46,95 @@
           "completed": true
         },
         {
-          "item": "Test water flow",
+          "item": "Test AC running",
           "completed": true
         },
         {
           "item": "Clean up area",
           "completed": true
+        },
+        {
+          "item": "Show result to customer",
+          "completed": true
         }
       ],
-      "created_at": "2026-05-18T16:00:42.567Z",
-      "updated_at": "2026-05-18T16:04:00.189Z",
+      "created_at": "2026-05-20T15:23:39.093Z",
+      "updated_at": "2026-05-20T15:27:26.134Z",
       "state_history": [
         {
           "status": "PENDING_PROVIDER",
-          "timestamp": "2026-05-18T16:00:42.567Z"
+          "timestamp": "2026-05-20T15:23:39.093Z"
         },
         {
           "status": "ACCEPTED",
-          "timestamp": "2026-05-18T16:01:43.129Z"
+          "timestamp": "2026-05-20T15:24:29.405Z"
         },
         {
           "status": "ARRIVING",
-          "timestamp": "2026-05-18T16:03:24.171Z"
+          "timestamp": "2026-05-20T15:24:38.280Z"
         },
         {
           "status": "ARRIVED",
-          "timestamp": "2026-05-18T16:03:52.165Z"
+          "timestamp": "2026-05-20T15:26:29.278Z"
         },
         {
           "status": "IN_PROGRESS",
-          "timestamp": "2026-05-18T16:03:52.165Z"
+          "timestamp": "2026-05-20T15:26:29.278Z"
         },
         {
           "status": "COMPLETED",
-          "timestamp": "2026-05-18T16:04:00.186Z"
+          "timestamp": "2026-05-20T15:27:16.534Z"
+        },
+        {
+          "status": "COMPLETED",
+          "timestamp": "2026-05-20T15:27:26.134Z"
         }
       ],
-      "current_lat": 33.69344998507544,
-      "current_lng": 73.05481175241508,
-      "customer_lat": 33.6938,
-      "customer_lng": 73.0551,
-      "distance_meters": 47
+      "current_lat": 33.684778599423716,
+      "current_lng": 73.04764760038418,
+      "customer_lat": 33.6844,
+      "customer_lng": 73.0479,
+      "distance_meters": 48
     },
     {
-      "booking_id": "SVC-20260519-0003",
-      "provider_id": "p019",
-      "provider_name": "Usman Fast Plumbing",
+      "booking_id": "SVC-20260520-0002",
+      "provider_id": "p001",
+      "provider_name": "Ali AC Services",
       "customer_id": "customer_001",
-      "service_type": "plumber",
-      "location": "G-11",
-      "scheduled_time": "2026-05-20T05:00:00.000Z",
+      "service_type": "ac_repair",
+      "location": "park view",
+      "scheduled_time": "2026-05-21T21:00:00.000Z",
       "status": "COMPLETED",
-      "final_price": 1310,
+      "final_price": 1750,
       "price_quote": {
-        "base_rate": 650,
-        "distance_fee": 10,
+        "base_rate": 800,
+        "distance_fee": 0,
         "urgency_surcharge": 0,
         "complexity_premium": 0,
         "loyalty_discount": 0,
         "surge_multiplier": 1,
         "surge_active": false,
-        "visit_fee": 0,
+        "visit_fee": 150,
         "hours_min": 2,
         "hours_max": 2,
-        "min_total": 1240,
-        "max_total": 1380,
-        "total": 1310,
-        "min_rate_total": 1240,
-        "floor_min": 1180,
-        "floor_max": 1440,
-        "industry_standard_min": 1040,
-        "industry_standard_max": 1690,
+        "min_total": 1660,
+        "max_total": 1840,
+        "total": 1750,
+        "min_rate_total": 1660,
+        "floor_min": 1580,
+        "floor_max": 1930,
+        "industry_standard_min": 1280,
+        "industry_standard_max": 2080,
         "currency": "PKR",
-        "breakdown_text": "Base Service Fee: Rs. 1300 (Estimated 2 hours)\nTravel Charges (0.2km): Rs. 10\n─────────────────────────────\nTotal Charges: Rs. 1310",
+        "breakdown_text": "Visit Fee (non-refundable): Rs. 150\nLabour (Rs. 800/hr × 2hrs): Rs. 1600\n─────────────────────────────\nTotal: Rs. 1750",
         "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
       },
       "negotiation_thread_id": null,
-      "confirmation_message": "Booking confirm ho gayi! Usman Fast Plumbing aap ke paas G-11 mein 20/05/2026, 10:00:00 am ko pohunchen ge. Booking ID: SVC-20260519-0003. Total: Rs. 1310.",
-      "reminder_scheduled_at": "2026-05-20T04:00:00.000Z",
+      "confirmation_message": "Booking confirm ho gayi! Ali AC Services aap ke paas park view mein 22/05/2026, 2:00:00 am ko pohunchen ge. Booking ID: SVC-20260520-0002. Total: Rs. 1750.",
+      "reminder_scheduled_at": "2026-05-21T20:00:00.000Z",
       "checklist": [
         {
-          "item": "Diagnose leak/blockage",
+          "item": "Diagnose the issue",
           "completed": true
         },
         {
@@ -210,263 +142,56 @@
           "completed": true
         },
         {
-          "item": "Test water flow",
+          "item": "Test AC running",
           "completed": true
         },
         {
           "item": "Clean up area",
           "completed": true
+        },
+        {
+          "item": "Show result to customer",
+          "completed": true
         }
       ],
-      "created_at": "2026-05-19T07:26:19.382Z",
-      "updated_at": "2026-05-19T07:27:42.156Z",
+      "created_at": "2026-05-20T16:51:37.264Z",
+      "updated_at": "2026-05-20T16:54:57.715Z",
       "state_history": [
         {
           "status": "PENDING_PROVIDER",
-          "timestamp": "2026-05-19T07:26:19.382Z"
+          "timestamp": "2026-05-20T16:51:37.264Z"
         },
         {
           "status": "ACCEPTED",
-          "timestamp": "2026-05-19T07:26:44.237Z"
+          "timestamp": "2026-05-20T16:52:04.285Z"
         },
         {
           "status": "ARRIVING",
-          "timestamp": "2026-05-19T07:27:03.532Z"
+          "timestamp": "2026-05-20T16:52:20.429Z"
         },
         {
           "status": "ARRIVED",
-          "timestamp": "2026-05-19T07:27:31.535Z"
+          "timestamp": "2026-05-20T16:54:11.423Z"
         },
         {
           "status": "IN_PROGRESS",
-          "timestamp": "2026-05-19T07:27:31.535Z"
+          "timestamp": "2026-05-20T16:54:11.423Z"
         },
         {
           "status": "COMPLETED",
-          "timestamp": "2026-05-19T07:27:39.580Z"
+          "timestamp": "2026-05-20T16:54:40.600Z"
         },
         {
           "status": "COMPLETED",
-          "timestamp": "2026-05-19T07:27:42.156Z"
+          "timestamp": "2026-05-20T16:54:57.715Z"
         }
       ],
-      "current_lat": 33.69344998507544,
-      "current_lng": 73.05481175241508,
-      "customer_lat": 33.6938,
-      "customer_lng": 73.0551,
-      "distance_meters": 47
-    },
-    {
-      "booking_id": "SVC-20260519-0004",
-      "provider_id": "p019",
-      "provider_name": "Usman Fast Plumbing",
-      "customer_id": "customer_001",
-      "service_type": "plumber",
-      "location": "G-11, Islamabad",
-      "scheduled_time": "2026-05-20T07:00:00.000Z",
-      "status": "PENDING_PROVIDER",
-      "final_price": 1510,
-      "price_quote": {
-        "base_rate": 650,
-        "distance_fee": 10,
-        "urgency_surcharge": 200,
-        "complexity_premium": 0,
-        "loyalty_discount": 0,
-        "surge_multiplier": 1,
-        "surge_active": false,
-        "visit_fee": 0,
-        "hours_min": 2,
-        "hours_max": 2,
-        "min_total": 1430,
-        "max_total": 1590,
-        "total": 1510,
-        "min_rate_total": 1430,
-        "floor_min": 1360,
-        "floor_max": 1660,
-        "industry_standard_min": 1040,
-        "industry_standard_max": 1690,
-        "currency": "PKR",
-        "breakdown_text": "Base Service Fee: Rs. 1300 (Estimated 2 hours)\nTravel Charges (0.2km): Rs. 10\nOn-demand Surcharge: Rs. 200\n─────────────────────────────\nTotal Charges: Rs. 1510",
-        "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
-      },
-      "negotiation_thread_id": null,
-      "confirmation_message": "Booking confirm ho gayi! Usman Fast Plumbing aap ke paas G-11, Islamabad mein 20/05/2026, 12:00:00 pm ko pohunchen ge. Booking ID: SVC-20260519-0004. Total: Rs. 1510.",
-      "reminder_scheduled_at": "2026-05-20T06:00:00.000Z",
-      "checklist": [
-        {
-          "item": "Diagnose leak/blockage",
-          "completed": false
-        },
-        {
-          "item": "Complete repair",
-          "completed": false
-        },
-        {
-          "item": "Test water flow",
-          "completed": false
-        },
-        {
-          "item": "Clean up area",
-          "completed": false
-        }
-      ],
-      "created_at": "2026-05-19T10:57:35.694Z",
-      "updated_at": "2026-05-19T10:57:35.694Z",
-      "state_history": [
-        {
-          "status": "PENDING_PROVIDER",
-          "timestamp": "2026-05-19T10:57:35.694Z"
-        }
-      ],
-      "current_lat": 33.6921,
-      "current_lng": 73.0537,
-      "customer_lat": 33.6938,
-      "customer_lng": 73.0551,
-      "distance_meters": 200
-    },
-    {
-      "booking_id": "SVC-20260519-0005",
-      "provider_id": "p019",
-      "provider_name": "Usman Fast Plumbing",
-      "customer_id": "customer_001",
-      "service_type": "plumber",
-      "location": "G-11",
-      "scheduled_time": "2026-05-20T09:00:00.000Z",
-      "status": "ACCEPTED",
-      "final_price": 1310,
-      "price_quote": {
-        "base_rate": 650,
-        "distance_fee": 10,
-        "urgency_surcharge": 0,
-        "complexity_premium": 0,
-        "loyalty_discount": 0,
-        "surge_multiplier": 1,
-        "surge_active": false,
-        "visit_fee": 0,
-        "hours_min": 2,
-        "hours_max": 2,
-        "min_total": 1240,
-        "max_total": 1380,
-        "total": 1310,
-        "min_rate_total": 1240,
-        "floor_min": 1180,
-        "floor_max": 1440,
-        "industry_standard_min": 1040,
-        "industry_standard_max": 1690,
-        "currency": "PKR",
-        "breakdown_text": "Base Service Fee: Rs. 1300 (Estimated 2 hours)\nTravel Charges (0.2km): Rs. 10\n─────────────────────────────\nTotal Charges: Rs. 1310",
-        "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
-      },
-      "negotiation_thread_id": null,
-      "confirmation_message": "Booking confirm ho gayi! Usman Fast Plumbing aap ke paas G-11 mein 20/05/2026, 2:00:00 pm ko pohunchen ge. Booking ID: SVC-20260519-0005. Total: Rs. 1310.",
-      "reminder_scheduled_at": "2026-05-20T08:00:00.000Z",
-      "checklist": [
-        {
-          "item": "Diagnose leak/blockage",
-          "completed": false
-        },
-        {
-          "item": "Complete repair",
-          "completed": false
-        },
-        {
-          "item": "Test water flow",
-          "completed": false
-        },
-        {
-          "item": "Clean up area",
-          "completed": false
-        }
-      ],
-      "created_at": "2026-05-19T11:37:27.204Z",
-      "updated_at": "2026-05-19T11:37:29.416Z",
-      "state_history": [
-        {
-          "status": "PENDING_PROVIDER",
-          "timestamp": "2026-05-19T11:37:27.204Z"
-        },
-        {
-          "status": "ACCEPTED",
-          "timestamp": "2026-05-19T11:37:29.416Z"
-        }
-      ],
-      "current_lat": 33.6921,
-      "current_lng": 73.0537,
-      "customer_lat": 33.6938,
-      "customer_lng": 73.0551,
-      "distance_meters": 200
-    },
-    {
-      "booking_id": "SVC-20260519-0006",
-      "provider_id": "p019",
-      "provider_name": "Usman Fast Plumbing",
-      "customer_id": "customer_001",
-      "service_type": "plumber",
-      "location": "G-11",
-      "scheduled_time": "2026-05-20T11:00:00.000Z",
-      "status": "ACCEPTED",
-      "final_price": 1310,
-      "price_quote": {
-        "base_rate": 650,
-        "distance_fee": 10,
-        "urgency_surcharge": 0,
-        "complexity_premium": 0,
-        "loyalty_discount": 0,
-        "surge_multiplier": 1,
-        "surge_active": false,
-        "visit_fee": 0,
-        "hours_min": 2,
-        "hours_max": 2,
-        "min_total": 1240,
-        "max_total": 1380,
-        "total": 1310,
-        "min_rate_total": 1240,
-        "floor_min": 1180,
-        "floor_max": 1440,
-        "industry_standard_min": 1040,
-        "industry_standard_max": 1690,
-        "currency": "PKR",
-        "breakdown_text": "Base Service Fee: Rs. 1300 (Estimated 2 hours)\nTravel Charges (0.2km): Rs. 10\n─────────────────────────────\nTotal Charges: Rs. 1310",
-        "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
-      },
-      "negotiation_thread_id": null,
-      "confirmation_message": "Booking confirm ho gayi! Usman Fast Plumbing aap ke paas G-11 mein 20/05/2026, 4:00:00 pm ko pohunchen ge. Booking ID: SVC-20260519-0006. Total: Rs. 1310.",
-      "reminder_scheduled_at": "2026-05-20T10:00:00.000Z",
-      "checklist": [
-        {
-          "item": "Diagnose leak/blockage",
-          "completed": false
-        },
-        {
-          "item": "Complete repair",
-          "completed": false
-        },
-        {
-          "item": "Test water flow",
-          "completed": false
-        },
-        {
-          "item": "Clean up area",
-          "completed": false
-        }
-      ],
-      "created_at": "2026-05-19T11:58:44.576Z",
-      "updated_at": "2026-05-19T11:58:46.932Z",
-      "state_history": [
-        {
-          "status": "PENDING_PROVIDER",
-          "timestamp": "2026-05-19T11:58:44.576Z"
-        },
-        {
-          "status": "ACCEPTED",
-          "timestamp": "2026-05-19T11:58:46.932Z"
-        }
-      ],
-      "current_lat": 33.6921,
-      "current_lng": 73.0537,
-      "customer_lat": 33.6938,
-      "customer_lng": 73.0551,
-      "distance_meters": 200
+      "session_id": "SESS-1779295876575-23",
+      "current_lat": 33.684778599423716,
+      "current_lng": 73.04764760038418,
+      "customer_lat": 33.6844,
+      "customer_lng": 73.0479,
+      "distance_meters": 48
     }
   ]
 }

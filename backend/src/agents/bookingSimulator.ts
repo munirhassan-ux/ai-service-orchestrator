@@ -8,6 +8,8 @@ import { ParsedIntent } from "./intentParser.js";
 import { RankedProvider } from "./providerMatcher.js";
 import { PriceQuote } from "./pricingEngine.js";
 import { pushNotification } from "../notifications.js";
+import { logScheduling, logStatusChange } from "../logger.js";
+import { logTraceEvent } from "../trace.js";
 
 const bookingsFile = path.join(__dirname, "../../data/mock_bookings.json");
 const scheduleFile = path.join(__dirname, "../../data/mock_schedule.json");
@@ -20,7 +22,8 @@ export type BookingStatus =
   | "IN_PROGRESS"
   | "COMPLETED"
   | "CANCELLED_PROVIDER"
-  | "CANCELLED_CUSTOMER";
+  | "CANCELLED_CUSTOMER"
+  | "CANCELLED_TIMEOUT";
 
 export interface Booking {
   booking_id: string;
@@ -40,6 +43,7 @@ export interface Booking {
   created_at: string;
   updated_at: string;
   state_history: { status: BookingStatus; timestamp: string }[];
+  session_id?: string;
   // GPS movement simulation fields
   current_lat?: number;
   current_lng?: number;
@@ -94,7 +98,7 @@ export function updateProviderInFile(providerId: string, updates: Partial<any>) 
   }
 }
 
-function getScheduledTime(preferredTime: string, providerId: string, existingSchedule: Record<string, string[]>): string {
+function getScheduledTime(preferredTime: string, providerId: string, existingSchedule: Record<string, string[]>): { time: string; collision: boolean } {
   const now = new Date();
   const tomorrow = new Date(now);
   tomorrow.setDate(now.getDate() + 1);
@@ -111,22 +115,23 @@ function getScheduledTime(preferredTime: string, providerId: string, existingSch
   };
 
   let baseTime = (timeMap[preferredTime] || timeMap.tomorrow_morning);
-  
-  // Basic collision avoidance: if slot taken, move forward by 2 hours
+
   const providerSlots = existingSchedule[providerId] || [];
   let finalTime = baseTime.toISOString();
-  
+  let collision = false;
+
   while (providerSlots.some(s => s === finalTime || s.startsWith(finalTime))) {
+    collision = true;
     baseTime = new Date(baseTime.getTime() + 2 * 60 * 60 * 1000);
     finalTime = baseTime.toISOString();
   }
 
-  return finalTime;
+  return { time: finalTime, collision };
 }
 
 export function softLockSlot(providerId: string, preferredTime: string, sessionId: string): string {
   const schedule = readSchedule();
-  const slotTime = getScheduledTime(preferredTime, providerId, schedule);
+  const { time: slotTime } = getScheduledTime(preferredTime, providerId, schedule);
   
   if (!schedule[providerId]) schedule[providerId] = [];
   schedule[providerId].push(`${slotTime}::soft_locked::${sessionId}`);
@@ -230,13 +235,14 @@ export function createBooking(
   priceQuote: PriceQuote,
   finalPrice: number,
   negotiationThreadId: string | null = null,
-  customerId: string = "customer_001"
+  customerId: string = "customer_001",
+  sessionId?: string
 ): { booking: Booking; before: any; after: any } {
   const data = readBookings();
   const schedule = readSchedule();
   const before = { bookings_count: data.bookings.length };
 
-  const scheduledTime = getScheduledTime(intent.preferred_time, provider.provider_id, schedule);
+  const { time: scheduledTime, collision } = getScheduledTime(intent.preferred_time, provider.provider_id, schedule);
   const bookingId = generateBookingId();
 
   // Block the slot in schedule
@@ -250,6 +256,23 @@ export function createBooking(
   // Setup GPS starting coords
   const customerCoords = getAreaCoords(intent.location);
   const providerCoords = provider.location || { latitude: 33.6844, longitude: 73.0479 };
+
+  // Ensure provider always starts at least 1km away for a realistic GPS simulation
+  let startLat = providerCoords.latitude;
+  let startLng = providerCoords.longitude;
+  const latDiff = Math.abs(customerCoords.lat - startLat);
+  const lngDiff = Math.abs(customerCoords.lng - startLng);
+  const approxDistMeters = Math.sqrt(latDiff * latDiff + lngDiff * lngDiff) * 111000;
+  if (approxDistMeters < 900) {
+    startLat = customerCoords.lat + 0.009;  // ~1km north
+    startLng = customerCoords.lng - 0.006;  // ~550m west
+  }
+  const startDistMeters = Math.round(
+    Math.sqrt(
+      Math.pow((customerCoords.lat - startLat) * 111000, 2) +
+      Math.pow((customerCoords.lng - startLng) * 111000, 2)
+    )
+  );
 
   // Generate JOB DETAIL object with status = PENDING_PROVIDER
   const booking: Booking = {
@@ -270,11 +293,12 @@ export function createBooking(
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
     state_history: [{ status: "PENDING_PROVIDER", timestamp: new Date().toISOString() }],
-    current_lat: providerCoords.latitude,
-    current_lng: providerCoords.longitude,
+    session_id: sessionId,
+    current_lat: startLat,
+    current_lng: startLng,
     customer_lat: customerCoords.lat,
     customer_lng: customerCoords.lng,
-    distance_meters: Math.round(provider.distance_km * 1000),
+    distance_meters: startDistMeters,
   };
 
   booking.confirmation_message = getConfirmationMessage(booking, intent.language);
@@ -283,6 +307,20 @@ export function createBooking(
 
   const after = { bookings_count: data.bookings.length, latest_booking: bookingId };
 
+  logScheduling(provider.provider_id, intent.preferred_time, scheduledTime, bookingId, collision);
+  if (sessionId) {
+    logTraceEvent(sessionId, {
+      agent: "BookingSimulator",
+      phase_after: "PENDING_PROVIDER",
+      booking_id: bookingId,
+      provider_id: provider.provider_id,
+      provider_name: provider.name,
+      preferred_time_requested: intent.preferred_time,
+      scheduled_time_assigned: scheduledTime,
+      scheduling_collision_detected: collision,
+      final_price: finalPrice,
+    });
+  }
   console.log(`[BookingSimulator] Created: ${bookingId} | Provider: ${provider.name} | Price: Rs. ${finalPrice}`);
 
   pushNotification(
@@ -302,11 +340,22 @@ export function updateBookingStatus(bookingId: string, newStatus: BookingStatus)
   const booking = data.bookings.find((b) => b.booking_id === bookingId);
   if (!booking) throw new Error(`Booking ${bookingId} not found`);
 
+  const prevStatus = booking.status;
+  logStatusChange(bookingId, prevStatus, newStatus);
   booking.status = newStatus;
   booking.updated_at = new Date().toISOString();
   booking.state_history.push({ status: newStatus, timestamp: new Date().toISOString() });
 
   writeBookings(data);
+  if (booking.session_id) {
+    logTraceEvent(booking.session_id, {
+      agent: "StatusMachine",
+      phase_after: newStatus,
+      booking_id: bookingId,
+      status_from: prevStatus,
+      status_to: newStatus,
+    });
+  }
   console.log(`[BookingSimulator] Status updated: ${bookingId} → ${newStatus}`);
 
   if (newStatus === "ACCEPTED") {
@@ -426,6 +475,16 @@ export function submitBookingRating(bookingId: string, stars: number, actualArri
   booking.updated_at = new Date().toISOString();
   booking.state_history.push({ status: "COMPLETED", timestamp: new Date().toISOString() });
   writeBookings(data);
+  if (booking.session_id) {
+    logTraceEvent(booking.session_id, {
+      agent: "RatingEngine",
+      phase_after: "COMPLETED",
+      booking_id: bookingId,
+      provider_id: booking.provider_id,
+      stars_submitted: stars,
+      on_time: isOnTime === 1,
+    });
+  }
   return booking;
 }
 
@@ -437,26 +496,6 @@ export function completeChecklistItem(bookingId: string, itemIndex: number): Boo
 
   if (booking.checklist[itemIndex]) {
     booking.checklist[itemIndex].completed = true;
-  }
-
-  const allComplete = booking.checklist.every((item) => item.completed);
-  if (allComplete) {
-    booking.status = "COMPLETED";
-    booking.state_history.push({ status: "COMPLETED", timestamp: new Date().toISOString() });
-    
-    // Decrement active jobs on complete
-    const filePath = path.join(__dirname, "../../data/mock_providers.json");
-    try {
-      const providers = JSON.parse(fs.readFileSync(filePath, "utf-8"));
-      const p = providers.find((pr: any) => pr.provider_id === booking.provider_id);
-      if (p) {
-        updateProviderInFile(booking.provider_id, {
-          active_jobs: Math.max(0, (p.active_jobs || 1) - 1),
-        });
-      }
-    } catch (e) {
-      console.error(e);
-    }
   }
 
   booking.updated_at = new Date().toISOString();

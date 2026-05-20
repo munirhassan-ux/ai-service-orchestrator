@@ -291,14 +291,47 @@ router.post("/dispute", async (req: Request, res: Response) => {
 
   try {
     const result = await processDispute(booking_id, provider_id, issue_type, comment || "");
-    
+
     // Also mark the booking as disputed
     updateBookingStatus(booking_id, "disputed" as any);
+
+    const disputedBooking = getBooking(booking_id);
+    if (disputedBooking?.session_id) {
+      logTraceEvent(disputedBooking.session_id, {
+        agent: "DisputeAgent",
+        phase_after: "dispute_resolved",
+        booking_id,
+        provider_id,
+        issue_type,
+        resolution: result.resolution || JSON.stringify(result),
+      });
+    }
 
     return res.json({ status: "dispute_logged", result });
   } catch (err: any) {
     return res.status(500).json({ error: err.message });
   }
+});
+
+// ── GET /api/trace/session/:session_id ───────────────────
+// Retrieve full JSON trace for a session
+router.get("/trace/session/:session_id", (req: Request, res: Response) => {
+  const traceFile = path.join(__dirname, "../../data/agent_traces", `${req.params.session_id}.json`);
+  if (!fs.existsSync(traceFile)) return res.status(404).json({ error: "Trace not found for session" });
+  return res.json(JSON.parse(fs.readFileSync(traceFile, "utf-8")));
+});
+
+// ── GET /api/trace/latest ─────────────────────────────────
+// Return the most recently written trace file (convenience for post-flow export)
+router.get("/trace/latest", (req: Request, res: Response) => {
+  const traceDir = path.join(__dirname, "../../data/agent_traces");
+  if (!fs.existsSync(traceDir)) return res.status(404).json({ error: "No traces directory" });
+  const files = fs.readdirSync(traceDir).filter((f) => f.endsWith(".json"));
+  if (!files.length) return res.status(404).json({ error: "No trace files found" });
+  const latest = files
+    .map((f) => ({ f, mtime: fs.statSync(path.join(traceDir, f)).mtimeMs }))
+    .sort((a, b) => b.mtime - a.mtime)[0];
+  return res.json(JSON.parse(fs.readFileSync(path.join(traceDir, latest.f), "utf-8")));
 });
 
 // ── GET /api/trace/:thread_id ─────────────────────────────
@@ -318,13 +351,18 @@ router.post("/booking/simulate-step", (req: Request, res: Response) => {
     const booking = getBooking(booking_id);
     if (!booking) return res.status(404).json({ error: "Booking not found" });
 
-    // Transition status to ARRIVING if it is ACCEPTED or PENDING_PROVIDER
-    if (booking.status === "ACCEPTED" || booking.status === "PENDING_PROVIDER") {
+    // Only run GPS simulation for bookings actively in transit
+    if (booking.status !== "ACCEPTED" && booking.status !== "ARRIVING") {
+      return res.json({ status: "skipped", booking });
+    }
+
+    // Transition status to ARRIVING once movement begins
+    if (booking.status === "ACCEPTED") {
       updateBookingStatus(booking_id, "ARRIVING");
     }
 
-    // GPS Step Fraction = 0.1 (10%)
-    const step_fraction = 0.1;
+    // GPS Step Fraction = 0.08 (8% per step — longer, more realistic ride)
+    const step_fraction = 0.08;
     const customerLat = booking.customer_lat || 33.6938;
     const customerLng = booking.customer_lng || 73.0551;
     const currentLat = booking.current_lat || 33.6844;
@@ -432,21 +470,37 @@ router.post("/notifications/clear", (req: Request, res: Response) => {
 });
 
 // ── GET /api/bookings ───────────────────────────────────
+const PENDING_EXPIRY_MS = 2 * 60 * 1000; // 2 minutes
+
 router.get("/bookings", (req: Request, res: Response) => {
   const { customer_id, provider_id } = req.query;
   try {
     const bookingsFile = path.join(__dirname, "../../data/mock_bookings.json");
-    let data = { bookings: [] };
+    let data: any = { bookings: [] };
     if (fs.existsSync(bookingsFile)) {
       data = JSON.parse(fs.readFileSync(bookingsFile, "utf-8"));
     }
+
+    // Auto-expire PENDING_PROVIDER bookings older than 2 minutes
+    let dirty = false;
+    const now = Date.now();
+    for (const b of data.bookings) {
+      if (b.status === "PENDING_PROVIDER") {
+        const age = now - new Date(b.created_at || 0).getTime();
+        if (age > PENDING_EXPIRY_MS) {
+          b.status = "CANCELLED_TIMEOUT";
+          b.updated_at = new Date().toISOString();
+          b.state_history = b.state_history || [];
+          b.state_history.push({ status: "CANCELLED_TIMEOUT", timestamp: b.updated_at });
+          dirty = true;
+        }
+      }
+    }
+    if (dirty) fs.writeFileSync(bookingsFile, JSON.stringify(data, null, 2));
+
     let list = data.bookings;
-    if (customer_id) {
-      list = list.filter((b: any) => b.customer_id === customer_id);
-    }
-    if (provider_id) {
-      list = list.filter((b: any) => b.provider_id === provider_id);
-    }
+    if (customer_id) list = list.filter((b: any) => b.customer_id === customer_id);
+    if (provider_id) list = list.filter((b: any) => b.provider_id === provider_id);
     return res.json(list);
   } catch (err: any) {
     return res.status(500).json({ error: err.message });

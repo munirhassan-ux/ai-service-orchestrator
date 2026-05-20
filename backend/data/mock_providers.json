@@ -25,8 +25,8 @@
     "cancellation_risk": 0.04,
     "capacity": 3,
     "active_jobs": 0,
-    "total_reviews": 114,
-    "total_jobs": 142
+    "total_reviews": 118,
+    "total_jobs": 146
   },
   {
     "provider_id": "p002",
@@ -169,8 +169,8 @@
     "cancellation_risk": 0.01,
     "capacity": 2,
     "active_jobs": 0,
-    "total_reviews": 205,
-    "total_jobs": 256
+    "total_reviews": 206,
+    "total_jobs": 257
   },
   {
     "provider_id": "p007",
@@ -548,7 +548,7 @@
     "on_time_score": 0.81,
     "cancellation_risk": 0.12,
     "capacity": 4,
-    "active_jobs": 2,
+    "active_jobs": 0,
     "total_reviews": 64,
     "total_jobs": 81
   },

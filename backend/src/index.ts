@@ -18,14 +18,14 @@ app.use("/api", apiRoutes);
 app.get("/health", (req, res) => {
   res.json({
     status: "ok",
-    service: "Khedmatgar AI Orchestrator",
+    service: "Haazir AI Orchestrator",
     version: "1.0.0",
     timestamp: new Date().toISOString(),
   });
 });
 
 app.listen(PORT, () => {
-  console.log(`\n🚀 Khedmatgar backend running on http://localhost:${PORT}`);
+  console.log(`\n🚀 Haazir backend running on http://localhost:${PORT}`);
   console.log(`📋 Health check: http://localhost:${PORT}/health`);
   console.log(`🤖 Orchestrate: POST http://localhost:${PORT}/api/orchestrate\n`);
 });

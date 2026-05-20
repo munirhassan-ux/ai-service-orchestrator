@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../services/api_service.dart';
+import '../customer/customer_home.dart';
 
 class ProviderChatScreen extends StatefulWidget {
   final String? bookingId;
@@ -19,8 +21,6 @@ class _ProviderChatScreenState extends State<ProviderChatScreen> {
   // Job state
   bool _jobOffered = false;
   bool _jobAccepted = false;
-  final _checklistItems = ['Kaam complete kiya', 'Area saaf kiya', 'Customer ko dikhaya', 'Customer ne confirm kiya'];
-  final Set<int> _checkedItems = {};
 
   final _setupQuestions = [
     {'q': "Aap ka naam kya hai?", 'key': 'name', 'chips': null},
@@ -41,7 +41,7 @@ class _ProviderChatScreenState extends State<ProviderChatScreen> {
     if (widget.bookingId != null) {
       _fetchBooking();
     } else {
-      _messages.add({'text': "Assalam o Alaikum! Khedmatgar mein khush aamdeed.\nMain aap ka profile set karta hoon. Pehle batayein — aap ka naam kya hai?", 'isUser': false, 'chips': null});
+      _messages.add({'text': "Assalam o Alaikum! Haazir mein khush aamdeed.\nShuru karne se pehle aap ka profile set karte hain. Pehle batayein — aap ka naam kya hai?", 'isUser': false, 'chips': null});
     }
   }
 
@@ -71,8 +71,11 @@ class _ProviderChatScreenState extends State<ProviderChatScreen> {
               });
             } else if (status == 'ACCEPTED' || status == 'ARRIVING' || status == 'ARRIVED' || status == 'IN_PROGRESS') {
               _jobAccepted = true;
-              _messages.add({'text': "Current Status: $status", 'isUser': false});
+              _messages.add({'text': "Yeh job abhi ${_statusLabel(status)} hai. Checklist se kaam track karein.", 'isUser': false});
               _messages.add({'text': null, 'isUser': false, 'type': 'checklist'});
+            } else if (status == 'COMPLETED') {
+              _jobAccepted = true;
+              _messages.add({'text': null, 'isUser': false, 'type': 'job_history'});
             }
           });
         }
@@ -113,7 +116,7 @@ class _ProviderChatScreenState extends State<ProviderChatScreen> {
       } else {
         // Profile complete
         setState(() => _messages.add({
-          'text': "Profile set ho gayi, ${_profile['name']}! Ab aap ka availability toggle on hai.\n\nJab bhi koi job aaye, main aap ko yahan message karunga. Agle kaam ka intezaar karein! 🙏",
+          'text': "Profile complete! Shukriya, ${_profile['name']}.\n\nAb aap online hain — jab bhi koi nayi job aaye gi, main aap ko yahan notify karunga. Taiyaar rahein! 💪",
           'isUser': false, 'chips': null,
         }));
         await Future.delayed(const Duration(seconds: 2));
@@ -151,54 +154,184 @@ class _ProviderChatScreenState extends State<ProviderChatScreen> {
   }
 
   void _acceptJob() async {
-    if (widget.bookingId != null) {
-      await ApiService.post('booking/status', {'booking_id': widget.bookingId, 'status': 'ACCEPTED'});
-    }
-    setState(() {
-      _jobOffered = false;
-      _jobAccepted = true;
-      _messages.add({
-        'text': "✅ Job accept ho gayi!\n\nCustomer ka address:\n📍 House 12, Street 4, G-11/3, Islamabad\n\nYaad rakhein:\n• Seedha customer se equipment cost discuss karein on-site\n• Kaam complete karne ke baad checklist fill karein\n\n1 ghante pehle reminder milega. 🙏",
-        'isUser': false, 'type': 'accepted',
+    if (widget.bookingId == null) return;
+    try {
+      await ApiService.post('/booking/status', {'booking_id': widget.bookingId, 'status': 'ACCEPTED'});
+      final location = _bookingData?['location'] ?? 'customer location';
+      final price = _bookingData?['final_price']?.toString() ?? '';
+      setState(() {
+        _jobOffered = false;
+        _jobAccepted = true;
+        _messages.add({
+          'text': "Job accept ho gayi!\n\n📍 Location: $location\n💰 Amount: Rs. $price\n\nNote: Parts ya equipment ki cost alag hogi — customer se on-site discuss karein. Kaam ke baad checklist zaroor fill karein.",
+          'isUser': false, 'type': 'accepted',
+        });
+        _messages.add({'text': null, 'isUser': false, 'type': 'checklist'});
       });
-      _messages.add({'text': null, 'isUser': false, 'type': 'checklist'});
-    });
-    _scrollBottom();
+      _scrollBottom();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error accepting job: $e'), backgroundColor: Colors.redAccent),
+        );
+      }
+    }
   }
 
-  void _declineJob() {
-    setState(() {
-      _jobOffered = false;
-      _messages.add({'text': "Theek hai. Yeh job doosre provider ko bhej di gayi. Aap ki availability unchanged hai — agla job aane par notify karunga.", 'isUser': false});
-    });
-    _scrollBottom();
+  void _declineJob() async {
+    if (widget.bookingId == null) return;
+    try {
+      await ApiService.post('/booking/status', {'booking_id': widget.bookingId, 'status': 'CANCELLED_PROVIDER'});
+      if (!mounted) return;
+      setState(() {
+        _jobOffered = false;
+        _messages.add({'text': "Job decline kar di gayi. Customer ko notify kar diya gaya hai.\n\nAgle job ka intezaar karein.", 'isUser': false});
+      });
+      _scrollBottom();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error declining job: $e'), backgroundColor: Colors.redAccent),
+        );
+      }
+    }
+  }
+
+  Future<void> _tapChecklistItem(int idx) async {
+    if (widget.bookingId == null) return;
+    final checklist = _bookingData?['checklist'] as List? ?? [];
+    if (idx >= checklist.length) return;
+    if (checklist[idx]['completed'] == true) return; // already done
+    try {
+      final res = await ApiService.post('/booking/checklist', {
+        'booking_id': widget.bookingId,
+        'item_index': idx,
+      });
+      if (!mounted) return;
+      if (res['booking'] != null) {
+        setState(() {
+          _bookingData = Map<String, dynamic>.from(res['booking'] as Map);
+          final idx2 = _messages.indexWhere((m) => m['type'] == 'checklist');
+          if (idx2 != -1) _messages[idx2] = {..._messages[idx2]};
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.redAccent),
+        );
+      }
+    }
+  }
+
+  Future<void> _cancelJob() async {
+    if (widget.bookingId == null) return;
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text("Cancel This Job?", style: TextStyle(color: const Color(0xFF21231D), fontSize: 16)),
+        content: const Text(
+          "Are you sure? The customer will be notified and matched with another provider. This will be recorded against your profile.",
+          style: TextStyle(color: const Color(0xFF565955), fontSize: 13, height: 1.5),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text("Keep Job", style: TextStyle(color: const Color(0xFF3A9010), fontWeight: FontWeight.bold)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text("Yes, Cancel", style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true || !mounted) return;
+    try {
+      await ApiService.post('/booking/cancel-provider', {'booking_id': widget.bookingId});
+      if (!mounted) return;
+      setState(() {
+        if (_bookingData != null) {
+          _bookingData = {..._bookingData!, 'status': 'CANCELLED_PROVIDER'};
+        }
+        final idx = _messages.indexWhere((m) => m['type'] == 'checklist');
+        if (idx != -1) _messages[idx] = {..._messages[idx]};
+        _messages.add({
+          'text': "Job cancelled. Customer has been notified and will be rematched.\n\n⚠️ This cancellation has been recorded on your profile.",
+          'isUser': false,
+        });
+      });
+      _scrollBottom();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error cancelling job: $e'), backgroundColor: Colors.redAccent),
+        );
+      }
+    }
   }
 
   void _markComplete() async {
-    if (_checkedItems.length < _checklistItems.length) return;
-    if (widget.bookingId != null) {
-      await ApiService.post('booking/status', {'booking_id': widget.bookingId, 'status': 'COMPLETED'});
-    }
-    setState(() {
-      _messages.add({
-        'text': "✅ Job complete ho gayi!\nCustomer ko rate karne ka request bhej diya gaya.\n\n📊 Aaj ka summary:\nJobs complete: 1\nEarnings: Rs. 1,400\nRating: 4.5★\n\nAgle kaam ka intezaar karein! 🙏",
-        'isUser': false,
+    if (widget.bookingId == null) return;
+    final checklist = _bookingData?['checklist'] as List? ?? [];
+    final allDone = checklist.every((item) => item['completed'] == true);
+    if (!allDone) return;
+    try {
+      final res = await ApiService.post('/booking/status', {'booking_id': widget.bookingId, 'status': 'COMPLETED'});
+      if (!mounted) return;
+      setState(() {
+        if (res['booking'] != null) {
+          _bookingData = Map<String, dynamic>.from(res['booking'] as Map);
+          final idx2 = _messages.indexWhere((m) => m['type'] == 'checklist');
+          if (idx2 != -1) _messages[idx2] = {..._messages[idx2]};
+        }
+        _messages.add({
+          'text': "Job marked complete. Customer has been sent a rating request.",
+          'isUser': false,
+        });
       });
-    });
-    _scrollBottom();
+      _scrollBottom();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error completing job: $e'), backgroundColor: Colors.redAccent),
+        );
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0F172A),
+      backgroundColor: const Color(0xFFF7FAF5),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1E293B), elevation: 0,
-        title: Row(children: [
-          Container(width: 8, height: 8, decoration: const BoxDecoration(color: Colors.amber, shape: BoxShape.circle)),
-          const SizedBox(width: 8),
-          const Text("Khedmatgar — Provider", style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
-        ]),
+        backgroundColor: const Color(0xFF163300), elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_rounded, color: Colors.white, size: 18),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        title: SvgPicture.asset('assets/haazir_logo.svg', height: 26),
+        actions: [
+          GestureDetector(
+            onTap: () => Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (_) => const CustomerHome()),
+            ),
+            child: Container(
+              margin: const EdgeInsets.only(right: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: const Color(0xFF3A9010).withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFF3A9010).withValues(alpha: 0.3)),
+              ),
+              child: const Text('To Customer', style: TextStyle(color: const Color(0xFF3A9010), fontSize: 10, fontWeight: FontWeight.bold)),
+            ),
+          ),
+        ],
       ),
       body: SafeArea(child: Column(children: [
         Expanded(child: ListView.builder(
@@ -210,7 +343,7 @@ class _ProviderChatScreenState extends State<ProviderChatScreen> {
             child: _buildItem(_messages[i]),
           ),
         )),
-        if (_loading) const Padding(padding: EdgeInsets.all(8), child: CircularProgressIndicator(strokeWidth: 2, color: Colors.amber)),
+        if (_loading) const Padding(padding: EdgeInsets.all(8), child: CircularProgressIndicator(strokeWidth: 2, color: const Color(0xFF3A9010))),
         _buildInput(),
       ])),
     );
@@ -219,6 +352,7 @@ class _ProviderChatScreenState extends State<ProviderChatScreen> {
   Widget _buildItem(Map<String, dynamic> msg) {
     if (msg['type'] == 'job_offer') return _jobOfferCard(msg['job'] as Map<String, dynamic>);
     if (msg['type'] == 'checklist') return _checklistCard();
+    if (msg['type'] == 'job_history') return _jobHistoryCard();
 
     final isUser = msg['isUser'] as bool;
     final text = msg['text'] as String? ?? '';
@@ -232,24 +366,24 @@ class _ProviderChatScreenState extends State<ProviderChatScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.78),
           decoration: BoxDecoration(
-            color: isUser ? Colors.amber.withOpacity(0.15) : const Color(0xFF1E293B),
+            color: isUser ? const Color(0xFF3A9010).withValues(alpha: 0.15) : Colors.white,
             borderRadius: BorderRadius.only(
               topLeft: const Radius.circular(18), topRight: const Radius.circular(18),
               bottomLeft: Radius.circular(isUser ? 18 : 4), bottomRight: Radius.circular(isUser ? 4 : 18),
             ),
-            border: Border.all(color: isUser ? Colors.amber.withOpacity(0.3) : Colors.white.withOpacity(0.07)),
+            border: Border.all(color: isUser ? const Color(0xFF3A9010).withValues(alpha: 0.3) : const Color(0xFFE8EDE6)),
           ),
-          child: Text(text, style: TextStyle(color: isUser ? Colors.amber : const Color(0xFFE2E8F0), fontSize: 13, height: 1.5)),
+          child: Text(text, style: TextStyle(color: isUser ? const Color(0xFF3A9010) : const Color(0xFF21231D), fontSize: 13, height: 1.5)),
         ),
       ),
       if (chips != null && !isUser) Padding(
         padding: const EdgeInsets.only(top: 6, bottom: 4),
-        child: Wrap(spacing: 8, children: (chips as List<dynamic>).map((c) => GestureDetector(
-          onTap: () => _send(c as String),
+        child: Wrap(spacing: 8, children: chips.map((c) => GestureDetector(
+          onTap: () => _send(c),
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-            decoration: BoxDecoration(color: const Color(0xFF1E293B), borderRadius: BorderRadius.circular(20), border: Border.all(color: Colors.amber.withOpacity(0.4))),
-            child: Text(c as String, style: const TextStyle(color: Colors.amber, fontSize: 12, fontWeight: FontWeight.w600)),
+            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20), border: Border.all(color: const Color(0xFF3A9010).withValues(alpha: 0.4))),
+            child: Text(c, style: const TextStyle(color: const Color(0xFF3A9010), fontSize: 12, fontWeight: FontWeight.w600)),
           ),
         )).toList()),
       ),
@@ -261,12 +395,12 @@ class _ProviderChatScreenState extends State<ProviderChatScreen> {
       margin: const EdgeInsets.symmetric(vertical: 10),
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        gradient: LinearGradient(colors: [Colors.amber.withOpacity(0.1), Colors.amber.withOpacity(0.03)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+        color: const Color(0xFF3A9010).withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.amber.withOpacity(0.4)),
+        border: Border.all(color: const Color(0xFF3A9010).withValues(alpha: 0.4)),
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Row(children: [const Icon(Icons.notifications_active, color: Colors.amber, size: 18), const SizedBox(width: 8), const Text("🔔 Naya Kaam Aaya!", style: TextStyle(color: Colors.amber, fontSize: 15, fontWeight: FontWeight.bold))]),
+        Row(children: [const Icon(Icons.notifications_active, color: const Color(0xFF3A9010), size: 18), const SizedBox(width: 8), const Text("🔔 Naya Kaam Aaya!", style: TextStyle(color: const Color(0xFF3A9010), fontSize: 15, fontWeight: FontWeight.bold))]),
         const SizedBox(height: 14),
         _jobRow("Service:", job['service'] as String),
         _jobRow("Problem:", job['problem'] as String),
@@ -274,19 +408,19 @@ class _ProviderChatScreenState extends State<ProviderChatScreen> {
         _jobRow("Time:", job['time'] as String),
         _jobRow("Urgency:", job['urgency'] as String),
         _jobRow("Quoted:", "Rs. ${job['min']} – Rs. ${job['max']}"),
-        const Divider(color: Colors.white10, height: 20),
-        const Text("⚠️ Parts/equipment cost alag hoga — on-site discuss karein.", style: TextStyle(color: Colors.white38, fontSize: 11)),
+        const Divider(color: const Color(0xFFE8EDE6), height: 20),
+        const Text("Parts & equipment costs are separate — discuss with the customer on-site.", style: TextStyle(color: const Color(0xFF767773), fontSize: 11)),
         const SizedBox(height: 14),
         Row(children: [
           Expanded(child: GestureDetector(
             onTap: _acceptJob,
-            child: Container(padding: const EdgeInsets.symmetric(vertical: 12), decoration: BoxDecoration(color: const Color(0xFF00C853), borderRadius: BorderRadius.circular(16)), alignment: Alignment.center,
+            child: Container(padding: const EdgeInsets.symmetric(vertical: 12), decoration: BoxDecoration(color: const Color(0xFF3A9010), borderRadius: BorderRadius.circular(16)), alignment: Alignment.center,
               child: const Text("✓ Accept", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 14))),
           )),
           const SizedBox(width: 10),
           Expanded(child: GestureDetector(
             onTap: _declineJob,
-            child: Container(padding: const EdgeInsets.symmetric(vertical: 12), decoration: BoxDecoration(color: Colors.redAccent.withOpacity(0.12), borderRadius: BorderRadius.circular(16), border: Border.all(color: Colors.redAccent.withOpacity(0.5))), alignment: Alignment.center,
+            child: Container(padding: const EdgeInsets.symmetric(vertical: 12), decoration: BoxDecoration(color: Colors.redAccent.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(16), border: Border.all(color: Colors.redAccent.withValues(alpha: 0.5))), alignment: Alignment.center,
               child: const Text("✗ Decline", style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold, fontSize: 14))),
           )),
         ]),
@@ -295,72 +429,208 @@ class _ProviderChatScreenState extends State<ProviderChatScreen> {
   }
 
   Widget _checklistCard() {
-    final allDone = _checkedItems.length == _checklistItems.length;
+    final checklist = _bookingData?['checklist'] as List? ?? [];
+    final allDone = checklist.isNotEmpty && checklist.every((item) => item['completed'] == true);
+    final bookingStatus = _bookingData?['status'] as String? ?? '';
+    final isCompleted = bookingStatus == 'COMPLETED';
+
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 10),
       padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(color: const Color(0xFF1E293B), borderRadius: BorderRadius.circular(18), border: Border.all(color: Colors.white10)),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFE8EDE6)),
+      ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        const Text("Kaam complete karne se pehle confirm karein:", style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)),
-        const SizedBox(height: 12),
-        ..._checklistItems.asMap().entries.map((e) => GestureDetector(
-          onTap: () => setState(() { _checkedItems.contains(e.key) ? _checkedItems.remove(e.key) : _checkedItems.add(e.key); }),
-          child: Container(
-            margin: const EdgeInsets.only(bottom: 8),
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            decoration: BoxDecoration(
-              color: _checkedItems.contains(e.key) ? const Color(0xFF00C853).withOpacity(0.12) : Colors.white.withOpacity(0.04),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: _checkedItems.contains(e.key) ? const Color(0xFF00C853).withOpacity(0.4) : Colors.white12),
+        Row(children: [
+          const Text("📋 Job Checklist", style: TextStyle(color: const Color(0xFF21231D), fontSize: 14, fontWeight: FontWeight.bold)),
+          const Spacer(),
+          if (isCompleted)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(color: const Color(0xFF3A9010).withValues(alpha: 0.15), borderRadius: BorderRadius.circular(8)),
+              child: const Text("COMPLETED", style: TextStyle(color: const Color(0xFF3A9010), fontSize: 10, fontWeight: FontWeight.bold)),
             ),
-            child: Row(children: [
-              Icon(_checkedItems.contains(e.key) ? Icons.check_circle_rounded : Icons.circle_outlined, size: 18, color: _checkedItems.contains(e.key) ? const Color(0xFF00C853) : Colors.white38),
-              const SizedBox(width: 10),
-              Text(e.value, style: TextStyle(color: _checkedItems.contains(e.key) ? const Color(0xFF00C853) : Colors.white70, fontSize: 13)),
-            ]),
+        ]),
+        const SizedBox(height: 12),
+        if (checklist.isEmpty)
+          const Text("No checklist items yet.", style: TextStyle(color: const Color(0xFF767773), fontSize: 13))
+        else
+          ...checklist.asMap().entries.map((e) {
+            final idx = e.key;
+            final item = e.value as Map;
+            final done = item['completed'] == true;
+            return GestureDetector(
+              onTap: (!done && !isCompleted) ? () => _tapChecklistItem(idx) : null,
+              child: Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                decoration: BoxDecoration(
+                  color: done
+                      ? const Color(0xFF3A9010).withValues(alpha: 0.10)
+                      : const Color(0xFFF7FAF5),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: done
+                        ? const Color(0xFF3A9010).withValues(alpha: 0.35)
+                        : const Color(0xFFE8EDE6),
+                  ),
+                ),
+                child: Row(children: [
+                  Icon(
+                    done ? Icons.check_circle_rounded : Icons.circle_outlined,
+                    size: 18,
+                    color: done ? const Color(0xFF3A9010) : const Color(0xFF767773),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      item['item'] as String? ?? '',
+                      style: TextStyle(
+                        color: done ? const Color(0xFF565955) : const Color(0xFF3E3F3B),
+                        fontSize: 13,
+                        decoration: done ? TextDecoration.lineThrough : null,
+                        decorationColor: const Color(0xFF767773),
+                      ),
+                    ),
+                  ),
+                  if (!done && !isCompleted)
+                    const Icon(Icons.touch_app_rounded, size: 14, color: const Color(0xFFB0B5AE)),
+                ]),
+              ),
+            );
+          }),
+        if (!isCompleted) ...[
+          const SizedBox(height: 8),
+          GestureDetector(
+            onTap: allDone ? _markComplete : null,
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              decoration: BoxDecoration(
+                color: allDone ? const Color(0xFF3A9010) : const Color(0xFFE8EDE6),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                allDone ? "Mark Job as Complete" : "Complete all items first",
+                style: TextStyle(
+                  color: allDone ? Colors.black : const Color(0xFF767773),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
+              ),
+            ),
           ),
-        )),
-        const SizedBox(height: 8),
-        GestureDetector(
-          onTap: allDone ? _markComplete : null,
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 12),
-            decoration: BoxDecoration(color: allDone ? const Color(0xFF00C853) : Colors.white12, borderRadius: BorderRadius.circular(14)),
-            alignment: Alignment.center,
-            child: Text("✅ Haan, sab kuch ho gaya — Job Complete Karo", style: TextStyle(color: allDone ? Colors.black : Colors.white38, fontWeight: FontWeight.bold, fontSize: 13)),
-          ),
-        ),
+          if (bookingStatus != 'CANCELLED_PROVIDER' && bookingStatus != 'CANCELLED_CUSTOMER') ...[
+            const SizedBox(height: 8),
+            GestureDetector(
+              onTap: _cancelJob,
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                decoration: BoxDecoration(
+                  color: Colors.redAccent.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: Colors.redAccent.withValues(alpha: 0.3)),
+                ),
+                alignment: Alignment.center,
+                child: const Text(
+                  "Cancel Job",
+                  style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold, fontSize: 12),
+                ),
+              ),
+            ),
+          ],
+        ],
       ]),
     );
+  }
+
+  Widget _jobHistoryCard() {
+    final b = _bookingData ?? {};
+    final checklist = b['checklist'] as List? ?? [];
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 10),
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFF3A9010).withValues(alpha: 0.3)),
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          const Icon(Icons.check_circle_rounded, color: const Color(0xFF3A9010), size: 18),
+          const SizedBox(width: 8),
+          const Text("Job History", style: TextStyle(color: const Color(0xFF3A9010), fontSize: 14, fontWeight: FontWeight.bold)),
+          const Spacer(),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+            decoration: BoxDecoration(color: const Color(0xFF3A9010).withValues(alpha: 0.12), borderRadius: BorderRadius.circular(8)),
+            child: const Text("COMPLETED", style: TextStyle(color: const Color(0xFF3A9010), fontSize: 10, fontWeight: FontWeight.bold)),
+          ),
+        ]),
+        const Divider(color: const Color(0xFFE8EDE6), height: 20),
+        _jobRow("Booking ID:", b['booking_id'] as String? ?? '—'),
+        _jobRow("Service:", b['service_type'] as String? ?? '—'),
+        _jobRow("Location:", b['location'] as String? ?? '—'),
+        _jobRow("Amount:", "Rs. ${b['final_price'] ?? '—'}"),
+        _jobRow("Customer:", b['customer_id'] as String? ?? '—'),
+        if (b['scheduled_time'] != null)
+          _jobRow("Scheduled:", (b['scheduled_time'] as String).substring(0, 16)),
+        const SizedBox(height: 12),
+        const Text("Work completed:", style: TextStyle(color: const Color(0xFF565955), fontSize: 12, fontWeight: FontWeight.w600)),
+        const SizedBox(height: 6),
+        ...checklist.map((item) => Padding(
+          padding: const EdgeInsets.symmetric(vertical: 3),
+          child: Row(children: [
+            const Icon(Icons.check_circle_rounded, size: 14, color: const Color(0xFF3A9010)),
+            const SizedBox(width: 8),
+            Text(item['item'] as String? ?? '', style: const TextStyle(color: const Color(0xFF565955), fontSize: 12, decoration: TextDecoration.lineThrough, decorationColor: const Color(0xFFB0B5AE))),
+          ]),
+        )),
+      ]),
+    );
+  }
+
+  String _statusLabel(String status) {
+    switch (status) {
+      case 'PENDING_PROVIDER': return 'Pending';
+      case 'ACCEPTED': return 'Accepted';
+      case 'ARRIVING': return 'En Route';
+      case 'ARRIVED': return 'On Site';
+      case 'IN_PROGRESS': return 'In Progress';
+      case 'COMPLETED': return 'Completed';
+      default: return status.replaceAll('_', ' ');
+    }
   }
 
   Widget _jobRow(String label, String value) => Padding(
     padding: const EdgeInsets.symmetric(vertical: 3),
     child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      SizedBox(width: 80, child: Text(label, style: const TextStyle(color: Colors.white38, fontSize: 12))),
-      Expanded(child: Text(value, style: const TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w600))),
+      SizedBox(width: 80, child: Text(label, style: const TextStyle(color: const Color(0xFF767773), fontSize: 12))),
+      Expanded(child: Text(value, style: const TextStyle(color: const Color(0xFF3E3F3B), fontSize: 12, fontWeight: FontWeight.w600))),
     ]),
   );
 
   Widget _buildInput() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      decoration: const BoxDecoration(color: Color(0xFF1E293B), border: Border(top: BorderSide(color: Colors.white10))),
+      decoration: const BoxDecoration(color: Colors.white, border: Border(top: BorderSide(color: const Color(0xFFE8EDE6)))),
       child: Row(children: [
         Expanded(child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          decoration: BoxDecoration(color: const Color(0xFF0F172A), borderRadius: BorderRadius.circular(24), border: Border.all(color: Colors.amber.withOpacity(0.15))),
+          decoration: BoxDecoration(color: const Color(0xFFF7FAF5), borderRadius: BorderRadius.circular(24), border: Border.all(color: const Color(0xFF3A9010).withValues(alpha: 0.15))),
           child: TextField(
             controller: _ctrl,
-            style: const TextStyle(color: Colors.white),
-            decoration: const InputDecoration(hintText: "Type karein...", hintStyle: TextStyle(color: Colors.white30, fontSize: 13), border: InputBorder.none),
+            style: const TextStyle(color: const Color(0xFF21231D)),
+            decoration: const InputDecoration(hintText: "Message...", hintStyle: TextStyle(color: const Color(0xFF767773), fontSize: 13), border: InputBorder.none),
             onSubmitted: (_) => _send(),
           ),
         )),
         const SizedBox(width: 8),
         GestureDetector(
           onTap: _send,
-          child: Container(padding: const EdgeInsets.all(10), decoration: const BoxDecoration(color: Colors.amber, shape: BoxShape.circle), child: const Icon(Icons.send_rounded, color: Colors.black, size: 18)),
+          child: Container(padding: const EdgeInsets.all(10), decoration: const BoxDecoration(color: const Color(0xFF3A9010), shape: BoxShape.circle), child: const Icon(Icons.send_rounded, color: Colors.white, size: 18)),
         ),
       ]),
     );

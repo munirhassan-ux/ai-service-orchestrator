@@ -2,6 +2,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import * as fs from "fs";
 import * as path from "path";
 import { fileURLToPath } from "url";
+import { logProviderMatch } from "../logger.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -10,6 +11,61 @@ import { ParsedIntent } from "./intentParser.js";
 function getProvidersData() {
   const filePath = path.join(__dirname, "../../data/mock_providers.json");
   return JSON.parse(fs.readFileSync(filePath, "utf-8"));
+}
+
+// Real-time active booking counts — more accurate than cached active_jobs field
+function getLiveActiveBookingCounts(): Record<string, number> {
+  const bookingsFile = path.join(__dirname, "../../data/mock_bookings.json");
+  const occupied = new Set(["PENDING_PROVIDER", "ACCEPTED", "ARRIVING", "ARRIVED", "IN_PROGRESS"]);
+  try {
+    const data = JSON.parse(fs.readFileSync(bookingsFile, "utf-8"));
+    const counts: Record<string, number> = {};
+    for (const b of data.bookings) {
+      if (occupied.has(b.status)) {
+        counts[b.provider_id] = (counts[b.provider_id] || 0) + 1;
+      }
+    }
+    return counts;
+  } catch {
+    return {};
+  }
+}
+
+// Detect time-window conflicts: provider already has an active booking within ±2h of requested slot
+function resolvePreferredTimeMs(preferredTime: string): number {
+  const now = Date.now();
+  const ONE_DAY = 86400000;
+  switch ((preferredTime || "flexible").toLowerCase().replace(" ", "_")) {
+    case "asap": return now + 2 * 3600000;
+    case "today_morning": return new Date().setHours(10, 0, 0, 0);
+    case "today_afternoon": return new Date().setHours(14, 0, 0, 0);
+    case "today_evening": return new Date().setHours(18, 0, 0, 0);
+    case "tomorrow_morning": return new Date(now + ONE_DAY).setHours(10, 0, 0, 0);
+    case "tomorrow_afternoon": return new Date(now + ONE_DAY).setHours(14, 0, 0, 0);
+    default: return new Date(now + ONE_DAY).setHours(10, 0, 0, 0);
+  }
+}
+
+function buildProviderSchedule(preferredTime: string): { schedule: Record<string, number[]>; requestedMs: number } {
+  const bookingsFile = path.join(__dirname, "../../data/mock_bookings.json");
+  const active = new Set(["ACCEPTED", "ARRIVING", "ARRIVED", "IN_PROGRESS"]);
+  const requestedMs = resolvePreferredTimeMs(preferredTime);
+  const schedule: Record<string, number[]> = {};
+  try {
+    const data = JSON.parse(fs.readFileSync(bookingsFile, "utf-8"));
+    for (const b of data.bookings) {
+      if (active.has(b.status) && b.scheduled_time) {
+        if (!schedule[b.provider_id]) schedule[b.provider_id] = [];
+        schedule[b.provider_id].push(new Date(b.scheduled_time).getTime());
+      }
+    }
+  } catch { /* no-op */ }
+  return { schedule, requestedMs };
+}
+
+function hasTimeConflict(providerId: string, requestedMs: number, schedule: Record<string, number[]>): boolean {
+  const TWO_HOURS = 2 * 3600000;
+  return (schedule[providerId] || []).some(t => Math.abs(t - requestedMs) < TWO_HOURS);
 }
 
 export interface RankedProvider {
@@ -99,26 +155,34 @@ function getAreaCoords(location: string): { lat: number; lng: number } {
 }
 
 export async function matchProviders(intent: ParsedIntent, excludedIds: string[] = []): Promise<MatchResult> {
+  const tStart = Date.now();
   const providersData = getProvidersData();
   const userCoords = getAreaCoords(intent.location);
+
+  // Real-time capacity and time-window conflict data
+  const liveActiveCounts = getLiveActiveBookingCounts();
+  const { schedule, requestedMs } = buildProviderSchedule(intent.preferred_time);
 
   // STEP 2 - Provider Matching Filters
   // Filter providers who:
   // - Are online
-  // - Have active jobs under capacity
+  // - Have active jobs under capacity (using live counts from bookings file)
+  // - No time-window conflict (not already booked within ±2h of requested slot)
   // - Match the service type
   let eligible = providersData.filter((p: any) => {
     const pId = p.provider_id || p.id;
     if (excludedIds.includes(pId)) return false;
-    
+
     const isOnline = p.availability_status === "online";
-    const capacityOk = p.active_jobs < p.capacity;
+    const liveJobs = liveActiveCounts[pId] ?? p.active_jobs;
+    const capacityOk = liveJobs < p.capacity;
+    const noConflict = !hasTimeConflict(pId, requestedMs, schedule);
     const matchesService = p.service_expertise.some(
       (s: string) =>
         s.toLowerCase() === intent.service_type.toLowerCase() ||
         s.toLowerCase().startsWith(intent.service_type.toLowerCase().split("_")[0])
     );
-    return isOnline && capacityOk && matchesService;
+    return isOnline && capacityOk && noConflict && matchesService;
   });
 
   let fallback_used = false;
@@ -131,7 +195,9 @@ export async function matchProviders(intent: ParsedIntent, excludedIds: string[]
     fallback_used = true;
     fallback_reason = "Fewer than 3 active online providers found. Filling with waitlisted/offline options.";
     const extraProviders = providersData.filter((p: any) => {
-      const isAlreadyIncluded = eligible.some((e: any) => e.provider_id === p.provider_id);
+      const pId = p.provider_id || p.id;
+      if (excludedIds.includes(pId)) return false;
+      const isAlreadyIncluded = eligible.some((e: any) => (e.provider_id || e.id) === pId);
       const matchesService = p.service_expertise.some(
         (s: string) =>
           s.toLowerCase() === intent.service_type.toLowerCase() ||
@@ -278,32 +344,41 @@ export async function matchProviders(intent: ParsedIntent, excludedIds: string[]
 
   const top3 = sorted.slice(0, 3);
 
-  // Generate Reasoning
+  // Generate Reasoning — explain the key trade-off (specialization vs proximity etc.)
   let reasoning = "";
   try {
-    const reasoningPrompt = `You are the matching AI for Khedmatgar, a home services platform.
-Explain in 2 sentences in Urdu/Roman Urdu why ${top3[0].name} (Score: ${top3[0].score}%, ${top3[0].distance_km}km door) is the best match for ${intent.service_type} in ${intent.location}.
-Primary strengths:
-- Distance: ${top3[0].distance_km}km
-- Rating: ${top3[0].rating}★
-- On-Time: ${Math.round(top3[0].on_time_score * 100)}%
-- Specialization: Exact matches service.
-Be extremely concise.`;
+    const isRecommendedFarther = top3.length > 1 && top3[0].distance_km > top3[1].distance_km;
+    const budgetNote = intent.budget_sensitivity === "low"
+      ? " The customer is price-sensitive — note if this is cost-effective."
+      : "";
+    const langNote = intent.language === "english" ? "English" : "Urdu / Roman Urdu";
+
+    const reasoningPrompt = `You are Khedmatgar's AI recommendation engine. Write exactly 2 sentences in ${langNote} explaining why ${top3[0].name} is the best match for this request.
+
+Recommended: ${top3[0].name} | ${top3[0].distance_km}km away | ${top3[0].rating}★ | ${Math.round(top3[0].on_time_score * 100)}% on-time | Specialization: ${top3[0].score_breakdown.specialization}/100 | Score: ${top3[0].score}%
+${top3[1] ? `Runner-up: ${top3[1].name} | ${top3[1].distance_km}km | ${top3[1].rating}★ | Score: ${top3[1].score}%` : ""}
+
+Context: ${intent.service_type} request | Urgency: ${intent.urgency} | Complexity: ${intent.job_complexity_hint}${budgetNote}
+${isRecommendedFarther ? `Key trade-off: ${top3[1]?.name ?? "another provider"} is closer but ${top3[0].name} was chosen for superior specialization and reliability.` : ""}
+
+Be conversational and specific. Mention the deciding factor. No markdown.`;
 
     const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY!);
     const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
     const response = await model.generateContent(reasoningPrompt);
     reasoning = response.response.text().trim();
   } catch {
-    reasoning = `${top3[0].name} selected based on high composite score of ${top3[0].score}%, proximity of ${top3[0].distance_km}km, and excellent rating.`;
+    reasoning = `${top3[0].name} selected: score ${top3[0].score}%, ${top3[0].distance_km}km away, ${Math.round(top3[0].on_time_score * 100)}% on-time reliability.`;
   }
 
   const trace = `Matched ${eligible.length} eligible providers using 8 weighted factors and tiebreaker rules. Top Match: ${top3[0]?.name}`;
-  return {
+  const result: MatchResult = {
     top_providers: top3,
     reasoning,
     fallback_used,
     fallback_reason,
     matching_trace: trace,
   };
+  logProviderMatch(intent, result, Date.now() - tStart);
+  return result;
 }

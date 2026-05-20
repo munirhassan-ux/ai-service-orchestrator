@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'chat_screen.dart';
 
 class ProviderDashboard extends StatefulWidget {
@@ -15,12 +16,12 @@ class _ProviderDashboardState extends State<ProviderDashboard> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Provider Dashboard'),
+        title: SvgPicture.asset('assets/haazir_logo.svg', height: 26),
         actions: [
           Switch(
             value: _isAvailable,
             onChanged: (val) => setState(() => _isAvailable = val),
-            activeColor: const Color(0xFF00C853),
+            activeColor: const Color(0xFF3A9010),
           ),
         ],
       ),
@@ -33,14 +34,14 @@ class _ProviderDashboardState extends State<ProviderDashboard> {
             const SizedBox(height: 32),
             const Text(
               'ACTIVE JOBS',
-              style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.2, color: Colors.white54),
+              style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.2, color: const Color(0xFF565955)),
             ),
             const SizedBox(height: 16),
             _buildJobCard(),
             const SizedBox(height: 32),
             const Text(
               'REPUTATION',
-              style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.2, color: Colors.white54),
+              style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.2, color: const Color(0xFF565955)),
             ),
             const SizedBox(height: 16),
             _buildReputationCard(),
@@ -61,7 +62,7 @@ class _ProviderDashboardState extends State<ProviderDashboard> {
       children: [
         _buildStatTile('Today\'s Earnings', 'Rs. 4,500', Icons.payments_rounded, Colors.green),
         _buildStatTile('Completed', '142', Icons.task_alt_rounded, Colors.blue),
-        _buildStatTile('Rating', '4.7 / 5.0', Icons.star_rounded, Colors.amber),
+        _buildStatTile('Rating', '4.7 / 5.0', Icons.star_rounded, const Color(0xFF3A9010)),
         _buildStatTile('Risk Score', '0.08', Icons.security_rounded, Colors.orange),
       ],
     );
@@ -71,9 +72,9 @@ class _ProviderDashboardState extends State<ProviderDashboard> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: const Color(0xFFF7FAF5),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white10),
+        border: Border.all(color: const Color(0xFFE8EDE6)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -84,7 +85,7 @@ class _ProviderDashboardState extends State<ProviderDashboard> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              Text(label, style: const TextStyle(fontSize: 12, color: Colors.white54)),
+              Text(label, style: const TextStyle(fontSize: 12, color: const Color(0xFF565955))),
             ],
           ),
         ],
@@ -105,13 +106,9 @@ class _ProviderDashboardState extends State<ProviderDashboard> {
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [const Color(0xFF00C853).withOpacity(0.2), Colors.transparent],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+          color: const Color(0xFF3A9010).withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFF00C853).withOpacity(0.3)),
+          border: Border.all(color: const Color(0xFF3A9010).withOpacity(0.3)),
         ),
         child: Column(
           children: [
@@ -122,25 +119,25 @@ class _ProviderDashboardState extends State<ProviderDashboard> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text('AC Repair - G-13', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                    Text('Today, 2:00 PM', style: TextStyle(color: Colors.white54)),
+                    Text('Today, 2:00 PM', style: TextStyle(color: const Color(0xFF565955))),
                   ],
                 ),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF00C853),
+                    color: const Color(0xFF3A9010),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: const Text('EN ROUTE', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 12)),
                 ),
               ],
             ),
-            const Divider(height: 32, color: Colors.white10),
+            const Divider(height: 32, color: const Color(0xFFE8EDE6)),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Agreed Price', style: TextStyle(color: Colors.white70)),
-                const Text('Rs. 1,200', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF00C853))),
+                const Text('Agreed Price', style: TextStyle(color: const Color(0xFF3E3F3B))),
+                const Text('Rs. 1,200', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: const Color(0xFF3A9010))),
               ],
             ),
           ],
@@ -153,7 +150,7 @@ class _ProviderDashboardState extends State<ProviderDashboard> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: const Color(0xFFF7FAF5),
         borderRadius: BorderRadius.circular(16),
       ),
       child: const Column(
@@ -178,13 +175,13 @@ class _ReputationRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Expanded(flex: 3, child: Text(label, style: const TextStyle(color: Colors.white70))),
+        Expanded(flex: 3, child: Text(label, style: const TextStyle(color: const Color(0xFF3E3F3B)))),
         Expanded(
           flex: 7,
           child: LinearProgressIndicator(
             value: value,
-            backgroundColor: Colors.white10,
-            color: value > 0.8 ? const Color(0xFF00C853) : Colors.amber,
+            backgroundColor: const Color(0xFFE8EDE6),
+            color: value > 0.8 ? const Color(0xFF3A9010) : const Color(0xFF3A9010),
             minHeight: 8,
             borderRadius: BorderRadius.circular(4),
           ),

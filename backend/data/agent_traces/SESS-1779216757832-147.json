@@ -1,0 +1,107 @@
+[
+  {
+    "timestamp": "2026-05-19T18:52:39.409Z",
+    "step": 1,
+    "agent": "IntentParser",
+    "confidence": 0.9,
+    "input": "mujhe kal shaam plumber ka kaam karwana he",
+    "output": {
+      "service_type": "plumber",
+      "service_raw": "plumber ka kaam",
+      "location": "null",
+      "urgency": "medium",
+      "preferred_time": "kal shaam",
+      "budget_sensitivity": "medium",
+      "job_complexity_hint": "intermediate",
+      "language": "roman_urdu",
+      "confidence": 0.9,
+      "clarification_needed": true,
+      "clarification_question": "Ji bilkul, hum aapki madad kar sakte hain. Kya aap apna ilaaqa (area) bata sakte hain taake hum plumber ko aapke paas bhej saken?",
+      "reasoning": "Service and time identified, but specific location missing."
+    }
+  },
+  {
+    "timestamp": "2026-05-19T18:52:52.752Z",
+    "step": 1,
+    "agent": "IntentParser",
+    "confidence": 0.2,
+    "input": "lahore",
+    "output": {
+      "service_type": null,
+      "service_raw": null,
+      "location": "Lahore",
+      "urgency": "low",
+      "preferred_time": null,
+      "budget_sensitivity": "medium",
+      "job_complexity_hint": "basic",
+      "language": "english",
+      "confidence": 0.2,
+      "clarification_needed": true,
+      "clarification_question": "Ji bilkul, Lahore mein aapko kis tarah ki service chahiye aur aap ye kaam kab karwana chahenge?",
+      "reasoning": "User only provided location. Service type and preferred time are missing."
+    }
+  },
+  {
+    "timestamp": "2026-05-19T18:52:56.806Z",
+    "step": 1,
+    "agent": "IntentParser",
+    "confidence": 0.9,
+    "input": "AC Repair",
+    "output": {
+      "service_type": "ac_repair",
+      "service_raw": "AC Repair",
+      "location": null,
+      "urgency": "medium",
+      "preferred_time": null,
+      "budget_sensitivity": "medium",
+      "job_complexity_hint": "intermediate",
+      "language": "english",
+      "confidence": 0.9,
+      "clarification_needed": true,
+      "clarification_question": "Sure, I can help with that. Could you please provide your specific area and a preferred time for the technician to visit?",
+      "reasoning": "Service type identified as AC Repair, but location and preferred time are missing."
+    }
+  },
+  {
+    "timestamp": "2026-05-19T18:53:21.105Z",
+    "step": 1,
+    "agent": "IntentParser",
+    "confidence": 0.2,
+    "input": "kal shaam 5 baje",
+    "output": {
+      "service_type": null,
+      "service_raw": null,
+      "location": null,
+      "urgency": "medium",
+      "preferred_time": "tomorrow 5:00 PM",
+      "budget_sensitivity": "medium",
+      "job_complexity_hint": "basic",
+      "language": "roman_urdu",
+      "confidence": 0.2,
+      "clarification_needed": true,
+      "clarification_question": "Ji, humein samajh aa gaya ke aap kal shaam 5 baje service chahte hain. Lekin kya aap bata sakte hain ke aapko kis cheez ki service chahiye (jaise electrician, plumber, ya AC repair) aur aap kis area mein rehte hain?",
+      "reasoning": "The user provided time but missing service type and location."
+    }
+  },
+  {
+    "timestamp": "2026-05-19T18:53:30.307Z",
+    "step": 1,
+    "agent": "IntentParser",
+    "confidence": 0.8,
+    "input": "AC Repair",
+    "output": {
+      "service_type": "ac_repair",
+      "service_raw": "AC Repair",
+      "location": null,
+      "urgency": "medium",
+      "preferred_time": null,
+      "budget_sensitivity": "medium",
+      "job_complexity_hint": "intermediate",
+      "language": "english",
+      "confidence": 0.8,
+      "clarification_needed": true,
+      "clarification_question": "Sure, I can help with that. Could you please provide your specific area and a preferred time for the technician to visit?",
+      "reasoning": "Service type is clear, but location and preferred time are missing."
+    }
+  }
+]

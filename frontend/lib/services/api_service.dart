@@ -1,8 +1,19 @@
 import 'dart:convert';
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  static const String baseUrl = 'http://127.0.0.1:3000/api';
+  // Injected at build time via --dart-define=BACKEND_URL=https://...
+  // Falls back to emulator/local URLs for dev builds.
+  static const String _prodUrl = String.fromEnvironment('BACKEND_URL');
+
+  static String get baseUrl {
+    if (_prodUrl.isNotEmpty) return _prodUrl;
+    if (kIsWeb) return 'http://127.0.0.1:3000/api';
+    if (Platform.isAndroid) return 'http://10.0.2.2:3000/api';
+    return 'http://127.0.0.1:3000/api';
+  }
 
   // Create Session
   static Future<Map<String, dynamic>> createSession(String customerId) async {

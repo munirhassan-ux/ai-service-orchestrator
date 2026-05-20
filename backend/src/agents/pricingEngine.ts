@@ -1,5 +1,6 @@
 import { ParsedIntent } from "./intentParser.js";
 import { RankedProvider } from "./providerMatcher.js";
+import { logPricing } from "../logger.js";
 
 export interface PriceQuote {
   base_rate: number;
@@ -59,24 +60,28 @@ export function calculatePrice(
     on_demand_charges = roundToNearest10(service_fee * multiplier);
   }
 
+  // Visit fee — non-refundable call-out charge
+  const visit_fee = 150;
+
   // Total calculation
-  const total = roundToNearest10(service_fee + travel_charges + on_demand_charges);
+  const total = roundToNearest10(visit_fee + service_fee + travel_charges + on_demand_charges);
 
   // Ranges for backward-compatibility with UI
   const min_total = roundToNearest10(total * 0.95);
   const max_total = roundToNearest10(total * 1.05);
 
   const breakdown_text = [
-    `Base Service Fee: Rs. ${service_fee} (Estimated 2 hours)`,
-    `Travel Charges (${provider.distance_km}km): Rs. ${travel_charges}`,
-    on_demand_charges > 0 ? `On-demand Surcharge: Rs. ${on_demand_charges}` : null,
+    `Visit Fee (non-refundable): Rs. ${visit_fee}`,
+    `Labour (Rs. ${provider.charges.base_rate}/hr × 2hrs): Rs. ${service_fee}`,
+    travel_charges > 0 ? `Travel (${provider.distance_km}km): Rs. ${travel_charges}` : null,
+    on_demand_charges > 0 ? `Urgency Surcharge: Rs. ${on_demand_charges}` : null,
     `─────────────────────────────`,
-    `Total Charges: Rs. ${total}`,
+    `Total: Rs. ${total}`,
   ].filter(Boolean).join("\n");
 
   const fairness_note = "Standard flat-rate pricing applied, incorporating travel rate and urgency surge.";
 
-  return {
+  const quote: PriceQuote = {
     base_rate,
     distance_fee: travel_charges,
     urgency_surcharge: on_demand_charges,
@@ -84,7 +89,7 @@ export function calculatePrice(
     loyalty_discount: 0,
     surge_multiplier: 1.0,
     surge_active: false,
-    visit_fee: 0,
+    visit_fee,
     hours_min: estimated_hours,
     hours_max: estimated_hours,
     min_total,
@@ -99,4 +104,6 @@ export function calculatePrice(
     breakdown_text,
     fairness_note,
   };
+  logPricing(provider, intent, quote);
+  return quote;
 }

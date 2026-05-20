@@ -5,27 +5,47 @@ import 'services/notification_service.dart';
 import 'screens/provider/provider_home.dart';
 
 void main() {
-  runApp(const KhedmatgarApp());
+  runApp(const HaazirApp());
 }
 
-class KhedmatgarApp extends StatelessWidget {
-  const KhedmatgarApp({super.key});
+class HaazirApp extends StatelessWidget {
+  const HaazirApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Khedmatgar',
+      title: 'Haazir',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        brightness: Brightness.dark,
-        primaryColor: const Color(0xFF00C853), // Emerald Green
-        scaffoldBackgroundColor: const Color(0xFF0F172A), // Deep Slate
+        brightness: Brightness.light,
+        primaryColor: const Color(0xFF3A9010),
+        scaffoldBackgroundColor: const Color(0xFFF7FAF5),
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF00C853),
-          brightness: Brightness.dark,
-          secondary: const Color(0xFFFFD700), // Amber Gold
+          seedColor: const Color(0xFF3A9010),
+          brightness: Brightness.light,
+          primary: const Color(0xFF3A9010),
+          secondary: const Color(0xFF163300),
+          surface: Colors.white,
+          error: const Color(0xFFB00020),
         ),
-        textTheme: GoogleFonts.outfitTextTheme(ThemeData.dark().textTheme),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Color(0xFF163300),
+          foregroundColor: Colors.white,
+          elevation: 0,
+          iconTheme: IconThemeData(color: Colors.white),
+          titleTextStyle: TextStyle(
+            color: Colors.white,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+          backgroundColor: Colors.white,
+          selectedItemColor: Color(0xFF3A9010),
+          unselectedItemColor: Color(0xFF767773),
+        ),
+        dividerColor: const Color(0xFFE8EDE6),
+        textTheme: GoogleFonts.outfitTextTheme(ThemeData.light().textTheme),
         useMaterial3: true,
       ),
       builder: (context, child) {
@@ -77,8 +97,6 @@ class _NotificationOverlayState extends State<NotificationOverlay> {
               color: Colors.transparent,
               child: GestureDetector(
                 onTap: () {
-                  // Handle navigation/role toggle
-                  // For now we just dismiss
                   setState(() => _currentNotification = null);
                 },
                 child: TweenAnimationBuilder<double>(
@@ -94,19 +112,15 @@ class _NotificationOverlayState extends State<NotificationOverlay> {
                   child: Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: _currentNotification!.roleTarget == 'PROVIDER'
-                          ? const Color(0xFF1E293B) // Darker background for provider
-                          : const Color(0xFF1E293B),
+                      color: Colors.white,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                        color: _currentNotification!.roleTarget == 'PROVIDER'
-                            ? Colors.amber.withOpacity(0.5)
-                            : const Color(0xFF00C853).withOpacity(0.5),
+                        color: const Color(0xFF3A9010).withValues(alpha: 0.5),
                         width: 2,
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.3),
+                          color: Colors.black.withValues(alpha: 0.1),
                           blurRadius: 10,
                           offset: const Offset(0, 5),
                         ),
@@ -118,9 +132,7 @@ class _NotificationOverlayState extends State<NotificationOverlay> {
                           _currentNotification!.roleTarget == 'PROVIDER'
                               ? Icons.work_rounded
                               : Icons.info_rounded,
-                          color: _currentNotification!.roleTarget == 'PROVIDER'
-                              ? Colors.amber
-                              : const Color(0xFF00C853),
+                          color: const Color(0xFF3A9010),
                           size: 32,
                         ),
                         const SizedBox(width: 16),
@@ -134,7 +146,7 @@ class _NotificationOverlayState extends State<NotificationOverlay> {
                                 style: const TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 16,
-                                  color: Colors.white,
+                                  color: Color(0xFF21231D),
                                 ),
                               ),
                               const SizedBox(height: 4),
@@ -142,7 +154,7 @@ class _NotificationOverlayState extends State<NotificationOverlay> {
                                 _currentNotification!.body,
                                 style: const TextStyle(
                                   fontSize: 13,
-                                  color: Colors.white70,
+                                  color: Color(0xFF3E3F3B),
                                 ),
                               ),
                             ],

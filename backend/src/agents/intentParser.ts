@@ -2,6 +2,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import * as fs from "fs";
 import * as path from "path";
 import { fileURLToPath } from "url";
+import { logIntent } from "../logger.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const currDir = path.dirname(__filename);
@@ -50,12 +51,30 @@ Return this JSON:
 }
 
 STRICT CONVERSATIONAL RULES:
-1. If "location" is missing or too vague (e.g. just "Lahore"), set "clarification_needed": true and "clarification_question" to ask for their specific area.
-2. If "service_type" is missing or ambiguous, set "clarification_needed": true and ask what they need help with.
-3. If "preferred_time" is missing, set "clarification_needed": true and ask when they want the service.
+1. If "location" is missing or too vague (e.g. just "Lahore" without a neighbourhood), set "clarification_needed": true and ask for their specific area.
+2. If "service_type" is missing or truly ambiguous, set "clarification_needed": true and ask what they need help with.
+3. "preferred_time" is OPTIONAL. If missing, default it to "flexible" and do NOT set "clarification_needed": true because of it.
 4. LANGUAGE PARITY: If the user speaks in Roman Urdu, the "clarification_question" MUST be in Roman Urdu.
 5. BE POLITE: Use "G bilkul", "Ji", "Sure" etc. in your follow-up questions.
-6. If all key info (Service, Location, Time) is present, set "clarification_needed": false.`;
+6. If service_type AND location are present, set "clarification_needed": false even if preferred_time is absent.
+
+FUZZY MATCHING — always try to infer before asking:
+7. MISSPELLINGS: Correct common misspellings to the nearest service. Examples:
+   - "pambr", "plambr", "pambar" → plumber
+   - "alectric", "electrition", "elec" → electrician
+   - "carpnter", "carpinter" → carpenter
+   - "cleenng", "clening" → cleaning
+   - "AC repir", "ac ripar", "AC kharab" → ac_repair
+8. SYMPTOM-TO-SERVICE MAPPING: If the user describes a problem, infer the service. Examples:
+   - "pani nahi aa raha", "pipe se leak", "nala band" → plumber
+   - "bijli nahi hai", "lights band", "short circuit", "wire kharab" → electrician
+   - "AC thanda nahi karta", "AC band ho gaya", "AC gas khatam" → ac_repair
+   - "geyser kaam nahi kar raha", "garam pani nahi" → geyser_repair
+   - "fridge thanda nahi karta", "fridge kharab" → fridge_repair
+   - "darwaza toot gaya", "furniture fix", "almari" → carpenter
+9. MIXED LANGUAGE: Handle English words inside Roman Urdu sentences naturally (e.g. "mujhe kal electrician chahiye G-11 mein").
+10. AMBIGUOUS BUT INFERABLE: If the user gives minimal info but enough to infer (e.g. "AC", "plumber", "cleaner"), do NOT ask clarification — assume service matches and just ask for location if missing.
+11. Never ask about preferred_time — it is always optional.`;
 
 export async function parseIntent(userInput: string, history: any[] = []): Promise<ParsedIntent> {
   const traceStart = Date.now();
@@ -113,5 +132,6 @@ export async function parseIntent(userInput: string, history: any[] = []): Promi
     };
   }
 
+  logIntent(userInput, parsed, Date.now() - traceStart);
   return parsed;
 }

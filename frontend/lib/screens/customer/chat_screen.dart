@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'dart:async';
 import 'dart:math' as math;
 import '../../services/api_service.dart';
 import 'widgets/chat_widgets.dart';
+import '../provider/provider_home.dart';
 
 class Message {
   final String id;
@@ -46,15 +48,20 @@ class _ChatScreenState extends State<ChatScreen> {
     setState(() => _loading = true);
     try {
       if (widget.bookingId != null) {
-        // Load booking state
-        final res = await ApiService.get('bookings?customer_id=customer_001');
-        if (res is List) {
-          final b = res.firstWhere((x) => x['booking_id'] == widget.bookingId, orElse: () => null);
-          if (b != null) {
-            _addMsg(Message(text: "Booking ID: ${widget.bookingId}\nStatus: ${b['status']}\nService: ${b['service_type']}\nProvider: ${b['provider_name'] ?? 'Pending'}", isUser: false));
+        try {
+          final b = await ApiService.get('booking/${widget.bookingId}');
+          if (b is Map<String, dynamic> && b['booking_id'] != null) {
+            _addMsg(Message(
+              text: "Booking ${b['booking_id']}",
+              isUser: false,
+              type: 'booking_success',
+              data: b,
+            ));
           } else {
             _addMsg(Message(text: "Booking not found.", isUser: false));
           }
+        } catch (e) {
+          _addMsg(Message(text: "Error loading booking: $e", isUser: false));
         }
         setState(() => _loading = false);
         return;
@@ -92,11 +99,19 @@ class _ChatScreenState extends State<ChatScreen> {
     _scrollBottom();
   }
 
+  List<Map<String, String>> _buildHistory() {
+    return _messages
+        .where((m) => m.type == 'text' && m.text.isNotEmpty)
+        .map((m) => {'role': m.isUser ? 'user' : 'model', 'content': m.text})
+        .toList();
+  }
+
   Future<void> _send([String? override]) async {
     final input = override ?? _ctrl.text.trim();
     final isSystemAction = override != null;
     if (input.isEmpty || (_inputDisabled && !isSystemAction)) return;
     _ctrl.clear();
+    final history = _buildHistory();
     _addMsg(Message(text: input, isUser: true));
     setState(() { _loading = true; _inputDisabled = true; });
 
@@ -109,7 +124,7 @@ class _ChatScreenState extends State<ChatScreen> {
     await Future.delayed(const Duration(milliseconds: 1000));
 
     try {
-      final res = await ApiService.orchestrate(input, [], sessionId: _sessionId);
+      final res = await ApiService.orchestrate(input, history, sessionId: _sessionId);
       setState(() => _messages.removeWhere((m) => m.type == 'thinking'));
       _handleResponse(res);
     } catch (e) {
@@ -163,7 +178,7 @@ class _ChatScreenState extends State<ChatScreen> {
   Future<void> _onProviderTimeout() async {
     if (!_countdownActive || _sessionId == null) return;
     setState(() { _countdownActive = false; _inputDisabled = true; _loading = true; });
-    _addMsg(Message(text: "⏱ Provider ne jawab nahi diya. Main agle provider ko try karta hoon...", isUser: false));
+    _addMsg(Message(text: "⏱ Provider didn't respond in time. Finding the next available provider...", isUser: false));
     try {
       final res = await ApiService.timeoutNegotiation(_sessionId!);
       setState(() { _loading = false; _inputDisabled = false; });
@@ -183,10 +198,10 @@ class _ChatScreenState extends State<ChatScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
           constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.72),
           decoration: const BoxDecoration(
-            gradient: LinearGradient(colors: [Color(0xFF00C853), Color(0xFF00A240)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+            color: const Color(0xFF163300),
             borderRadius: BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20), bottomLeft: Radius.circular(20)),
           ),
-          child: Text(msg.text, style: const TextStyle(color: Colors.black, fontSize: 14, fontWeight: FontWeight.w600)),
+          child: Text(msg.text, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
         ),
       );
     }
@@ -233,7 +248,7 @@ class _ChatScreenState extends State<ChatScreen> {
             LiveTrackingWidget(
               booking: bk,
               onRated: (stars) {
-                _addMsg(Message(text: "Aap ka feedback submit ho gaya hai! Shukriya! 🙏", isUser: false));
+                _addMsg(Message(text: "Your rating has been submitted. Thank you for using Haazir!", isUser: false));
               },
             ),
           ],
@@ -257,11 +272,11 @@ class _ChatScreenState extends State<ChatScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 13),
         constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.82),
         decoration: BoxDecoration(
-          color: const Color(0xFF1E293B),
+          color: Colors.white,
           borderRadius: const BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20), bottomRight: Radius.circular(20)),
-          border: Border.all(color: Colors.white.withOpacity(0.07)),
+          border: Border.all(color: const Color(0xFFE8EDE6)),
         ),
-        child: Text(text, style: const TextStyle(color: Color(0xFFE2E8F0), fontSize: 14, height: 1.5)),
+        child: Text(text, style: const TextStyle(color: Color(0xFF3E3F3B), fontSize: 14, height: 1.5)),
       ),
     );
   }
@@ -269,9 +284,9 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0F172A),
-      appBar: null, // Global AppBar is handled by CustomerHome!
-      body: SafeArea(child: Column(children: [
+      backgroundColor: const Color(0xFFF7FAF5),
+      appBar: _buildAppBar(),
+      body: Column(children: [
         Expanded(child: ListView.builder(
           controller: _scroll,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -281,19 +296,65 @@ class _ChatScreenState extends State<ChatScreen> {
             child: _buildBubble(_messages[i], i),
           ),
         )),
-        if (_loading) const Padding(padding: EdgeInsets.all(8), child: Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF00C853))))),
+        if (_loading) const Padding(padding: EdgeInsets.all(8), child: Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: const Color(0xFF3A9010))))),
         _buildInput(),
-      ])),
+      ]),
+    );
+  }
+
+  PreferredSizeWidget _buildAppBar() {
+    return AppBar(
+      backgroundColor: const Color(0xFF163300),
+      elevation: 0,
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back_ios_rounded, color: Colors.white, size: 18),
+        onPressed: () => Navigator.of(context).pop(),
+      ),
+      title: SvgPicture.asset('assets/haazir_logo.svg', height: 26),
+      actions: [
+        Container(
+          margin: const EdgeInsets.only(right: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
+          ),
+          child: Row(children: [
+            const Icon(Icons.person_rounded, size: 16, color: Colors.white),
+            const SizedBox(width: 4),
+            const Text('Customer', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white)),
+            const SizedBox(width: 8),
+            GestureDetector(
+              onTap: () => Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (_) => const ProviderHome()),
+              ),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Text('To Provider', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+              ),
+            ),
+          ]),
+        ),
+      ],
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(1.0),
+        child: Container(color: const Color(0xFFE8EDE6), height: 1.0),
+      ),
     );
   }
 
   Widget _buildInput() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      decoration: const BoxDecoration(color: Color(0xFF1E293B), border: Border(top: BorderSide(color: Colors.white10))),
+      decoration: const BoxDecoration(color: Colors.white, border: Border(top: BorderSide(color: const Color(0xFFE8EDE6)))),
       child: Row(children: [
         IconButton(
-          icon: const Icon(Icons.refresh_rounded, color: Colors.white38, size: 20),
+          icon: const Icon(Icons.refresh_rounded, color: const Color(0xFF767773), size: 20),
           onPressed: () {
             setState(() {
               _messages.clear();
@@ -305,14 +366,14 @@ class _ChatScreenState extends State<ChatScreen> {
         ),
         Expanded(child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          decoration: BoxDecoration(color: const Color(0xFF0F172A), borderRadius: BorderRadius.circular(24), border: Border.all(color: Colors.white.withOpacity(0.07))),
+          decoration: BoxDecoration(color: const Color(0xFFF7FAF5), borderRadius: BorderRadius.circular(24), border: Border.all(color: const Color(0xFFE8EDE6))),
           child: TextField(
             controller: _ctrl,
             enabled: !_inputDisabled,
-            style: const TextStyle(color: Colors.white),
+            style: const TextStyle(color: const Color(0xFF21231D)),
             decoration: InputDecoration(
-              hintText: _inputDisabled ? "Intezaar karein..." : "Type naya request...",
-              hintStyle: const TextStyle(color: Colors.white30, fontSize: 13),
+              hintText: _inputDisabled ? "Please wait..." : "What do you need help with?",
+              hintStyle: const TextStyle(color: const Color(0xFF767773), fontSize: 13),
               border: InputBorder.none,
             ),
             onSubmitted: (_) => _send(),
@@ -323,8 +384,8 @@ class _ChatScreenState extends State<ChatScreen> {
           onTap: _inputDisabled ? null : _send,
           child: Container(
             padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(color: _inputDisabled ? Colors.white12 : const Color(0xFF00C853), shape: BoxShape.circle),
-            child: Icon(Icons.send_rounded, color: _inputDisabled ? Colors.white38 : Colors.black, size: 18),
+            decoration: BoxDecoration(color: _inputDisabled ? const Color(0xFFE8EDE6) : const Color(0xFF3A9010), shape: BoxShape.circle),
+            child: Icon(Icons.send_rounded, color: _inputDisabled ? const Color(0xFF767773) : Colors.black, size: 18),
           ),
         ),
       ]),
@@ -349,85 +410,98 @@ class LiveTrackingWidget extends StatefulWidget {
 
 class _LiveTrackingWidgetState extends State<LiveTrackingWidget> {
   late Map<String, dynamic> _booking;
-  Timer? _timer;
+  Timer? _gpsTimer;
+  Timer? _pollTimer;
   bool _simulating = false;
-  bool _completed = false;
   int _starsSubmitted = 0;
+  bool _disputeSubmitted = false;
+  String? _disputeResolution;
 
   @override
   void initState() {
     super.initState();
     _booking = widget.booking;
+    _startPolling();
+    final status = _booking['status'] as String? ?? '';
+    if (status == 'ACCEPTED' || status == 'ARRIVING') {
+      Future.delayed(const Duration(milliseconds: 600), _startSimulation);
+    }
   }
 
   @override
   void dispose() {
-    _timer?.cancel();
+    _gpsTimer?.cancel();
+    _pollTimer?.cancel();
     super.dispose();
+  }
+
+  void _startPolling() {
+    _pollTimer?.cancel();
+    _pollTimer = Timer.periodic(const Duration(seconds: 3), (_) => _refreshStatus());
+  }
+
+  Future<void> _refreshStatus() async {
+    final bId = _booking['booking_id'];
+    if (bId == null) return;
+    try {
+      final res = await ApiService.get('booking/$bId');
+      if (!mounted) return;
+      if (res is Map<String, dynamic> && res['booking_id'] != null) {
+        final prevStatus = _booking['status'] as String? ?? '';
+        final newStatus = res['status'] as String? ?? '';
+        setState(() => _booking = res);
+        // Provider just accepted — auto-start GPS simulation
+        if ((newStatus == 'ACCEPTED' || newStatus == 'ARRIVING') &&
+            prevStatus == 'PENDING_PROVIDER' && !_simulating) {
+          _startSimulation();
+        }
+        // Stop polling when fully resolved
+        if (newStatus == 'COMPLETED' || newStatus.startsWith('CANCELLED')) {
+          _pollTimer?.cancel();
+          _pollTimer = null;
+        }
+      }
+    } catch (_) {}
+  }
+
+  void _startSimulation() {
+    if (_simulating) return;
+    setState(() => _simulating = true);
+    _gpsTimer = Timer.periodic(const Duration(seconds: 3), (_) => _simulateStep());
   }
 
   Future<void> _simulateStep() async {
     final bId = _booking['booking_id'];
     if (bId == null) return;
-
     try {
       final res = await ApiService.post('/booking/simulate-step', {'booking_id': bId});
-      if (res['booking'] != null) {
-        setState(() {
-          _booking = res['booking'];
-        });
-
+      if (!mounted) return;
+      final bookingData = res['booking'] as Map<String, dynamic>?;
+      if (bookingData != null) {
+        setState(() => _booking = bookingData);
+        final status = _booking['status'] as String? ?? '';
         final dist = _booking['distance_meters'] as num? ?? 1000;
-        if (dist <= 50) {
-          _timer?.cancel();
+        // Stop GPS if arrived, already in progress/completed, or step was skipped
+        final shouldStop = dist <= 50 ||
+            status == 'IN_PROGRESS' ||
+            status == 'ARRIVED' ||
+            status == 'COMPLETED' ||
+            status.startsWith('CANCELLED') ||
+            res['status'] == 'skipped';
+        if (shouldStop) {
+          _gpsTimer?.cancel();
+          _gpsTimer = null;
           setState(() => _simulating = false);
-          _simulateChecklist();
         }
       }
     } catch (e) {
-      print("Simulation step error: $e");
+      debugPrint('GPS step error: $e');
     }
-  }
-
-  void _startSimulation() {
-    setState(() => _simulating = true);
-    _timer = Timer.periodic(const Duration(seconds: 2), (timer) {
-      _simulateStep();
-    });
-  }
-
-  Future<void> _simulateChecklist() async {
-    final bId = _booking['booking_id'];
-    if (bId == null) return;
-
-    final checklist = _booking['checklist'] as List? ?? [];
-    for (int i = 0; i < checklist.length; i++) {
-      await Future.delayed(const Duration(seconds: 2));
-      if (!mounted) return;
-      try {
-        final res = await ApiService.post('/booking/checklist', {
-          'booking_id': bId,
-          'item_index': i
-        });
-        if (res['booking'] != null) {
-          setState(() {
-            _booking = res['booking'];
-          });
-        }
-      } catch (e) {
-        print("Checklist progress error: $e");
-      }
-    }
-
-    setState(() {
-      _completed = true;
-    });
   }
 
   Future<void> _submitRating(int stars) async {
     final bId = _booking['booking_id'];
     if (bId == null) return;
-
     try {
       final res = await ApiService.post('/booking/submit-rating', {
         'booking_id': bId,
@@ -441,8 +515,66 @@ class _LiveTrackingWidgetState extends State<LiveTrackingWidget> {
         widget.onRated(stars);
       }
     } catch (e) {
-      print("Rating submission error: $e");
+      debugPrint('Rating submission error: $e');
     }
+  }
+
+  Future<void> _submitDispute(String issueType) async {
+    final bId = _booking['booking_id'];
+    final pId = _booking['provider_id'];
+    if (bId == null || pId == null) return;
+    try {
+      final res = await ApiService.post('/dispute', {
+        'booking_id': bId,
+        'provider_id': pId,
+        'issue_type': issueType,
+        'comment': '',
+      });
+      if (!mounted) return;
+      setState(() {
+        _disputeSubmitted = true;
+        _disputeResolution = res['result']?['resolution'] as String? ??
+            'Dispute logged. Our team will contact you within 24 hours.';
+      });
+    } catch (e) {
+      debugPrint('Dispute error: $e');
+    }
+  }
+
+  void _showDisputeModal() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text("Report an Issue", style: TextStyle(color: const Color(0xFF21231D), fontSize: 16, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 4),
+            const Text("What went wrong?", style: TextStyle(color: const Color(0xFF565955), fontSize: 13)),
+            const SizedBox(height: 12),
+            ...[
+              ('quality_complaint', 'Quality Issue', Icons.thumb_down_outlined, 'Work was not done properly'),
+              ('price_dispute', 'Price Dispute', Icons.money_off_outlined, 'Charged more than quoted'),
+              ('no_show', 'Provider No-Show', Icons.person_off_outlined, 'Provider never arrived'),
+              ('cancellation', 'Unfair Cancellation', Icons.cancel_outlined, 'Cancelled without a valid reason'),
+            ].map((t) => ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: Icon(t.$3, color: Colors.redAccent, size: 20),
+              title: Text(t.$2, style: const TextStyle(color: const Color(0xFF21231D), fontSize: 13)),
+              subtitle: Text(t.$4, style: const TextStyle(color: const Color(0xFF767773), fontSize: 11)),
+              onTap: () {
+                Navigator.pop(ctx);
+                _submitDispute(t.$1);
+              },
+            )),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -451,18 +583,18 @@ class _LiveTrackingWidgetState extends State<LiveTrackingWidget> {
     final dist = _booking['distance_meters'] as num? ?? 2000;
     final checklist = _booking['checklist'] as List? ?? [];
 
-    Color statusColor = Colors.amber;
+    Color statusColor = const Color(0xFF3A9010);
     if (status == 'ARRIVED' || status == 'IN_PROGRESS') statusColor = Colors.blueAccent;
-    if (status == 'COMPLETED') statusColor = const Color(0xFF00C853);
+    if (status == 'COMPLETED') statusColor = const Color(0xFF3A9010);
     if (status.startsWith('CANCELLED')) statusColor = Colors.redAccent;
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8),
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E293B),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white.withOpacity(0.08)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -471,13 +603,13 @@ class _LiveTrackingWidgetState extends State<LiveTrackingWidget> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text(
-                "🚚 Live Booking Status",
-                style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
+                "Live Tracking",
+                style: TextStyle(color: const Color(0xFF21231D), fontSize: 13, fontWeight: FontWeight.bold),
               ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: statusColor.withOpacity(0.15),
+                  color: statusColor.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
@@ -489,68 +621,124 @@ class _LiveTrackingWidgetState extends State<LiveTrackingWidget> {
           ),
           const SizedBox(height: 12),
 
-          if (status == 'PENDING_PROVIDER' || status == 'ACCEPTED' || status == 'ARRIVING') ...[
-            Row(
-              children: [
-                const Icon(Icons.location_on, size: 14, color: Colors.white38),
-                const SizedBox(width: 6),
-                Text(
-                  "Provider Distance: ${dist} meters",
-                  style: const TextStyle(color: Colors.white70, fontSize: 12),
+          if (status == 'CANCELLED_PROVIDER') ...[
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.redAccent.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.redAccent.withValues(alpha: 0.25)),
+              ),
+              child: Column(children: [
+                const Row(children: [
+                  Icon(Icons.cancel_outlined, color: Colors.redAccent, size: 16),
+                  SizedBox(width: 8),
+                  Expanded(child: Text(
+                    "Provider cancelled. We're sorry for the inconvenience.",
+                    style: TextStyle(color: Colors.redAccent, fontSize: 12),
+                  )),
+                ]),
+                const SizedBox(height: 12),
+                GestureDetector(
+                  onTap: () => Navigator.of(context).popUntil((r) => r.isFirst),
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF3A9010),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Center(child: Text(
+                      "Find New Provider",
+                      style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 13),
+                    )),
+                  ),
                 ),
-              ],
+              ]),
             ),
+          ] else if (status.contains('CANCELLED')) ...[
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+              decoration: BoxDecoration(
+                color: Colors.redAccent.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.redAccent.withValues(alpha: 0.25)),
+              ),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.cancel_outlined, color: Colors.redAccent, size: 16),
+                  SizedBox(width: 8),
+                  Expanded(child: Text(
+                    "Booking cancelled. Start a new request from the chat.",
+                    style: TextStyle(color: Colors.redAccent, fontSize: 12),
+                  )),
+                ],
+              ),
+            ),
+          ] else if (status == 'PENDING_PROVIDER') ...[
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+              decoration: BoxDecoration(
+                color: const Color(0xFF3A9010).withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFF3A9010).withValues(alpha: 0.25)),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF3A9010))),
+                  const SizedBox(width: 10),
+                  const Expanded(
+                    child: Text(
+                      "Awaiting provider confirmation...",
+                      style: TextStyle(color: Color(0xFF3A9010), fontSize: 12),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: _refreshStatus,
+                    child: const Icon(Icons.refresh_rounded, color: Color(0xFF3A9010), size: 18),
+                  ),
+                ],
+              ),
+            ),
+          ] else if (status == 'ACCEPTED' || status == 'ARRIVING') ...[
+            Row(children: [
+              const Icon(Icons.directions_bike_rounded, size: 14, color: const Color(0xFF3A9010)),
+              const SizedBox(width: 6),
+              Text(
+                "Provider is on the way — ${dist.toInt()} m away",
+                style: const TextStyle(color: const Color(0xFF3E3F3B), fontSize: 12),
+              ),
+            ]),
             const SizedBox(height: 10),
             ClipRRect(
               borderRadius: BorderRadius.circular(4),
               child: LinearProgressIndicator(
-                value: math.max(0.0, math.min(1.0, 1.0 - (dist / 2000.0))),
-                backgroundColor: Colors.white10,
-                valueColor: const AlwaysStoppedAnimation(Color(0xFF00C853)),
+                value: math.max(0.0, math.min(1.0, 1.0 - (dist / 1200.0))),
+                backgroundColor: const Color(0xFFE8EDE6),
+                valueColor: const AlwaysStoppedAnimation(const Color(0xFF3A9010)),
                 minHeight: 6,
               ),
             ),
-            const SizedBox(height: 16),
-            if (!_simulating)
-              GestureDetector(
-                onTap: _startSimulation,
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 10),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF00C853),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: const Center(
-                    child: Text(
-                      "Start GPS Simulation",
-                      style: TextStyle(color: Colors.black, fontSize: 12, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ),
-              )
-            else
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
-                  SizedBox(
-                    width: 12,
-                    height: 12,
-                    child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF00C853)),
-                  ),
-                  SizedBox(width: 8),
-                  Text(
-                    "Simulating movement (10% steps)...",
-                    style: TextStyle(color: Colors.white60, fontSize: 11),
-                  ),
-                ],
-              ),
+            const SizedBox(height: 12),
+            const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(width: 12, height: 12, child: CircularProgressIndicator(strokeWidth: 2, color: const Color(0xFF3A9010))),
+                SizedBox(width: 8),
+                Text("Live GPS tracking active", style: TextStyle(color: const Color(0xFF565955), fontSize: 11)),
+              ],
+            ),
           ],
 
           if (status == 'ARRIVED' || status == 'IN_PROGRESS' || status == 'COMPLETED') ...[
             const Text(
-              "📋 Job Execution Checklist:",
-              style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.bold),
+              "Service Checklist",
+              style: TextStyle(color: const Color(0xFF3E3F3B), fontSize: 12, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             ...List.generate(checklist.length, (idx) {
@@ -563,13 +751,13 @@ class _LiveTrackingWidgetState extends State<LiveTrackingWidget> {
                     Icon(
                       done ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
                       size: 15,
-                      color: done ? const Color(0xFF00C853) : Colors.white38,
+                      color: done ? const Color(0xFF3A9010) : const Color(0xFF767773),
                     ),
                     const SizedBox(width: 8),
                     Text(
                       item['item'] ?? '',
                       style: TextStyle(
-                        color: done ? Colors.white60 : Colors.white,
+                        color: done ? const Color(0xFF565955) : const Color(0xFF21231D),
                         fontSize: 12,
                         decoration: done ? TextDecoration.lineThrough : null,
                       ),
@@ -582,12 +770,12 @@ class _LiveTrackingWidgetState extends State<LiveTrackingWidget> {
 
           if (status == 'COMPLETED') ...[
             const SizedBox(height: 14),
-            const Divider(color: Colors.white10),
+            const Divider(color: const Color(0xFFE8EDE6)),
             const SizedBox(height: 10),
             if (_starsSubmitted == 0) ...[
               const Text(
-                "⭐ Rate your experience:",
-                style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                "How was your experience?",
+                style: TextStyle(color: const Color(0xFF21231D), fontSize: 12, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               Row(
@@ -604,14 +792,53 @@ class _LiveTrackingWidgetState extends State<LiveTrackingWidget> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.stars_rounded, color: Colors.amber, size: 16),
+                  const Icon(Icons.stars_rounded, color: Color(0xFF3A9010), size: 16),
                   const SizedBox(width: 6),
                   Text(
-                    "You rated this job $_starsSubmitted stars! Thank you!",
-                    style: const TextStyle(color: Colors.amber, fontSize: 12, fontWeight: FontWeight.bold),
+                    "You gave $_starsSubmitted / 5 stars. Thank you!",
+                    style: const TextStyle(color: Color(0xFF163300), fontSize: 12, fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
+              if (_starsSubmitted <= 2 && !_disputeSubmitted) ...[
+                const SizedBox(height: 10),
+                GestureDetector(
+                  onTap: _showDisputeModal,
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 9),
+                    decoration: BoxDecoration(
+                      color: Colors.redAccent.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.redAccent.withValues(alpha: 0.3)),
+                    ),
+                    child: const Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                      Icon(Icons.report_outlined, color: Colors.redAccent, size: 14),
+                      SizedBox(width: 6),
+                      Text("Report an Issue", style: TextStyle(color: Colors.redAccent, fontSize: 12, fontWeight: FontWeight.bold)),
+                    ]),
+                  ),
+                ),
+              ] else if (_disputeSubmitted && _disputeResolution != null) ...[
+                const SizedBox(height: 10),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.blueAccent.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.blueAccent.withValues(alpha: 0.25)),
+                  ),
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    const Row(children: [
+                      Icon(Icons.shield_outlined, color: Colors.blueAccent, size: 14),
+                      SizedBox(width: 6),
+                      Text("Dispute Filed", style: TextStyle(color: Colors.blueAccent, fontSize: 12, fontWeight: FontWeight.bold)),
+                    ]),
+                    const SizedBox(height: 6),
+                    Text(_disputeResolution!, style: const TextStyle(color: const Color(0xFF3E3F3B), fontSize: 11, height: 1.4)),
+                  ]),
+                ),
+              ],
             ],
           ],
         ],

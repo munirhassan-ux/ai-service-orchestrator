@@ -4,6 +4,7 @@ import { calculatePrice, PriceQuote } from "./agents/pricingEngine.js";
 import { createBooking, updateBookingStatus, getBooking } from "./agents/bookingSimulator.js";
 import { getSession, updateSession, createSession, CustomerSession } from "./session.js";
 import { logTraceEvent } from "./trace.js";
+import { logAction, logFallback } from "./logger.js";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export interface AgentTraceStep {
@@ -70,6 +71,20 @@ export async function runOrchestration(
     let intent: ParsedIntent;
     try {
       intent = await parseIntent(cleanInput, history);
+
+      // Merge with previously established fields from the session — never lose what the user already told us
+      const prev = session.parsed_intent;
+      if (prev) {
+        if (!intent.service_type || intent.service_type === "unknown") intent.service_type = prev.service_type;
+        if (!intent.location || intent.location === "unknown") intent.location = prev.location;
+        if (!intent.preferred_time || intent.preferred_time === "flexible") intent.preferred_time = prev.preferred_time;
+        // If merged fields now satisfy requirements, clear the clarification flag
+        if (intent.service_type && intent.service_type !== "unknown" && intent.location && intent.location !== "unknown") {
+          intent.clarification_needed = false;
+          if (intent.confidence < 0.75) intent.confidence = 0.8;
+        }
+      }
+
       trace.push({
         step, agent: "IntentParser",
         input: { user_input: cleanInput },
@@ -90,11 +105,17 @@ export async function runOrchestration(
     // If confidence < 0.75, ask exactly one clarifying question matching user's language
     if (intent.clarification_needed || intent.confidence < 0.75 || !intent.service_type || !intent.location) {
       updateSession(session.session_id, { parsed_intent: intent, phase: "intake" });
-      const q = intent.clarification_question || 
-                (intent.language === "roman_urdu" 
-                  ? "Aap ki exact location kya hai aur kab kaam karwana hai?" 
+      const q = intent.clarification_question ||
+                (intent.language === "roman_urdu"
+                  ? "Aap ki exact location kya hai aur kab kaam karwana hai?"
                   : "Could you please specify your exact location and preferred time?");
-      
+      logFallback("IntentParser", `Low confidence (${Math.round(intent.confidence * 100)}%) or missing fields`, q);
+      logTraceEvent(session.session_id, {
+        agent: "IntentParser",
+        fallback_triggered: true,
+        reason: `confidence=${Math.round(intent.confidence * 100)}%, clarification_needed=${intent.clarification_needed}, missing_fields=${!intent.service_type ? "service_type " : ""}${!intent.location ? "location" : ""}`.trim(),
+        clarification_question: q,
+      });
       const chips = !intent.service_type ? ["AC Repair", "Plumber", "Electrician", "Cleaning", "Carpenter"] : undefined;
       return {
         success: false, session_id: session.session_id, phase: "intake",
@@ -104,6 +125,7 @@ export async function runOrchestration(
       };
     }
 
+    logAction(session.session_id, session.phase, "thinking", { service: intent.service_type, location: intent.location });
     session = updateSession(session.session_id, { parsed_intent: intent, phase: "thinking" });
   }
 
@@ -143,6 +165,16 @@ export async function runOrchestration(
 
     // Handle no more providers available
     if (matchResult.top_providers.length === 0) {
+      logFallback("ProviderMatcher", "No providers matched for service/location", "Returning waitlist message to customer");
+      logTraceEvent(session.session_id, {
+        agent: "ProviderMatcher",
+        fallback_triggered: true,
+        reason: "no_providers_matched",
+        service_type: intent.service_type,
+        location: intent.location,
+        excluded_ids: excludedIds,
+        phase_after: "waitlisted",
+      });
       updateSession(session.session_id, { phase: "intake" });
       return {
         success: false, session_id: session.session_id, phase: "intake",
@@ -162,10 +194,46 @@ export async function runOrchestration(
       };
     });
 
+    // Mark the cheapest provider for budget-sensitive customers
+    if (intent.budget_sensitivity === "low" || intent.budget_sensitivity === "medium") {
+      let cheapestIdx = 0;
+      for (let i = 1; i < providersWithQuotes.length; i++) {
+        if ((providersWithQuotes[i].price_quote as any).total < (providersWithQuotes[cheapestIdx].price_quote as any).total) {
+          cheapestIdx = i;
+        }
+      }
+      (providersWithQuotes[cheapestIdx] as any).is_budget_pick = true;
+    }
+
+    logTraceEvent(session.session_id, {
+      agent: "PricingEngine",
+      phase_after: "pricing_complete",
+      budget_sensitivity: intent.budget_sensitivity,
+      providers_priced: providersWithQuotes.map((p) => ({
+        provider_id: p.provider_id,
+        name: p.name,
+        score: p.score,
+        is_budget_pick: !!(p as any).is_budget_pick,
+        quote: {
+          visit_fee: p.price_quote.visit_fee,
+          base_rate: p.price_quote.base_rate,
+          distance_fee: p.price_quote.distance_fee,
+          urgency_surcharge: p.price_quote.urgency_surcharge,
+          total: p.price_quote.total,
+          fairness_note: p.price_quote.fairness_note,
+        },
+      })),
+    });
+
     // Update list of tried provider IDs
     const newlyShownIds = matchResult.top_providers.map((p) => p.provider_id);
     const updatedTried = [...excludedIds, ...newlyShownIds];
 
+    logAction(session.session_id, "thinking", "negotiating", {
+      providers: String(providersWithQuotes.length),
+      top: providersWithQuotes[0]?.name,
+      fallback: matchResult.fallback_used ? matchResult.fallback_reason ?? "yes" : "no",
+    }, Date.now() - tStart);
     session = updateSession(session.session_id, {
       matched_providers: providersWithQuotes,
       providers_tried: updatedTried,
@@ -177,12 +245,15 @@ export async function runOrchestration(
     const isUrdu = intent.language !== "english";
     const countdown = intent.urgency === "high" ? 180 : intent.urgency === "medium" ? 420 : 900;
 
+    const budgetLabel = intent.budget_sensitivity === "low" ? "Price-Sensitive"
+      : intent.budget_sensitivity === "flexible" ? "Flexible Budget"
+      : "Standard Budget";
     const thinkingSteps = [
       `🤖 Khedmatgar Engine is searching...`,
-      `✓ Extraction: ${intent.service_type} in ${intent.location}`,
-      `✓ Priority Level: ${intent.urgency?.toUpperCase() || "STANDARD"}`,
+      `✓ Extracted: ${intent.service_type} in ${intent.location}`,
+      `✓ Priority: ${intent.urgency?.toUpperCase() || "STANDARD"} | Budget: ${budgetLabel}`,
       `✓ Matched ${providersWithQuotes.length} certified professionals`,
-      `✓ Score recalculation complete!`,
+      `✓ Score recalculation complete — ranked by 8 weighted factors`,
     ];
 
     return {
@@ -231,11 +302,17 @@ export async function runOrchestration(
         provider.price_quote!,
         provider.price_quote!.total,
         null,
-        customerId
+        customerId,
+        session.session_id
       );
 
+      logAction(session.session_id, "negotiating", "equipment_ack", {
+        provider: provider.name,
+        booking: booking.booking_id,
+        price: `Rs. ${booking.final_price}`,
+      });
       session = updateSession(session.session_id, {
-        phase: "equipment_ack", // Wait for customer equipment acknowledgment
+        phase: "equipment_ack",
         active_booking_id: booking.booking_id,
       });
 
@@ -272,17 +349,23 @@ export async function runOrchestration(
     const bookingId = session.active_booking_id!;
 
     if (cleanInput.toLowerCase().includes("agree") || cleanInput.includes("Haan") || cleanInput.includes("✓")) {
-      // Transition state to ACCEPTED (simulated or real provider flow)
-      // For immediate confirmation demo, let's mark it as ACCEPTED!
-      const booking = updateBookingStatus(bookingId, "ACCEPTED");
+      // Booking was already created as PENDING_PROVIDER — keep it that way.
+      // The provider must explicitly accept before we move to ACCEPTED.
+      const booking = getBooking(bookingId);
+      if (!booking) throw new Error(`Booking ${bookingId} not found`);
+
+      logAction(session.session_id, "equipment_ack", "booking_confirmed", {
+        booking: booking.booking_id,
+        status: booking.status,
+      });
       updateSession(session.session_id, { phase: "booking_confirmed" });
 
       return {
         success: true, session_id: session.session_id, phase: "booking_confirmed",
         message: isUrdu
-          ? `🎉 Mubarak ho! Aap ki booking confirm ho gayi hai.\n\nBooking ID: ${booking.booking_id}\nProvider Name: ${booking.provider_name}\nScheduled Time: ${new Date(booking.scheduled_time).toLocaleString("en-PK")}\nTotal: Rs. ${booking.final_price}\n\nKaam shuru hone par aap ko real-time reminder aur map updates milein ge! 🙏`
-          : `🎉 Congratulations! Your booking is successfully confirmed.\n\nBooking ID: ${booking.booking_id}\nProvider Name: ${booking.provider_name}\nScheduled Time: ${new Date(booking.scheduled_time).toLocaleString("en-PK")}\nTotal: Rs. ${booking.final_price}\n\nYou will receive a reminder 1 hour before arrival with live updates! 🙏`,
-        chips: ["Status Check", "New Request"],
+          ? `✅ Shukriya! Aap ki request provider ko bhej di gayi hai.\n\nBooking ID: ${booking.booking_id}\nProvider: ${booking.provider_name}\nScheduled: ${new Date(booking.scheduled_time).toLocaleString("en-PK")}\nTotal: Rs. ${booking.final_price}\n\nAb provider ki confirmation ka intezaar karein. Confirm hone par simulation start ho gi! 🙏`
+          : `✅ Thank you! Your request has been sent to the provider.\n\nBooking ID: ${booking.booking_id}\nProvider: ${booking.provider_name}\nScheduled: ${new Date(booking.scheduled_time).toLocaleString("en-PK")}\nTotal: Rs. ${booking.final_price}\n\nWaiting for provider confirmation. Simulation will start once confirmed! 🙏`,
+        chips: [],
         intent: session.parsed_intent,
         match_result: null,
         price_quote: booking.price_quote,
@@ -337,6 +420,7 @@ export async function triggerWarmRestart(session: CustomerSession, trace: AgentT
   const failedProvider = session.matched_providers[session.current_provider_index];
 
   if (session.restart_count >= 2 || nextIndex >= session.matched_providers.length) {
+    logFallback("WarmRestart", `No more providers (restart_count=${session.restart_count}, nextIndex=${nextIndex})`, "Returning helpline message");
     updateSession(session.session_id, { phase: "intake" });
     return {
       success: false, session_id: session.session_id, phase: "intake",

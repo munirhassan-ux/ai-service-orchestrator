@@ -1,0 +1,86 @@
+[
+  {
+    "timestamp": "2026-05-19T18:54:40.455Z",
+    "step": 1,
+    "agent": "IntentParser",
+    "confidence": 0.85,
+    "input": "mujhe kal 5 baje ac repair karwana he",
+    "output": {
+      "service_type": "ac_repair",
+      "service_raw": "ac repair",
+      "location": null,
+      "urgency": "medium",
+      "preferred_time": "kal 5 baje",
+      "budget_sensitivity": "medium",
+      "job_complexity_hint": "intermediate",
+      "language": "roman_urdu",
+      "confidence": 0.85,
+      "clarification_needed": true,
+      "clarification_question": "Ji, bilkul! Hum aapka AC repair kar denge. Kya aap apna area bata sakte hain taake hum aapki booking confirm kar sakein?",
+      "reasoning": "User specified service and time, but location is missing, requiring clarification."
+    }
+  },
+  {
+    "timestamp": "2026-05-19T18:55:00.763Z",
+    "step": 1,
+    "agent": "IntentParser",
+    "confidence": 0.2,
+    "input": "park view",
+    "output": {
+      "service_type": null,
+      "service_raw": null,
+      "location": "Park View",
+      "urgency": "low",
+      "preferred_time": null,
+      "budget_sensitivity": "medium",
+      "job_complexity_hint": "basic",
+      "language": "english",
+      "confidence": 0.2,
+      "clarification_needed": true,
+      "clarification_question": "Sure, I have noted the location as Park View. Could you please tell me what service you need help with (e.g., electrician, plumbing, AC repair) and when you would like us to visit?",
+      "reasoning": "The user only provided the location, missing both the service type and preferred time."
+    }
+  },
+  {
+    "timestamp": "2026-05-19T18:55:10.558Z",
+    "step": 1,
+    "agent": "IntentParser",
+    "confidence": 0.8,
+    "input": "AC Repair",
+    "output": {
+      "service_type": "ac_repair",
+      "service_raw": "AC Repair",
+      "location": null,
+      "urgency": "medium",
+      "preferred_time": null,
+      "budget_sensitivity": "medium",
+      "job_complexity_hint": "intermediate",
+      "language": "english",
+      "confidence": 0.8,
+      "clarification_needed": true,
+      "clarification_question": "Sure, I can help you with your AC repair. Could you please provide your specific area and let me know when you would like the technician to visit?",
+      "reasoning": "Service type is identified, but location and preferred time are missing, necessitating clarification."
+    }
+  },
+  {
+    "timestamp": "2026-05-19T18:55:27.762Z",
+    "step": 1,
+    "agent": "IntentParser",
+    "confidence": 0.4,
+    "input": "park view kal 5 baje",
+    "output": {
+      "service_type": null,
+      "service_raw": null,
+      "location": "Park View",
+      "urgency": "medium",
+      "preferred_time": "kal 5 baje",
+      "budget_sensitivity": "medium",
+      "job_complexity_hint": "basic",
+      "language": "roman_urdu",
+      "confidence": 0.4,
+      "clarification_needed": true,
+      "clarification_question": "Ji, bilkul. Hum Park View mein aapki khidmat ke liye hazir hain. Lekin aapko kis kaam mein madad chahiye? (Maslan: AC repair, plumber, ya kuch aur?)",
+      "reasoning": "The user provided the location and time, but failed to specify the service required. Asked a clarifying question in Roman Urdu."
+    }
+  }
+]
