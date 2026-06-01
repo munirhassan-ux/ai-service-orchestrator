@@ -1,0 +1,30 @@
+[
+  {
+    "timestamp": "2026-06-01T13:33:14.224Z",
+    "step": 1,
+    "agent": "IntentParser",
+    "confidence": 1,
+    "input": "plumber",
+    "output": {
+      "service_type": "plumber",
+      "service_raw": "plumber",
+      "location": null,
+      "urgency": "medium",
+      "preferred_time": "flexible",
+      "budget_sensitivity": "medium",
+      "job_complexity_hint": "basic",
+      "language": "english",
+      "confidence": 1,
+      "clarification_needed": true,
+      "clarification_question": "Sure, I can help you with a plumber. Could you please let me know your area or neighborhood so I can connect you with the right professional?",
+      "reasoning": "Service type is clearly identified as plumber, but the location is missing, necessitating clarification."
+    }
+  },
+  {
+    "timestamp": "2026-06-01T13:33:14.228Z",
+    "agent": "IntentParser",
+    "fallback_triggered": true,
+    "reason": "confidence=100%, clarification_needed=true, missing_fields=location",
+    "clarification_question": "Sure, I can help you with a plumber. Could you please let me know your area or neighborhood so I can connect you with the right professional?"
+  }
+]

@@ -62,7 +62,7 @@ async function runFlowTest() {
   console.log("Step 4: Confirming Booking...");
   // Create a clean mock thread id
   const mockThreadId = "thread_" + Date.now();
-  const { booking } = createBooking(
+  const { booking } = await createBooking(
     intent,
     selectedProvider,
     quote,

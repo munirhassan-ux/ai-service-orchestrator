@@ -14,7 +14,11 @@ class ProviderHome extends StatefulWidget {
 
 class _ProviderHomeState extends State<ProviderHome> {
   int _tab = 0;
-  final _screens = const [JobsScreen(), ProviderAlertsScreen(), ProviderDashboardScreen()];
+  final _screens = const [
+    JobsScreen(),
+    ProviderAlertsScreen(),
+    ProviderDashboardScreen()
+  ];
 
   void _onTabTap(int i) {
     // Fire a refresh whenever the Jobs tab is brought into view
@@ -26,6 +30,7 @@ class _ProviderHomeState extends State<ProviderHome> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: Row(
           children: [
             SvgPicture.asset('assets/haazir_logo.svg', height: 28),
@@ -34,33 +39,40 @@ class _ProviderHomeState extends State<ProviderHome> {
         actions: [
           Container(
             margin: const EdgeInsets.only(right: 12),
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            padding: const EdgeInsets.fromLTRB(10, 4, 4, 4),
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
             ),
-            child: Row(
-              children: [
-                const Icon(Icons.handyman_rounded, size: 16, color: const Color(0xFF3A9010)),
-                const SizedBox(width: 4),
-                const Text('Provider', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white)),
-                const SizedBox(width: 8),
-                GestureDetector(
-                  onTap: () => Navigator.of(context).pushReplacement(
-                    MaterialPageRoute(builder: (_) => const CustomerHome()),
-                  ),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF3A9010).withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Text('To Customer', style: TextStyle(color: const Color(0xFF3A9010), fontSize: 10, fontWeight: FontWeight.bold)),
-                  ),
+            child: Row(children: [
+              const Icon(Icons.handyman_rounded, size: 16, color: Colors.white),
+              const SizedBox(width: 4),
+              const Text('Provider',
+                  style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white)),
+              const SizedBox(width: 8),
+              GestureDetector(
+                onTap: () => Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(builder: (_) => const CustomerHome()),
                 ),
-              ],
-            ),
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Text('Customer',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ]),
           ),
         ],
         backgroundColor: const Color(0xFF163300),
@@ -81,9 +93,18 @@ class _ProviderHomeState extends State<ProviderHome> {
           type: BottomNavigationBarType.fixed,
           elevation: 0,
           items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.work_outline_rounded), activeIcon: Icon(Icons.work_rounded), label: "My Jobs"),
-            BottomNavigationBarItem(icon: Icon(Icons.notifications_none_rounded), activeIcon: Icon(Icons.notifications_rounded), label: "Alerts"),
-            BottomNavigationBarItem(icon: Icon(Icons.dashboard_outlined), activeIcon: Icon(Icons.dashboard_rounded), label: "Dashboard"),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.work_outline_rounded),
+                activeIcon: Icon(Icons.work_rounded),
+                label: "My Jobs"),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.notifications_none_rounded),
+                activeIcon: Icon(Icons.notifications_rounded),
+                label: "Alerts"),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.dashboard_outlined),
+                activeIcon: Icon(Icons.dashboard_rounded),
+                label: "Dashboard"),
           ],
         ),
       ),

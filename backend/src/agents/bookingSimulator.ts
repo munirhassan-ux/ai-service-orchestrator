@@ -5,7 +5,7 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 import { ParsedIntent } from "./intentParser.js";
-import { RankedProvider } from "./providerMatcher.js";
+import { RankedProvider, geocodeLocation } from "./providerMatcher.js";
 import { PriceQuote } from "./pricingEngine.js";
 import { pushNotification } from "../notifications.js";
 import { logScheduling, logStatusChange } from "../logger.js";
@@ -202,34 +202,8 @@ function getChecklist(serviceType: string): { item: string; completed: boolean }
 }
 
 // Approximate coordinate mappings for GPS movement simulation
-const areaCoords: Record<string, { lat: number; lng: number }> = {
-  "g-13": { lat: 33.6844, lng: 73.0479 },
-  "g-11": { lat: 33.6938, lng: 73.0551 },
-  "g-10": { lat: 33.6952, lng: 73.0621 },
-  "g-9":  { lat: 33.6987, lng: 73.0667 },
-  "g-14": { lat: 33.6699, lng: 73.0342 },
-  "g-15": { lat: 33.6601, lng: 73.0219 },
-  "f-10": { lat: 33.7025, lng: 73.0122 },
-  "f-11": { lat: 33.7098, lng: 73.0229 },
-  "f-7":  { lat: 33.7196, lng: 73.0551 },
-  "f-8":  { lat: 33.7156, lng: 73.0449 },
-  "e-11": { lat: 33.7290, lng: 73.0130 },
-  "i-8":  { lat: 33.6715, lng: 73.0837 },
-  "i-10": { lat: 33.6741, lng: 73.0721 },
-  "b-17": { lat: 33.7595, lng: 72.9872 },
-  "dha":  { lat: 33.5355, lng: 73.1218 },
-  "dha phase 2": { lat: 33.5412, lng: 73.1189 },
-};
 
-function getAreaCoords(location: string): { lat: number; lng: number } {
-  const key = location.toLowerCase().trim();
-  for (const [area, coords] of Object.entries(areaCoords)) {
-    if (key.includes(area) || area.includes(key)) return coords;
-  }
-  return { lat: 33.6844, lng: 73.0479 }; // Default: G-13
-}
-
-export function createBooking(
+export async function createBooking(
   intent: ParsedIntent,
   provider: RankedProvider,
   priceQuote: PriceQuote,
@@ -237,7 +211,7 @@ export function createBooking(
   negotiationThreadId: string | null = null,
   customerId: string = "customer_001",
   sessionId?: string
-): { booking: Booking; before: any; after: any } {
+): Promise<{ booking: Booking; before: any; after: any }> {
   const data = readBookings();
   const schedule = readSchedule();
   const before = { bookings_count: data.bookings.length };
@@ -253,26 +227,18 @@ export function createBooking(
   // Reminder = 1 hour before
   const reminderTime = new Date(new Date(scheduledTime).getTime() - 60 * 60 * 1000).toISOString();
 
-  // Setup GPS starting coords
-  const customerCoords = getAreaCoords(intent.location);
-  const providerCoords = provider.location || { latitude: 33.6844, longitude: 73.0479 };
+  // Geocode customer location using Nominatim (cached — already called by matchProviders)
+  const customerCoords = await geocodeLocation(intent.location);
 
-  // Ensure provider always starts at least 1km away for a realistic GPS simulation
+  // Use the provider's actual coordinates and the matched distance_km as the source of truth
+  const providerCoords = provider.location || { latitude: customerCoords.lat + 0.009, longitude: customerCoords.lng - 0.006 };
   let startLat = providerCoords.latitude;
   let startLng = providerCoords.longitude;
-  const latDiff = Math.abs(customerCoords.lat - startLat);
-  const lngDiff = Math.abs(customerCoords.lng - startLng);
-  const approxDistMeters = Math.sqrt(latDiff * latDiff + lngDiff * lngDiff) * 111000;
-  if (approxDistMeters < 900) {
-    startLat = customerCoords.lat + 0.009;  // ~1km north
-    startLng = customerCoords.lng - 0.006;  // ~550m west
-  }
-  const startDistMeters = Math.round(
-    Math.sqrt(
-      Math.pow((customerCoords.lat - startLat) * 111000, 2) +
-      Math.pow((customerCoords.lng - startLng) * 111000, 2)
-    )
-  );
+
+  // distance_km from the matcher is authoritative (calculated with geocoded coords)
+  // Convert to meters and ensure at least 1 km for a realistic simulation arc
+  const matcherDistMeters = Math.round(provider.distance_km * 1000);
+  const startDistMeters = Math.max(matcherDistMeters, 1000);
 
   // Generate JOB DETAIL object with status = PENDING_PROVIDER
   const booking: Booking = {

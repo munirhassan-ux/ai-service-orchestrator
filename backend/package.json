@@ -2,7 +2,7 @@
   "name": "khedmatgar-backend",
   "version": "1.0.0",
   "type": "module",
-  "description": "AI Service Orchestrator backend for Khedmatgar",
+  "description": "AI Service Orchestrator backend for Haazir",
   "main": "dist/index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",

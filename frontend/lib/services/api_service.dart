@@ -98,6 +98,17 @@ class ApiService {
     return jsonDecode(response.body);
   }
 
+  // Generic PATCH helper
+  static Future<Map<String, dynamic>> patch(String endpoint, Map<String, dynamic> body) async {
+    final p = endpoint.startsWith('/') ? endpoint : '/$endpoint';
+    final response = await http.patch(
+      Uri.parse('$baseUrl$p'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(body),
+    );
+    return jsonDecode(response.body);
+  }
+
   // Generic POST helper
   static Future<Map<String, dynamic>> post(String path, Map<String, dynamic> body) async {
     final response = await http.post(

@@ -1,0 +1,729 @@
+province,province_name,district,district_name,parent_code,tehsil,sub_tehsil,sub_lat,sub_lng
+1,Punjab,111,Bahawalnagar,111001,BAHAWALNAGAR,Harri Baghwala Block,30.05,73.3
+1,Punjab,111,Bahawalnagar,111001,BAHAWALNAGAR,Fatehpur Block,29.92,73.18
+1,Punjab,111,Bahawalnagar,111002,HAROONABAD,Haroonabad Urban,29.56,73.14
+1,Punjab,111,Bahawalnagar,111002,HAROONABAD,Haroonabad Rural,29.52,73.1
+1,Punjab,111,Bahawalnagar,111003,CHISHTIAN,Chishtian Urban,29.8,72.86
+1,Punjab,111,Bahawalnagar,111003,CHISHTIAN,Chishtian Rural,29.75,72.8
+1,Punjab,111,Bahawalnagar,111004,FORTABBAS,Fort Abbas Urban,29.18,72.98
+1,Punjab,111,Bahawalnagar,111004,FORTABBAS,Fort Abbas Rural,29.15,72.95
+1,Punjab,111,Bahawalnagar,111005,MINCHANABA,Minchinabad Urban,29.87,73.64
+1,Punjab,111,Bahawalnagar,111005,MINCHANABA,Minchinabad Rural,29.85,73.6
+1,Punjab,112,Bahawalpur,112001,Ahmedpur East,Ahmadpur East Urban,29.24,71.26
+1,Punjab,112,Bahawalpur,112001,Ahmedpur East,Sanjarpur,29.18,71.2
+1,Punjab,112,Bahawalpur,112002,BWP City,BWP City I,29.41,71.68
+1,Punjab,112,Bahawalpur,112002,BWP City,BWP City II,29.39,71.67
+1,Punjab,112,Bahawalpur,112003,BWP Sadar,BWP Sadar Urban,29.38,71.65
+1,Punjab,112,Bahawalpur,112003,BWP Sadar,Model Town BWP,29.36,71.64
+1,Punjab,112,Bahawalpur,112004,Hasilpur,Hasilpur Urban,29.71,72.56
+1,Punjab,112,Bahawalpur,112004,Hasilpur,Hasilpur Rural,29.68,72.52
+1,Punjab,112,Bahawalpur,112005,Khairpur Tamewali,Khairpur Tamewali Urban,29.57,72.08
+1,Punjab,112,Bahawalpur,112006,Yazman,Yazman Urban,29.12,71.75
+1,Punjab,112,Bahawalpur,112006,Yazman,Yazman Rural,29.08,71.72
+1,Punjab,113,Rahim Yar Khan,113002,LIAQUAITPUR,Liaquatpur Urban,28.89,70.95
+1,Punjab,113,Rahim Yar Khan,113002,LIAQUAITPUR,Liaquatpur Rural,28.85,70.9
+1,Punjab,113,Rahim Yar Khan,113003,SADIQABAD,Sadiqabad Urban,28.37,70.15
+1,Punjab,113,Rahim Yar Khan,113003,SADIQABAD,Sadiqabad Rural,28.35,70.12
+1,Punjab,113,Rahim Yar Khan,113004,KHANPUR,Khanpur Urban,28.65,70.69
+1,Punjab,113,Rahim Yar Khan,113004,KHANPUR,Khanpur Rural,28.62,70.65
+1,Punjab,113,Rahim Yar Khan,113005,RAHIMYAR KHAN,RYK City,28.42,70.3
+1,Punjab,113,Rahim Yar Khan,113005,RAHIMYAR KHAN,RYK Cantt,28.41,70.29
+1,Punjab,113,Rahim Yar Khan,113005,RAHIMYAR KHAN,RYK Rural,28.4,70.28
+1,Punjab,121,Dera Ghazi Khan,121001,DG KHAN,DG Khan City,30.06,70.64
+1,Punjab,121,Dera Ghazi Khan,121001,DG KHAN,DG Khan Sadar,30.05,70.63
+1,Punjab,121,Dera Ghazi Khan,121001,DG KHAN,DG Khan Rural,30.0,70.6
+1,Punjab,121,Dera Ghazi Khan,121002,TAUNSA,Taunsa Sharif,30.71,70.66
+1,Punjab,121,Dera Ghazi Khan,121002,TAUNSA,Taunsa Rural,30.68,70.63
+1,Punjab,121,Dera Ghazi Khan,121121,KOT CHUTTA,Kot Chutta Urban,30.48,70.18
+1,Punjab,122,Layyah,122108,LAYYAH,Layyah City,30.96,70.95
+1,Punjab,122,Layyah,122108,LAYYAH,Layyah Sadar,30.95,70.94
+1,Punjab,122,Layyah,122109,KAROR LAL ESAN,Karor Urban,31.22,70.96
+1,Punjab,122,Layyah,122110,CHOUBARA,Choubara Urban,30.77,71.2
+1,Punjab,123,Muzaffargarh,123001,MUZAFFARGARH,Muzaffargarh City,30.08,71.19
+1,Punjab,123,Muzaffargarh,123001,MUZAFFARGARH,Muzaffargarh Sadar,30.07,71.19
+1,Punjab,123,Muzaffargarh,123002,ALIPUR,Alipur Urban,29.38,70.91
+1,Punjab,123,Muzaffargarh,123003,JATOI,Jatoi Urban,29.52,71.33
+1,Punjab,123,Muzaffargarh,123004,KOT ADU,Kot Adu Urban,30.48,70.96
+1,Punjab,123,Muzaffargarh,123004,KOT ADU,Kot Adu Cantt,30.47,70.95
+1,Punjab,124,Rajanpur,124001,RAJAN PUR,Rajanpur Urban,29.1,70.33
+1,Punjab,124,Rajanpur,124096,ROJHAN,Rojhan Urban,28.69,69.86
+1,Punjab,124,Rajanpur,124098,JAM PUR,Jampur Urban,29.64,70.59
+1,Punjab,131,Faisalabad,131001,CHAK JHUMERA,Chak Jhumra Urban,31.57,72.72
+1,Punjab,131,Faisalabad,131002,JARANWALA,Jaranwala Urban,31.33,73.43
+1,Punjab,131,Faisalabad,131002,JARANWALA,Jaranwala Rural,31.3,73.4
+1,Punjab,131,Faisalabad,131003,TANDLIANWALA,Tandlianwala Urban,31.03,73.11
+1,Punjab,131,Faisalabad,131004,SAMUNDRI,Samundri Urban,31.06,72.96
+1,Punjab,131,Faisalabad,131005,FSD SADAR,Faisalabad Sadar,31.42,73.08
+1,Punjab,131,Faisalabad,131006,FSD CITY,Faisalabad City,31.45,73.14
+1,Punjab,131,Faisalabad,131006,FSD CITY,Madina Town,31.46,73.12
+1,Punjab,131,Faisalabad,131006,FSD CITY,Peoples Colony,31.44,73.11
+1,Punjab,132,Jhang,132002,JHANG,Jhang City,31.27,72.32
+1,Punjab,132,Jhang,132002,JHANG,Jhang Sadar,31.26,72.31
+1,Punjab,132,Jhang,132003,SHORKOT,Shorkot Urban,30.76,72.46
+1,Punjab,132,Jhang,132004,AP SAYAL,Ahmed Pur Sial Urban,31.17,71.95
+1,Punjab,132,Jhang,132005,18-HAZARI,18 Hazari Urban,31.39,72.15
+1,Punjab,133,Toba Tek Singh,133001,GOJRA,Gojra Urban,31.15,72.68
+1,Punjab,133,Toba Tek Singh,133002,KAMALIA,Kamalia Urban,30.73,72.65
+1,Punjab,133,Toba Tek Singh,133003,TT SINGH,TT Singh Urban,30.97,72.48
+1,Punjab,133,Toba Tek Singh,133004,PIR MAHAL,Pir Mahal Urban,30.76,72.42
+1,Punjab,134,Chiniot,134001,CHINIOT,Chiniot City,31.72,72.98
+1,Punjab,134,Chiniot,134001,CHINIOT,Chiniot Sadar,31.72,72.97
+1,Punjab,134,Chiniot,134002,LALIAN,Lalian Urban,31.83,72.81
+1,Punjab,134,Chiniot,134003,BHOWANA,Bhowana Urban,31.58,72.65
+1,Punjab,141,Gujranwala,141001,AROOP TOWN,Aarup Town Phase I,32.16,74.19
+1,Punjab,141,Gujranwala,141001,AROOP TOWN,Aarup Town Phase II,32.15,74.18
+1,Punjab,141,Gujranwala,141002,WAZIRABAD TOWN,Wazirabad City,32.44,74.13
+1,Punjab,141,Gujranwala,141002,WAZIRABAD TOWN,Wazirabad Industrial,32.43,74.12
+1,Punjab,141,Gujranwala,141003,KAMOKE TOWN,Kamoke Urban,31.98,74.23
+1,Punjab,141,Gujranwala,141004,N.VIRKAN TOWN,Nowshera Virkan Urban,32.12,74.07
+1,Punjab,141,Gujranwala,141005,K.S PUR TOWN,Kot Shahkhelipur Urban,32.08,74.33
+1,Punjab,141,Gujranwala,141006,NANDIPUR TOWN,Nandipur Urban,32.26,74.11
+1,Punjab,141,Gujranwala,141007,Q.D SING TOWN,Qila Didar Singh Urban,32.2,74.2
+1,Punjab,142,Gujrat,142001,GUJRAT,Gujrat City,32.57,74.08
+1,Punjab,142,Gujrat,142001,GUJRAT,Gujrat Sadar,32.57,74.07
+1,Punjab,142,Gujrat,142001,GUJRAT,Gujrat Industrial,32.58,74.08
+1,Punjab,142,Gujrat,142002,KHARIAN,Kharian Urban,32.81,73.88
+1,Punjab,142,Gujrat,142002,KHARIAN,Kharian Rural,32.8,73.85
+1,Punjab,142,Gujrat,142003,SARAI ALAMGIR,Sarai Alamgir Urban,32.91,73.76
+1,Punjab,143,Narowal,143001,NAROWAL,Narowal Urban,32.1,74.88
+1,Punjab,143,Narowal,143002,SHAKARGARH,Shakargarh Urban,32.27,75.17
+1,Punjab,144,Sialkot,144001,DASKA,Daska Urban,32.33,74.35
+1,Punjab,144,Sialkot,144001,DASKA,Daska Rural,32.3,74.33
+1,Punjab,144,Sialkot,144002,PASRUR,Pasrur Urban,32.26,74.66
+1,Punjab,144,Sialkot,144003,SIALKOT,Sialkot City,32.5,74.53
+1,Punjab,144,Sialkot,144003,SIALKOT,Sialkot Cantt,32.49,74.52
+1,Punjab,144,Sialkot,144003,SIALKOT,Sialkot Sadar,32.49,74.52
+1,Punjab,144,Sialkot,144004,SAMBRIAL,Sambrial Urban,32.48,74.35
+1,Punjab,145,Hafizabad,145001,HAFIZABAD,Hafizabad Urban,32.07,73.69
+1,Punjab,145,Hafizabad,145002,PINDI BHATTIAN,Pindi Bhattian Urban,31.9,73.28
+1,Punjab,146,Mandi Bahauddin,146001,MALAKWAL,Malakwal Urban,32.56,73.81
+1,Punjab,146,Mandi Bahauddin,146002,PHALIA,Phalia Urban,32.43,73.57
+1,Punjab,146,Mandi Bahauddin,146003,M.B DIN,Mandi Bahauddin City,32.59,73.48
+1,Punjab,146,Mandi Bahauddin,146003,M.B DIN,MB Din Sadar,32.58,73.48
+1,Punjab,151,Kasur,151001,CHUNIAN,Chunian Urban,30.92,73.98
+1,Punjab,151,Kasur,151001,CHUNIAN,Chunian Rural,30.9,73.96
+1,Punjab,151,Kasur,151002,KASUR,Kasur City,31.11,74.44
+1,Punjab,151,Kasur,151002,KASUR,Kasur Sadar,31.11,74.44
+1,Punjab,151,Kasur,151090,KOT RADHA KISHAN,Kot Radha Kishan Urban,31.15,74.05
+1,Punjab,151,Kasur,151099,PATTOKI,Pattoki Urban,31.02,73.85
+1,Punjab,151,Kasur,151099,PATTOKI,Pattoki Rural,31.0,73.84
+1,Punjab,152,Lahore,152001,ALLAMA IQBAL TOWN,Allama Iqbal Town Phase I,31.47,74.29
+1,Punjab,152,Lahore,152001,ALLAMA IQBAL TOWN,Allama Iqbal Town Phase II,31.47,74.3
+1,Punjab,152,Lahore,152002,AZIZ BHATTI TOWN,Aziz Bhatti Town Block A,31.58,74.33
+1,Punjab,152,Lahore,152002,AZIZ BHATTI TOWN,Aziz Bhatti Town Block B,31.58,74.34
+1,Punjab,152,Lahore,152003,CANTT.,Lahore Cantt,31.52,74.35
+1,Punjab,152,Lahore,152003,CANTT.,Cantt Model Town,31.51,74.35
+1,Punjab,152,Lahore,152004,DATA GUNJBUX TOWN,Data Gunj Bux Town Phase I,31.58,74.31
+1,Punjab,152,Lahore,152005,GULBERG TOWN,Gulberg I,31.52,74.35
+1,Punjab,152,Lahore,152005,GULBERG TOWN,Gulberg II,31.52,74.36
+1,Punjab,152,Lahore,152005,GULBERG TOWN,Gulberg III,31.52,74.36
+1,Punjab,152,Lahore,152006,NISHTER TOWN,Nishter Town Block A,31.56,74.32
+1,Punjab,152,Lahore,152007,RAVI TOWN,Ravi Town Block A,31.59,74.35
+1,Punjab,152,Lahore,152007,RAVI TOWN,Ravi Town Block B,31.6,74.35
+1,Punjab,152,Lahore,152008,SAMANABAD TOWN,Samanabad Town Phase I,31.52,74.36
+1,Punjab,152,Lahore,152008,SAMANABAD TOWN,Samanabad Town Phase II,31.52,74.37
+1,Punjab,152,Lahore,152009,SHALIMAR TOWN,Shalimar Town Phase I,31.54,74.4
+1,Punjab,152,Lahore,152009,SHALIMAR TOWN,Shalimar Town Phase II,31.55,74.4
+1,Punjab,152,Lahore,152010,WAHGA TOWN,Wahga Town Phase I,31.55,74.38
+1,Punjab,152,Lahore,152010,WAHGA TOWN,Wahga Border Area,31.56,74.6
+1,Punjab,153,Okara,153001,OKARA,Okara City,30.81,73.45
+1,Punjab,153,Okara,153001,OKARA,Okara Cantt,30.81,73.45
+1,Punjab,153,Okara,153001,OKARA,Okara Rural,30.79,73.44
+1,Punjab,153,Okara,153002,RENALA KHURD,Renala Khurd Urban,30.89,73.61
+1,Punjab,153,Okara,153003,DEPALPUR,Depalpur Urban,30.98,73.97
+1,Punjab,153,Okara,153003,DEPALPUR,Depalpur Rural,30.97,73.96
+1,Punjab,154,Sheikhupura,154001,SHEIKHUPURA,Sheikhupura City,31.71,73.99
+1,Punjab,154,Sheikhupura,154001,SHEIKHUPURA,Sheikhupura Sadar,31.7,73.98
+1,Punjab,154,Sheikhupura,154002,FEROZEWALA,Ferozewala Urban,31.56,74.24
+1,Punjab,154,Sheikhupura,154003,SHARAQPUR,Sharaqpur Urban,31.85,74.05
+1,Punjab,154,Sheikhupura,154004,MURIDKE,Muridke Urban,31.8,74.26
+1,Punjab,154,Sheikhupura,154004,MURIDKE,Muridke Industrial,31.81,74.26
+1,Punjab,154,Sheikhupura,154005,SAFDARABAD,Safdarabad Urban,31.63,73.75
+1,Punjab,155,Nankana Sahib,155002,SHAHKOT,Shahkot Urban,31.92,73.45
+1,Punjab,155,Nankana Sahib,155003,SANGLA HILL,Sangla Hill Urban,31.69,73.41
+1,Punjab,155,Nankana Sahib,155004,NANKANA SAHIB,Nankana Sahib City,31.45,73.71
+1,Punjab,155,Nankana Sahib,155004,NANKANA SAHIB,Nankana Sahib Rural,31.44,73.7
+1,Punjab,161,Khanewal,161001,JAHANIAN,Jahanian Urban,30.28,72.43
+1,Punjab,161,Khanewal,161002,KABIRWALA,Kabirwala Urban,30.4,71.87
+1,Punjab,161,Khanewal,161003,KHANEWAL,Khanewal City,30.3,71.93
+1,Punjab,161,Khanewal,161003,KHANEWAL,Khanewal Sadar,30.3,71.93
+1,Punjab,161,Khanewal,161004,MIAN CHANU,Mian Channu Urban,30.44,72.35
+1,Punjab,162,Lodhran,162001,LODHRAN,Lodhran Urban,29.54,71.63
+1,Punjab,162,Lodhran,162002,KAHROR PAKKA,Kahror Pakka Urban,29.36,71.91
+1,Punjab,162,Lodhran,162003,DUNYA PUR,Dunyapur Urban,29.78,71.72
+1,Punjab,163,Multan,163001,JALALPUR PIRWALA,Jalalpur Pirwala Urban,29.51,71.74
+1,Punjab,163,Multan,163002,MULTAN RURAL,Multan Rural North,30.13,71.54
+1,Punjab,163,Multan,163002,MULTAN RURAL,Multan Rural South,30.11,71.52
+1,Punjab,163,Multan,163003,SHUJABAD,Shujabad Urban,29.89,71.32
+1,Punjab,163,Multan,163004,MULTAN URBAN,Multan City,30.16,71.52
+1,Punjab,163,Multan,163004,MULTAN URBAN,Multan Cantt,30.15,71.53
+1,Punjab,163,Multan,163004,MULTAN URBAN,Shah Rukn-e-Alam,30.19,71.47
+1,Punjab,164,Pakpattan,164001,PAKPATTEN,Pakpattan Urban,30.35,73.39
+1,Punjab,164,Pakpattan,164001,PAKPATTEN,Pakpattan Rural,30.33,73.38
+1,Punjab,164,Pakpattan,164002,ARIFWALA,Arifwala Urban,30.56,73.07
+1,Punjab,165,Sahiwal,165001,SAHIWAL,Sahiwal City,30.68,73.11
+1,Punjab,165,Sahiwal,165001,SAHIWAL,Sahiwal Cantt,30.67,73.11
+1,Punjab,165,Sahiwal,165001,SAHIWAL,Sahiwal Sadar,30.68,73.1
+1,Punjab,165,Sahiwal,165002,CHICHAWATNI,Chichawatni Urban,30.53,72.7
+1,Punjab,166,Vehari,166001,VEHARI,Vehari Urban,30.05,72.35
+1,Punjab,166,Vehari,166002,MAILSI,Mailsi Urban,29.8,72.15
+1,Punjab,166,Vehari,166003,BUREWALA,Burewala Urban,30.15,72.66
+1,Punjab,171,Attock,171001,ATTOCK,Attock City,33.77,72.37
+1,Punjab,171,Attock,171001,ATTOCK,Attock Khurd,33.75,72.36
+1,Punjab,171,Attock,171001,ATTOCK,Attock Rural,33.74,72.33
+1,Punjab,171,Attock,171002,FATEH JANG,Fateh Jang Urban,33.57,72.65
+1,Punjab,171,Attock,171003,HASSANABDAL,Hassanabdal Urban,33.87,72.69
+1,Punjab,171,Attock,171004,HAZRO,Hazro Urban,33.91,72.5
+1,Punjab,171,Attock,171005,JAND,Jand Urban,33.43,72.06
+1,Punjab,171,Attock,171006,PINDI GHEB,Pindi Gheb Urban,32.95,71.97
+1,Punjab,172,Chakwal,172001,Chakwal,Chakwal City,32.93,72.85
+1,Punjab,172,Chakwal,172001,Chakwal,Chakwal Sadar,32.93,72.85
+1,Punjab,172,Chakwal,172002,Choa Saiden Shah,Choa Saiden Shah Urban,32.73,72.86
+1,Punjab,172,Chakwal,172003,Talagang,Talagang Urban,32.93,72.42
+1,Punjab,172,Chakwal,172099,Kallar Kahar,Kallar Kahar Urban,32.85,72.69
+1,Punjab,173,Jhelum,173001,JHELUM,Jhelum City,32.93,73.73
+1,Punjab,173,Jhelum,173001,JHELUM,Jhelum Cantt,32.93,73.72
+1,Punjab,173,Jhelum,173001,JHELUM,Jhelum Sadar,32.93,73.73
+1,Punjab,173,Jhelum,173002,PD KHAN,PD Khan Urban,32.57,73.21
+1,Punjab,173,Jhelum,173003,SOHAWA,Sohawa Urban,32.66,73.03
+1,Punjab,173,Jhelum,173004,DINA,Dina Urban,32.7,73.65
+1,Punjab,174,Rawalpindi,174001,GUJAR KHAN,Gujar Khan City,33.26,73.3
+1,Punjab,174,Rawalpindi,174001,GUJAR KHAN,Gujar Khan Rural,33.24,73.28
+1,Punjab,174,Rawalpindi,174002,KAHUTA,Kahuta Urban,33.59,73.39
+1,Punjab,174,Rawalpindi,174003,KOTLI SITTIAN,Kotli Sattian Urban,33.57,73.59
+1,Punjab,174,Rawalpindi,174004,MURREE,Murree Urban,33.91,73.39
+1,Punjab,174,Rawalpindi,174004,MURREE,Murree Hill Station,33.91,73.39
+1,Punjab,174,Rawalpindi,174005,RWP CITY,Rawalpindi City,33.6,73.07
+1,Punjab,174,Rawalpindi,174005,RWP CITY,Rawalpindi Commercial,33.6,73.07
+1,Punjab,174,Rawalpindi,174006,TAXILA,Taxila Urban,33.75,72.84
+1,Punjab,174,Rawalpindi,174006,TAXILA,Taxila Industrial,33.74,72.84
+1,Punjab,174,Rawalpindi,174007,KALLAR SYEDAN,Kallar Syedan Urban,33.44,73.27
+1,Punjab,174,Rawalpindi,174008,RWP CANTT,Rawalpindi Cantt,33.59,73.12
+1,Punjab,174,Rawalpindi,174008,RWP CANTT,Westridge,33.59,73.1
+1,Punjab,174,Rawalpindi,174008,RWP CANTT,Tench Bhatta,33.6,73.14
+1,Punjab,174,Rawalpindi,174009,RWP RURAL,Rawalpindi Rural North,33.57,73.09
+1,Punjab,174,Rawalpindi,174009,RWP RURAL,Rawalpindi Rural South,33.55,73.08
+1,Punjab,181,Bhakkar,181001,BHAKKAR,Bhakkar City,31.62,71.06
+1,Punjab,181,Bhakkar,181001,BHAKKAR,Bhakkar Sadar,31.62,71.06
+1,Punjab,181,Bhakkar,181002,KALOOR KOT,Kaloor Kot Urban,31.9,71.09
+1,Punjab,181,Bhakkar,181003,MANKERA,Mankera Urban,31.38,71.44
+1,Punjab,181,Bhakkar,181004,DARYA KHAN,Darya Khan Urban,31.79,71.11
+1,Punjab,182,Khushab,182001,KHUSHAB,Khushab City,32.3,72.35
+1,Punjab,182,Khushab,182001,KHUSHAB,Khushab Sadar,32.3,72.35
+1,Punjab,182,Khushab,182002,NOORPUR THUL,Noorpur Thal Urban,32.48,71.72
+1,Punjab,182,Khushab,182003,QUAIDA ABAD,Quaidabad Urban,32.15,71.87
+1,Punjab,183,Mianwali,183001,EISAKHAIL,Esa Khel Urban,32.64,71.59
+1,Punjab,183,Mianwali,183002,MAINWALI,Mianwali City,32.59,71.54
+1,Punjab,183,Mianwali,183002,MAINWALI,Mianwali Sadar,32.59,71.54
+1,Punjab,183,Mianwali,183099,PIPLAN,Piplan Urban,32.85,71.51
+1,Punjab,184,Sargodha,184001,BHULWAL,Bhalwal Urban,32.21,72.7
+1,Punjab,184,Sargodha,184002,KOT MOMIN,Kot Momin Urban,32.19,72.85
+1,Punjab,184,Sargodha,184004,SILANWALI,Silanwali Urban,32.08,72.47
+1,Punjab,184,Sargodha,184005,SARGODHA,Sargodha City,32.08,72.67
+1,Punjab,184,Sargodha,184005,SARGODHA,Sargodha Cantt,32.08,72.67
+1,Punjab,184,Sargodha,184005,SARGODHA,University Road,32.1,72.67
+1,Punjab,184,Sargodha,184006,SHAHPUR,Shahpur Urban,32.27,72.51
+1,Punjab,184,Sargodha,184007,BHERA,Bhera Urban,32.46,72.9
+2,Sindh,211,Badin,211001,BADIN,Badin City,24.66,68.84
+2,Sindh,211,Badin,211001,BADIN,Badin Sadar,24.65,68.83
+2,Sindh,211,Badin,211002,MATLI,Matli Urban,25.04,68.47
+2,Sindh,211,Badin,211003,TANDO BAGO,Tando Bago Urban,24.37,68.97
+2,Sindh,211,Badin,211004,GOLARCHI,Golarchi Urban,24.76,68.43
+2,Sindh,211,Badin,211005,TALHAR,Talhar Urban,24.88,68.82
+2,Sindh,212,Dadu,212070,DADU,Dadu City,26.73,67.78
+2,Sindh,212,Dadu,212070,DADU,Dadu Sadar,26.73,67.77
+2,Sindh,212,Dadu,212071,JOHI,Johi Urban,26.56,67.61
+2,Sindh,212,Dadu,212072,K.N.SHAH,Khairpur Nathan Shah,26.86,67.84
+2,Sindh,212,Dadu,212075,MEHAR,Mehar Urban,27.19,67.89
+2,Sindh,213,Hyderabad,213001,LATIFABAD,Latifabad Unit 1-4,25.39,68.38
+2,Sindh,213,Hyderabad,213001,LATIFABAD,Latifabad Unit 5-8,25.39,68.37
+2,Sindh,213,Hyderabad,213002,QASIMABAD,Qasimabad Phase I,25.38,68.35
+2,Sindh,213,Hyderabad,213002,QASIMABAD,Qasimabad Phase II,25.37,68.35
+2,Sindh,213,Hyderabad,213003,HYDERABAD CITY,Hyderabad Old City,25.4,68.38
+2,Sindh,213,Hyderabad,213003,HYDERABAD CITY,Hyderabad City Centre,25.39,68.37
+2,Sindh,213,Hyderabad,213004,HYDERABAD RURAL,Hyderabad Rural North,25.35,68.36
+2,Sindh,213,Hyderabad,213004,HYDERABAD RURAL,Hyderabad Rural South,25.3,68.34
+2,Sindh,214,Sujawal,214002,JATI,Jati Urban,24.35,67.73
+2,Sindh,214,Sujawal,214005,MIRPURBATHORO,Mirpur Bathoro Urban,25.05,69.13
+2,Sindh,214,Sujawal,214007,SHAH BUNDER,Shah Bundar Urban,24.2,67.85
+2,Sindh,214,Sujawal,214008,SUJAWAL,Sujawal Urban,24.69,68.07
+2,Sindh,215,Jamshoro,215001,KOTRI,Kotri Industrial,25.45,68.3
+2,Sindh,215,Jamshoro,215001,KOTRI,Kotri Urban,25.45,68.31
+2,Sindh,215,Jamshoro,215002,SEHWAN,Sehwan Urban,26.43,67.87
+2,Sindh,215,Jamshoro,215003,MANJHAND,Manjhand Urban,25.79,68.08
+2,Sindh,215,Jamshoro,215004,THANO BULA KHAN,Thano Bula Khan Urban,25.57,67.83
+2,Sindh,216,Tando Allahyar,216001,TALUKA TANDO A. YAR,Tando Allahyar City,25.46,68.72
+2,Sindh,216,Tando Allahyar,216001,TALUKA TANDO A. YAR,Tando Allahyar Rural,25.45,68.71
+2,Sindh,216,Tando Allahyar,216002,JHANDO MARI,Jhando Mari Urban,25.47,68.57
+2,Sindh,216,Tando Allahyar,216003,CHAMBAR,Chambar Urban,25.54,68.79
+2,Sindh,217,Thatta,217001,GHORA BARI,Ghora Bari Urban,24.85,67.65
+2,Sindh,217,Thatta,217003,KETI BUNDER,Keti Bandar Urban,24.14,67.45
+2,Sindh,217,Thatta,217004,KHARO CHHAN,Kharo Chhan Urban,24.52,67.38
+2,Sindh,217,Thatta,217006,MIRPUR SAKRO,Mirpur Sakro Urban,25.07,67.63
+2,Sindh,217,Thatta,217009,THATTA,Thatta City,24.75,67.93
+2,Sindh,217,Thatta,217009,THATTA,Thatta Sadar,24.74,67.92
+2,Sindh,218,Matiari,218001,MATIARI,Matiari Urban,25.59,68.46
+2,Sindh,218,Matiari,218002,HALA,Hala Urban,25.81,68.43
+2,Sindh,218,Matiari,218003,SAEEDABAD,Saeedabad Urban,25.91,68.53
+2,Sindh,219,Tando Muhammad Khan,219001,T. M. KHAN,TM Khan City,25.12,68.54
+2,Sindh,219,Tando Muhammad Khan,219001,T. M. KHAN,TM Khan Sadar,25.12,68.54
+2,Sindh,219,Tando Muhammad Khan,219002,BULRI SHAH KARIM,Bulri Shah Karim Urban,25.44,68.6
+2,Sindh,219,Tando Muhammad Khan,219003,TANDO GHULAM HYDER,Tando Ghulam Hyder Urban,25.06,68.7
+2,Sindh,221,Karachi West,221001,BALDIA,Baldia Town Block 1,24.85,67.02
+2,Sindh,221,Karachi West,221001,BALDIA,Baldia Town Block 2,24.84,67.01
+2,Sindh,221,Karachi West,221001,BALDIA,Site Area,24.85,67.03
+2,Sindh,221,Karachi West,221003,GADAB West,Gadab West Urban,24.89,66.95
+2,Sindh,221,Karachi West,221007,KAMARI,Kamari Urban,24.84,67.01
+2,Sindh,221,Karachi West,221015,ORANGI,Orangi Town Block A,24.91,67.01
+2,Sindh,221,Karachi West,221015,ORANGI,Orangi Town Block B,24.92,67.01
+2,Sindh,221,Karachi West,221015,ORANGI,Orangi Town Block C,24.91,67.02
+2,Sindh,221,Karachi West,221018,S I T E,SITE Area Industrial,24.86,67.01
+2,Sindh,221,Karachi West,221018,S I T E,SITE Area Residential,24.87,67.01
+2,Sindh,222,Karachi East,222003,GADAB EAST,Gadab East Urban,24.91,67.07
+2,Sindh,222,Karachi East,222004,GULSHAN E IQBAL,Gulshan-e-Iqbal Block 1-5,24.92,67.11
+2,Sindh,222,Karachi East,222004,GULSHAN E IQBAL,Gulshan-e-Iqbal Block 6-13,24.93,67.12
+2,Sindh,222,Karachi East,222006,JAMSHEED,Jamshed Town Phase I,24.88,67.07
+2,Sindh,222,Karachi East,222006,JAMSHEED,Jamshed Town Phase II,24.88,67.08
+2,Sindh,223,Korangi,223008,KORANGI,Korangi Phase I,24.84,67.14
+2,Sindh,223,Korangi,223008,KORANGI,Korangi Industrial Area,24.83,67.14
+2,Sindh,223,Korangi,223009,LANDHI,Landhi Block A,24.86,67.16
+2,Sindh,223,Korangi,223009,LANDHI,Landhi Block B,24.87,67.16
+2,Sindh,223,Korangi,223012,MALIR (KORANGI),Malir Korangi Urban,24.88,67.12
+2,Sindh,223,Korangi,223017,SHAH FAISAL,Shah Faisal Colony Phase I,24.87,67.1
+2,Sindh,223,Korangi,223017,SHAH FAISAL,Shah Faisal Colony Phase II,24.86,67.1
+2,Sindh,224,Karachi Central,224005,GULBERG,Gulberg Town Phase I,24.91,67.02
+2,Sindh,224,Karachi Central,224005,GULBERG,Gulberg Town Phase II,24.91,67.03
+2,Sindh,224,Karachi Central,224010,LIAQUATABAD,Liaquatabad Block A,24.9,67.03
+2,Sindh,224,Karachi Central,224010,LIAQUATABAD,Liaquatabad Block B,24.89,67.03
+2,Sindh,224,Karachi Central,224013,NORTH NAZIMABAD,North Nazimabad Block A,24.95,67.05
+2,Sindh,224,Karachi Central,224013,NORTH NAZIMABAD,North Nazimabad Block B,24.94,67.05
+2,Sindh,224,Karachi Central,224014,NORTH KARACHI,North Karachi Sector A,24.96,67.06
+2,Sindh,224,Karachi Central,224014,NORTH KARACHI,North Karachi Sector B,24.97,67.06
+2,Sindh,225,Karachi South,225011,LAYARI,Lyari Town Block A,24.87,67.01
+2,Sindh,225,Karachi South,225011,LAYARI,Lyari Town Block B,24.87,67.02
+2,Sindh,225,Karachi South,225016,SADDAR,Saddar Town Block A,24.86,67.01
+2,Sindh,225,Karachi South,225016,SADDAR,Clifton,24.82,67.03
+2,Sindh,225,Karachi South,225016,SADDAR,Defence Phase I-IV,24.81,67.05
+2,Sindh,226,Malir,226002,BIN QASIM,Bin Qasim Urban,24.79,67.33
+2,Sindh,226,Malir,226002,BIN QASIM,Port Qasim Industrial,24.78,67.37
+2,Sindh,226,Malir,226003,GADAB,Gadab Urban,24.85,66.95
+2,Sindh,226,Malir,226009,LANDHI (Malir),Landhi Malir Urban,24.86,67.16
+2,Sindh,226,Malir,226012,MALIR,Malir City,24.89,67.19
+2,Sindh,226,Malir,226012,MALIR,Malir Extension,24.88,67.2
+2,Sindh,231,Jacobabad,231001,GARHI KHAIRO,Garhi Khairo Urban,28.1,67.9
+2,Sindh,231,Jacobabad,231002,JACOBABAD,Jacobabad City,28.28,68.44
+2,Sindh,231,Jacobabad,231002,JACOBABAD,Jacobabad Sadar,28.28,68.44
+2,Sindh,231,Jacobabad,231003,THULL,Thull Urban,28.52,68.97
+2,Sindh,232,Larkana,232057,DOKRI,Dokri Urban,27.3,68.06
+2,Sindh,232,Larkana,232062,RATO DERO,Ratodero Urban,27.8,68.22
+2,Sindh,232,Larkana,232202,BAKRANI,Bakrani Urban,27.55,68.15
+2,Sindh,232,Larkana,232203,LARKANA,Larkana City,27.56,68.22
+2,Sindh,232,Larkana,232203,LARKANA,Larkana Sadar,27.56,68.22
+2,Sindh,233,Shikarpur,233001,GARHI YASIN,Garhi Yasin Urban,27.64,68.13
+2,Sindh,233,Shikarpur,233002,KHANPUR,Khanpur (Shikarpur),28.65,69.58
+2,Sindh,233,Shikarpur,233003,LAKHI,Lakhi Urban,27.55,68.55
+2,Sindh,233,Shikarpur,233004,SHIKARPUR,Shikarpur City,27.96,68.64
+2,Sindh,233,Shikarpur,233004,SHIKARPUR,Shikarpur Sadar,27.96,68.64
+2,Sindh,234,Kambar-Shahdadkot,234401,KAMBAR,Kambar Urban,27.59,67.67
+2,Sindh,234,Kambar-Shahdadkot,234402,MIRO KHAN,Miro Khan Urban,27.76,67.77
+2,Sindh,234,Kambar-Shahdadkot,234403,NASIR ABAD,Nasirabad Urban,27.63,67.91
+2,Sindh,234,Kambar-Shahdadkot,234404,QUBO SAEED KHAN,Qubo Saeed Khan Urban,27.24,67.54
+2,Sindh,234,Kambar-Shahdadkot,234405,SHAHDADKOT,Shahdadkot City,27.84,67.91
+2,Sindh,234,Kambar-Shahdadkot,234406,SIJAWAL,Sijawal Urban,27.74,67.82
+2,Sindh,234,Kambar-Shahdadkot,234407,WARAH,Warah Urban,27.52,67.72
+2,Sindh,235,Kashmore,235001,KANDH KOT,Kandhkot City,28.24,69.18
+2,Sindh,235,Kashmore,235001,KANDH KOT,Kandhkot Sadar,28.24,69.18
+2,Sindh,235,Kashmore,235002,KASHMORE,Kashmore Urban,28.44,69.56
+2,Sindh,235,Kashmore,235003,TANGWANI,Tangwani Urban,28.5,69.7
+2,Sindh,241,Khairpur,241001,KHAIRPUR,Khairpur City,27.53,68.76
+2,Sindh,241,Khairpur,241001,KHAIRPUR,Khairpur Sadar,27.53,68.76
+2,Sindh,241,Khairpur,241002,KINGRI,Kingri Urban,27.23,68.72
+2,Sindh,241,Khairpur,241003,KOT DEJI,Kot Diji Urban,27.48,68.64
+2,Sindh,241,Khairpur,241004,FAIZ GANJ,Faiz Ganj Urban,27.59,68.84
+2,Sindh,241,Khairpur,241005,THARI MIR WAH,Thari Mir Wah Urban,27.78,69.24
+2,Sindh,241,Khairpur,241006,GAMBAT,Gambat Urban,27.35,68.52
+2,Sindh,241,Khairpur,241007,SOBHO DERO,Sobho Dero Urban,27.17,68.46
+2,Sindh,241,Khairpur,241008,NARA,Nara Urban,27.21,68.94
+2,Sindh,242,Naushahro Feroze,242001,NAUSHERO FEROZ,Naushahro Feroze City,26.84,68.12
+2,Sindh,242,Naushahro Feroze,242002,MORO,Moro Urban,26.64,68.0
+2,Sindh,242,Naushahro Feroze,242003,KANDIARO,Kandiaro Urban,26.98,68.23
+2,Sindh,242,Naushahro Feroze,242004,BHIRIA,Bhiria Urban,26.7,68.04
+2,Sindh,242,Naushahro Feroze,242005,MEHRABPUR,Mehrabpur Urban,26.46,68.08
+2,Sindh,243,Shaheed Benazirabad,243001,NAWABSHAH,Nawabshah City,26.25,68.36
+2,Sindh,243,Shaheed Benazirabad,243001,NAWABSHAH,Nawabshah Sadar,26.25,68.36
+2,Sindh,243,Shaheed Benazirabad,243002,DAUR,Daur Urban,26.48,68.24
+2,Sindh,243,Shaheed Benazirabad,243003,SAKRAND,Sakrand Urban,26.15,68.27
+2,Sindh,243,Shaheed Benazirabad,243004,DAULAT PUR,Daulatpur Urban,26.07,68.18
+2,Sindh,244,Sukkur,244001,PANO AKIL,Pano Aqil Urban,27.86,69.11
+2,Sindh,244,Sukkur,244002,ROHRI,Rohri Urban,27.68,68.9
+2,Sindh,244,Sukkur,244003,SALEH PAT,Saleh Pat Urban,27.64,69.36
+2,Sindh,244,Sukkur,244004,SUKKUR CITY,Sukkur City,27.71,68.86
+2,Sindh,244,Sukkur,244004,SUKKUR CITY,Sukkur Sadar,27.71,68.86
+2,Sindh,244,Sukkur,244005,NEW SUKKUR,New Sukkur Urban,27.72,68.82
+2,Sindh,245,Ghotki,245001,GHOTKI,Ghotki City,28.0,69.32
+2,Sindh,245,Ghotki,245001,GHOTKI,Ghotki Sadar,28.0,69.32
+2,Sindh,245,Ghotki,245002,MIRPUR MATHELO,Mirpur Mathelo Urban,25.97,69.01
+2,Sindh,245,Ghotki,245003,DAHARKI,Daharki Urban,28.35,69.51
+2,Sindh,245,Ghotki,245004,UBAURO,Ubauro Urban,28.15,69.73
+2,Sindh,245,Ghotki,245005,KHAN GARH,Khan Garh Urban,28.65,70.17
+2,Sindh,251,Mirpurkhas,251001,MIRPURKHAS,Mirpurkhas City,25.52,69.01
+2,Sindh,251,Mirpurkhas,251001,MIRPURKHAS,Mirpurkhas Sadar,25.52,69.01
+2,Sindh,251,Mirpurkhas,251002,SINDRI,Sindri Urban,26.04,69.26
+2,Sindh,251,Mirpurkhas,251003,H.B MARI,Hussain Bux Mari Urban,25.29,68.97
+2,Sindh,251,Mirpurkhas,251004,KOT GHULAM MOHD.,Kot Ghulam Mohammad Urban,25.47,68.85
+2,Sindh,251,Mirpurkhas,251005,DIGRI,Digri Urban,25.21,69.11
+2,Sindh,251,Mirpurkhas,251006,JHUDO,Jhudo Urban,25.17,69.42
+2,Sindh,251,Mirpurkhas,251007,MIRPURKHAS,Mirpurkhas II Urban,25.52,69.01
+2,Sindh,252,Sanghar,252001,SANGHAR,Sanghar City,26.05,68.95
+2,Sindh,252,Sanghar,252001,SANGHAR,Sanghar Sadar,26.05,68.95
+2,Sindh,252,Sanghar,252002,SINJHORO,Sinjhoro Urban,26.13,68.87
+2,Sindh,252,Sanghar,252003,SHAHDAD PUR,Shahdadpur Urban,25.92,68.62
+2,Sindh,252,Sanghar,252004,TANDO ADAM,Tando Adam Urban,25.76,68.66
+2,Sindh,252,Sanghar,252005,KHIPRO,Khipro Urban,25.82,69.29
+2,Sindh,252,Sanghar,252006,JAM NAWAZ ALI,Jam Nawaz Ali Urban,25.89,68.44
+2,Sindh,253,Tharparkar,253001,MITHI,Mithi City,24.74,69.8
+2,Sindh,253,Tharparkar,253001,MITHI,Mithi Sadar,24.74,69.8
+2,Sindh,253,Tharparkar,253002,CHACHRO,Chachro Urban,24.92,70.24
+2,Sindh,253,Tharparkar,253003,NANGARPARKAR,Nagarparkar Urban,24.33,70.31
+2,Sindh,253,Tharparkar,253004,DIPLO,Diplo Urban,24.47,69.58
+2,Sindh,253,Tharparkar,253006,CHACHRO,Chachro II Urban,24.92,70.24
+2,Sindh,254,Umerkot,254001,UMERKOT,Umerkot City,25.36,69.74
+2,Sindh,254,Umerkot,254001,UMERKOT,Umerkot Sadar,25.36,69.74
+2,Sindh,254,Umerkot,254002,KUNRI,Kunri Urban,25.07,69.99
+2,Sindh,254,Umerkot,254003,SAMARO,Samaro Urban,25.48,69.5
+2,Sindh,254,Umerkot,254004,PITHORO,Pithoro Urban,25.37,69.38
+3,Khyber Pakhtunkhwa,311,Bannu,311001,Bannu,Bannu City,32.99,70.62
+3,Khyber Pakhtunkhwa,311,Bannu,311001,Bannu,Bannu Sadar,32.99,70.62
+3,Khyber Pakhtunkhwa,311,Bannu,311002,Domel,Domel Urban,33.04,70.58
+3,Khyber Pakhtunkhwa,312,D.I. Khan,312001,D.I Khan,DI Khan City,31.83,70.9
+3,Khyber Pakhtunkhwa,312,D.I. Khan,312001,D.I Khan,DI Khan Sadar,31.83,70.9
+3,Khyber Pakhtunkhwa,312,D.I. Khan,312001,D.I Khan,DI Khan Cantt,31.82,70.9
+3,Khyber Pakhtunkhwa,312,D.I. Khan,312002,Paroa,Paroa Urban,31.95,70.85
+3,Khyber Pakhtunkhwa,312,D.I. Khan,312003,Kulachi,Kulachi Urban,31.93,70.46
+3,Khyber Pakhtunkhwa,312,D.I. Khan,312004,Draban Kalan,Draban Kalan Urban,31.76,70.62
+3,Khyber Pakhtunkhwa,312,D.I. Khan,312005,Pahar Pur,Paharpur Urban,31.95,70.72
+3,Khyber Pakhtunkhwa,313,Lakki Marwat,313000,Lakki Marwat,Lakki Marwat City,32.61,70.91
+3,Khyber Pakhtunkhwa,313,Lakki Marwat,313000,Lakki Marwat,Lakki Marwat Sadar,32.61,70.91
+3,Khyber Pakhtunkhwa,313,Lakki Marwat,313002,Serai Naurang,Serai Naurang Urban,32.75,70.77
+3,Khyber Pakhtunkhwa,316,Tank,316016,Tank,Tank City,32.22,70.38
+3,Khyber Pakhtunkhwa,316,Tank,316016,Tank,Tank Sadar,32.22,70.37
+3,Khyber Pakhtunkhwa,321,Abbottabad,321001,Abbottabad,Abbottabad City,34.15,73.21
+3,Khyber Pakhtunkhwa,321,Abbottabad,321001,Abbottabad,Abbottabad Cantt,34.14,73.21
+3,Khyber Pakhtunkhwa,321,Abbottabad,321001,Abbottabad,Mandian,34.16,73.22
+3,Khyber Pakhtunkhwa,321,Abbottabad,321002,Havelian,Havelian Urban,34.05,73.16
+3,Khyber Pakhtunkhwa,322,Haripur,322001,Haripur,Haripur City,34.0,72.91
+3,Khyber Pakhtunkhwa,322,Haripur,322001,Haripur,Haripur Sadar,33.99,72.91
+3,Khyber Pakhtunkhwa,322,Haripur,322002,Ghazi,Ghazi Urban,34.17,72.52
+3,Khyber Pakhtunkhwa,323,Kohistan,323001,Dassu,Dassu Urban,35.08,73.54
+3,Khyber Pakhtunkhwa,323,Kohistan,323002,Pattan,Pattan Urban,35.12,72.91
+3,Khyber Pakhtunkhwa,323,Kohistan,323003,Palas,Palas Urban,35.49,73.27
+3,Khyber Pakhtunkhwa,324,Mansehra,324001,Mansehra,Mansehra City,34.33,73.2
+3,Khyber Pakhtunkhwa,324,Mansehra,324001,Mansehra,Mansehra Sadar,34.33,73.2
+3,Khyber Pakhtunkhwa,324,Mansehra,324003,Oghi,Oghi Urban,34.56,73.3
+3,Khyber Pakhtunkhwa,324,Mansehra,324080,Balakot,Balakot Urban,34.55,73.35
+3,Khyber Pakhtunkhwa,324,Mansehra,324080,Balakot,Balakot Bazar,34.55,73.35
+3,Khyber Pakhtunkhwa,325,Battagram,325001,Battagram,Battagram City,34.67,73.02
+3,Khyber Pakhtunkhwa,325,Battagram,325001,Battagram,Battagram Sadar,34.67,73.02
+3,Khyber Pakhtunkhwa,325,Battagram,325002,Allai,Allai Urban,35.02,72.97
+3,Khyber Pakhtunkhwa,326,Torghar,326001,Judba,Judba Urban,34.77,72.61
+3,Khyber Pakhtunkhwa,326,Torghar,326002,Kandar,Kandar Urban,34.85,72.69
+3,Khyber Pakhtunkhwa,331,Karak,331001,Karak,Karak City,33.12,71.09
+3,Khyber Pakhtunkhwa,331,Karak,331001,Karak,Karak Sadar,33.12,71.09
+3,Khyber Pakhtunkhwa,331,Karak,331002,Takhti e Nasrati,Takht-e-Nasrati Urban,33.26,71.12
+3,Khyber Pakhtunkhwa,331,Karak,331003,Banda Dawad Shah,Banda Daud Shah Urban,33.03,70.99
+3,Khyber Pakhtunkhwa,332,Kohat,332001,Kohat,Kohat City,33.59,71.44
+3,Khyber Pakhtunkhwa,332,Kohat,332001,Kohat,Kohat Sadar,33.59,71.44
+3,Khyber Pakhtunkhwa,332,Kohat,332001,Kohat,Kohat Cantt,33.58,71.44
+3,Khyber Pakhtunkhwa,332,Kohat,332002,Lachi,Lachi Urban,33.38,71.33
+3,Khyber Pakhtunkhwa,335,Hangu,335001,Hangu,Hangu Urban,33.53,71.06
+3,Khyber Pakhtunkhwa,335,Hangu,335002,Thall,Thall Urban,33.73,70.67
+3,Khyber Pakhtunkhwa,342,Buner,342002,Daggar,Daggar Urban,34.51,72.49
+3,Khyber Pakhtunkhwa,342,Buner,342002,Daggar,Daggar Sadar,34.51,72.49
+3,Khyber Pakhtunkhwa,342,Buner,342005,Mandanr(Chamla),Mandanr Urban,34.55,72.4
+3,Khyber Pakhtunkhwa,342,Buner,342006,Totalai,Totalai Urban,34.69,72.6
+3,Khyber Pakhtunkhwa,342,Buner,342007,Gagra,Gagra Urban,34.7,72.5
+3,Khyber Pakhtunkhwa,343,Chitral,343001,Arandu,Arandu Urban,35.76,71.57
+3,Khyber Pakhtunkhwa,343,Chitral,343002,Drosh,Drosh Urban,35.56,71.78
+3,Khyber Pakhtunkhwa,343,Chitral,343003,Chitral,Chitral City,35.85,71.79
+3,Khyber Pakhtunkhwa,343,Chitral,343003,Chitral,Chitral Bazaar,35.85,71.79
+3,Khyber Pakhtunkhwa,343,Chitral,343004,Lothkoh,Lotkoh Urban,35.91,71.52
+3,Khyber Pakhtunkhwa,343,Chitral,343005,Molkhow,Mulkhow Urban,35.96,71.82
+3,Khyber Pakhtunkhwa,343,Chitral,343006,Torkhow,Torkhow Urban,36.12,72.13
+3,Khyber Pakhtunkhwa,343,Chitral,343007,Mastuj,Mastuj Urban,36.28,72.53
+3,Khyber Pakhtunkhwa,344,Dir Lower,344001,Timergara,Timergara City,34.83,71.79
+3,Khyber Pakhtunkhwa,344,Dir Lower,344001,Timergara,Timergara Sadar,34.83,71.79
+3,Khyber Pakhtunkhwa,344,Dir Lower,344002,Adenzai,Adenzai Urban,34.98,72.02
+3,Khyber Pakhtunkhwa,344,Dir Lower,344003,SamarBagh,Samarbagh Urban,34.89,71.62
+3,Khyber Pakhtunkhwa,344,Dir Lower,344004,Munda,Munda Urban,34.72,71.87
+3,Khyber Pakhtunkhwa,344,Dir Lower,344005,Balambat,Balambat Urban,34.77,71.77
+3,Khyber Pakhtunkhwa,344,Dir Lower,344006,Lalqilla,Lalqilla Urban,34.92,71.94
+3,Khyber Pakhtunkhwa,344,Dir Lower,344007,Khall,Khall Urban,35.27,71.9
+3,Khyber Pakhtunkhwa,345,Malakand,345001,Batkhela,Batkhela City,34.57,71.99
+3,Khyber Pakhtunkhwa,345,Malakand,345001,Batkhela,Batkhela Sadar,34.57,71.99
+3,Khyber Pakhtunkhwa,345,Malakand,345002,Dargai,Dargai Urban,34.51,71.94
+3,Khyber Pakhtunkhwa,346,Swat,346002,Babuzai,Saidu Sharif,35.22,72.35
+3,Khyber Pakhtunkhwa,346,Swat,346002,Babuzai,Mingora City,35.22,72.36
+3,Khyber Pakhtunkhwa,346,Swat,346002,Babuzai,Mingora Phase I,35.23,72.35
+3,Khyber Pakhtunkhwa,346,Swat,346003,Barikot,Barikot Urban,34.89,72.22
+3,Khyber Pakhtunkhwa,346,Swat,346004,Behrain,Behrain Urban,35.17,72.58
+3,Khyber Pakhtunkhwa,346,Swat,346006,Charbagh,Charbagh Urban,35.32,72.24
+3,Khyber Pakhtunkhwa,346,Swat,346008,Kabal,Kabal Urban,35.16,72.5
+3,Khyber Pakhtunkhwa,346,Swat,346010,Khawazakhela,Khawazakhela Urban,35.36,72.5
+3,Khyber Pakhtunkhwa,346,Swat,346011,Matta,Matta Urban,35.24,72.51
+3,Khyber Pakhtunkhwa,347,Dir Upper,347001,Dir,Dir City,35.21,71.88
+3,Khyber Pakhtunkhwa,347,Dir Upper,347001,Dir,Dir Sadar,35.21,71.88
+3,Khyber Pakhtunkhwa,347,Dir Upper,347002,Barawal,Barawal Urban,35.63,71.84
+3,Khyber Pakhtunkhwa,347,Dir Upper,347003,Kalkot,Kalkot Urban,35.49,71.94
+3,Khyber Pakhtunkhwa,347,Dir Upper,347004,Wari,Wari Urban,35.59,71.68
+3,Khyber Pakhtunkhwa,348,Shangla,348001,Alpuri,Alpuri City,35.03,72.76
+3,Khyber Pakhtunkhwa,348,Shangla,348001,Alpuri,Alpuri Sadar,35.03,72.76
+3,Khyber Pakhtunkhwa,348,Shangla,348002,Besham,Besham Urban,34.93,72.86
+3,Khyber Pakhtunkhwa,348,Shangla,348003,Chakisar,Chakisar Urban,35.15,72.48
+3,Khyber Pakhtunkhwa,348,Shangla,348004,Puran,Puran Urban,35.27,72.68
+3,Khyber Pakhtunkhwa,348,Shangla,348005,Martung,Martung Urban,34.97,72.71
+3,Khyber Pakhtunkhwa,351,Mardan,351001,Mardan,Mardan City,34.2,72.02
+3,Khyber Pakhtunkhwa,351,Mardan,351001,Mardan,Mardan Sadar,34.2,72.02
+3,Khyber Pakhtunkhwa,351,Mardan,351001,Mardan,Mardan Cantt,34.19,72.02
+3,Khyber Pakhtunkhwa,351,Mardan,351002,Takht Bhai,Takht Bhai Urban,34.23,72.24
+3,Khyber Pakhtunkhwa,351,Mardan,351003,Katlang,Katlang Urban,34.33,72.12
+3,Khyber Pakhtunkhwa,352,Swabi,352001,Lahore,Lahore (Swabi) Urban,34.12,72.08
+3,Khyber Pakhtunkhwa,352,Swabi,352002,Swabi,Swabi City,34.12,72.47
+3,Khyber Pakhtunkhwa,352,Swabi,352002,Swabi,Swabi Sadar,34.12,72.47
+3,Khyber Pakhtunkhwa,352,Swabi,352003,Topi,Topi Urban,34.08,72.64
+3,Khyber Pakhtunkhwa,352,Swabi,352004,Razar,Razar Urban,34.19,72.27
+3,Khyber Pakhtunkhwa,361,Charsadda,361001,Charsadda,Charsadda City,34.15,71.73
+3,Khyber Pakhtunkhwa,361,Charsadda,361001,Charsadda,Charsadda Sadar,34.15,71.73
+3,Khyber Pakhtunkhwa,361,Charsadda,361002,Tangi,Tangi Urban,34.27,71.85
+3,Khyber Pakhtunkhwa,361,Charsadda,361003,Shabqadar,Shabqadar Urban,34.38,71.55
+3,Khyber Pakhtunkhwa,364,Nowshera,364001,Pabbi,Pabbi Urban,33.95,71.54
+3,Khyber Pakhtunkhwa,364,Nowshera,364002,Jehangira,Jehangira Urban,33.97,71.92
+3,Khyber Pakhtunkhwa,364,Nowshera,364064,Nowshera,Nowshera City,34.02,71.98
+3,Khyber Pakhtunkhwa,364,Nowshera,364064,Nowshera,Nowshera Cantt,34.01,71.98
+3,Khyber Pakhtunkhwa,364,Nowshera,364064,Nowshera,Nowshera Kalan,34.02,71.99
+3,Khyber Pakhtunkhwa,365,Peshawar,365002,TOWN 1,Peshawar Town 1,34.02,71.52
+3,Khyber Pakhtunkhwa,365,Peshawar,365002,TOWN 1,Hayatabad Phase I,34.01,71.43
+3,Khyber Pakhtunkhwa,365,Peshawar,365002,TOWN 1,Hayatabad Phase II,34.01,71.44
+3,Khyber Pakhtunkhwa,365,Peshawar,365003,TOWN 2,Peshawar Town 2,34.01,71.58
+3,Khyber Pakhtunkhwa,365,Peshawar,365003,TOWN 2,Peshawar Old City,34.01,71.57
+3,Khyber Pakhtunkhwa,365,Peshawar,365003,TOWN 2,Peshawar Saddar,34.0,71.57
+3,Khyber Pakhtunkhwa,365,Peshawar,365004,TOWN 3,Peshawar Town 3,34.02,71.54
+3,Khyber Pakhtunkhwa,365,Peshawar,365005,TOWN 4,Peshawar Town 4,34.01,71.55
+3,Khyber Pakhtunkhwa,365,Peshawar,365005,TOWN 4,Peshawar University Town,34.01,71.48
+4,Balochistan,411,Kalat,411001,Kalat,Kalat City,29.02,66.59
+4,Balochistan,411,Kalat,411001,Kalat,Kalat Sadar,29.02,66.59
+4,Balochistan,411,Kalat,411002,Sub Division Khaliq Abad,Khaliqabad Urban,29.15,66.7
+4,Balochistan,412,Kharan,412001,Kharan,Kharan City,28.58,65.41
+4,Balochistan,412,Kharan,412001,Kharan,Kharan Sadar,28.58,65.41
+4,Balochistan,412,Kharan,412002,Sar Kharan,Sar Kharan Urban,28.82,65.15
+4,Balochistan,413,Khuzdar,413001,Nal,Nal Urban,28.0,66.07
+4,Balochistan,413,Khuzdar,413002,Khuzdar,Khuzdar City,27.81,66.61
+4,Balochistan,413,Khuzdar,413002,Khuzdar,Khuzdar Sadar,27.81,66.61
+4,Balochistan,413,Khuzdar,413003,Moola,Moola Urban,27.37,66.85
+4,Balochistan,413,Khuzdar,413004,Wadh,Wadh Urban,26.92,66.62
+4,Balochistan,413,Khuzdar,413005,Zehri (Sub Tehsil),Zehri Urban,27.87,66.15
+4,Balochistan,414,Lasbela,414001,Bela,Bela Urban,26.23,66.31
+4,Balochistan,414,Lasbela,414002,Hub,Hub City,25.37,67.01
+4,Balochistan,414,Lasbela,414002,Hub,Hub Industrial Area,25.38,67.01
+4,Balochistan,414,Lasbela,414003,Kanraj,Kanraj Urban,26.38,66.27
+4,Balochistan,414,Lasbela,414004,Sommiani,Sonmiani Urban,25.07,66.62
+4,Balochistan,414,Lasbela,414005,Uthal,Uthal Urban,25.81,66.62
+4,Balochistan,414,Lasbela,414006,Lakhara,Lakhara Urban,25.99,66.15
+4,Balochistan,414,Lasbela,414007,Dureji,Dureji Urban,25.77,66.77
+4,Balochistan,414,Lasbela,414008,Liari,Liari Urban,25.59,66.25
+4,Balochistan,414,Lasbela,414009,Gaddani,Gaddani Urban,25.11,66.73
+4,Balochistan,414,Lasbela,414009,Gaddani,Gaddani Beach,25.1,66.73
+4,Balochistan,415,Mastung,415001,Mastung,Mastung City,29.79,66.84
+4,Balochistan,415,Mastung,415001,Mastung,Mastung Sadar,29.79,66.84
+4,Balochistan,415,Mastung,415002,Dasht,Dasht Urban,29.55,66.43
+4,Balochistan,415,Mastung,415003,Kardigap,Kardigap Urban,29.92,66.7
+4,Balochistan,416,Awaran,416001,Awaran,Awaran City,26.78,65.24
+4,Balochistan,416,Awaran,416002,Jhal Jhao,Jhal Jhao Urban,27.52,65.5
+4,Balochistan,416,Awaran,416003,Mashkai,Mashkai Urban,27.15,64.95
+4,Balochistan,417,Washuk,417001,Washuk,Washuk Urban,28.78,64.34
+4,Balochistan,417,Washuk,417002,Basima,Basima Urban,27.28,64.64
+4,Balochistan,417,Washuk,417003,Mashkail,Mashkail Urban,28.81,64.4
+4,Balochistan,418,Surab,418001,SURAB,Surab Urban,28.39,66.83
+4,Balochistan,418,Surab,418002,UMARABAD,Umarabad Urban,28.78,66.86
+4,Balochistan,418,Surab,418003,MEHRABAD,Mehrabad Urban,29.01,66.75
+4,Balochistan,418,Surab,418004,Dasht e Goran,Dasht e Goran Urban,28.5,66.5
+4,Balochistan,421,Gwadar,421001,Gawadar,Gwadar City,25.12,62.33
+4,Balochistan,421,Gwadar,421001,Gawadar,Gwadar Port Area,25.11,62.33
+4,Balochistan,421,Gwadar,421001,Gawadar,Gwadar East Bay,25.11,62.32
+4,Balochistan,421,Gwadar,421002,JIWANI,Jiwani Urban,25.05,61.74
+4,Balochistan,421,Gwadar,421003,ORMARA,Ormara Urban,25.2,64.64
+4,Balochistan,421,Gwadar,421004,PASNI,Pasni Urban,26.0,63.47
+4,Balochistan,422,Panjgur,422001,Panjgur,Panjgur City,26.96,64.11
+4,Balochistan,422,Panjgur,422001,Panjgur,Panjgur Sadar,26.96,64.11
+4,Balochistan,422,Panjgur,422002,Gwargo,Gwargo Urban,27.25,63.85
+4,Balochistan,423,Kech,423001,Turbat,Turbat City,26.0,63.05
+4,Balochistan,423,Kech,423001,Turbat,Turbat Sadar,26.0,63.05
+4,Balochistan,423,Kech,423002,Tump,Tump Urban,26.13,62.77
+4,Balochistan,423,Kech,423003,Dasht,Dasht Urban (Kech),25.82,63.33
+4,Balochistan,423,Kech,423004,Buleda,Buleda Urban,26.32,62.88
+4,Balochistan,431,Jaffarabad,431001,sohbat pur,Sohbatpur Urban,28.72,68.16
+4,Balochistan,431,Jaffarabad,431002,Fareedabad,Fareedabad Urban,28.88,68.14
+4,Balochistan,431,Jaffarabad,431003,Hairdin,Hairdin Urban,28.66,68.26
+4,Balochistan,431,Jaffarabad,431004,Manjhi pur,Manjhipur Urban,28.58,68.06
+4,Balochistan,432,Nasirabad,432001,Jhat Pat,Jhatpat Urban,29.39,68.2
+4,Balochistan,432,Nasirabad,432002,gandakha,Gandakha Urban,29.46,68.35
+4,Balochistan,432,Nasirabad,432003,Usta Muhammad,Usta Muhammad City,28.98,68.0
+4,Balochistan,433,Bolan,433001,Dhadar,Dhadar Urban,29.78,67.68
+4,Balochistan,433,Bolan,433002,Sunni,Sunni Urban,29.61,67.91
+4,Balochistan,433,Bolan,433003,BHAG,Bhag Urban,29.05,67.4
+4,Balochistan,433,Bolan,433004,Mach,Mach Urban,29.86,67.34
+4,Balochistan,434,Jhal Magsi,434001,Dera Murad Jamali,Dera Murad Jamali City,29.07,68.22
+4,Balochistan,434,Jhal Magsi,434001,Dera Murad Jamali,DMJ Sadar,29.07,68.22
+4,Balochistan,434,Jhal Magsi,434002,Tamboo,Tamboo Urban,29.24,68.02
+4,Balochistan,434,Jhal Magsi,434003,Chatter,Chatter Urban,29.16,67.78
+4,Balochistan,436,Jhal Magsi,436001,Gandawah,Gandawah Urban,28.48,67.77
+4,Balochistan,436,Jhal Magsi,436002,Jhall magsi,Jhal Magsi Urban,29.18,67.89
+4,Balochistan,441,Chagai,441001,Dalbabdin,Dalbandin Urban,29.18,62.98
+4,Balochistan,441,Chagai,441002,Nokundi,Nokundi Urban,28.82,63.15
+4,Balochistan,441,Chagai,441003,chaghi,Chagai Urban,29.53,63.01
+4,Balochistan,442,Pishin,442001,Pishin,Pishin City,30.58,66.99
+4,Balochistan,442,Pishin,442001,Pishin,Pishin Sadar,30.58,66.99
+4,Balochistan,442,Pishin,442002,Barshor,Barshor Urban,30.39,67.2
+4,Balochistan,442,Pishin,442003,Karezat,Karezat Urban,30.62,66.7
+4,Balochistan,442,Pishin,442004,Huram Zai,Huramzai Urban,30.51,67.18
+4,Balochistan,443,Quetta,443001,CHILTON TOWN,Quetta City,30.18,66.99
+4,Balochistan,443,Quetta,443001,CHILTON TOWN,Quetta Cantt,30.18,66.99
+4,Balochistan,443,Quetta,443001,CHILTON TOWN,Satellite Town,30.21,67.01
+4,Balochistan,443,Quetta,443002,ZARGHOON TOWN,Zarghoon Town Urban,30.25,67.08
+4,Balochistan,443,Quetta,443003,Panjpai,Panjpai Urban,30.12,66.87
+4,Balochistan,444,Killa Abdullah,444001,Chaman,Chaman City,30.92,66.45
+4,Balochistan,444,Killa Abdullah,444001,Chaman,Chaman Sadar,30.92,66.45
+4,Balochistan,444,Killa Abdullah,444001,Chaman,Chaman Border,30.92,66.45
+4,Balochistan,444,Killa Abdullah,444002,Gulistan,Gulistan Urban,30.72,66.35
+4,Balochistan,444,Killa Abdullah,444003,Killa Abdullah,Killa Abdullah City,30.68,66.7
+4,Balochistan,444,Killa Abdullah,444004,Dobandi,Dobandi Urban,30.82,66.55
+4,Balochistan,445,Nushki,445001,Nushki,Nushki City,29.55,66.02
+4,Balochistan,445,Nushki,445001,Nushki,Nushki Sadar,29.55,66.02
+4,Balochistan,451,Dera Bugti,451001,Dera Bughti,Dera Bugti Urban,28.92,69.16
+4,Balochistan,451,Dera Bugti,451002,Phellawagh,Phellawagh Urban,28.5,68.9
+4,Balochistan,451,Dera Bugti,451003,Sui,Sui Urban,28.64,69.19
+4,Balochistan,451,Dera Bugti,451003,Sui,Sui Gas Field,28.64,69.19
+4,Balochistan,452,Kohlu,452001,Kohlu,Kohlu City,29.89,69.26
+4,Balochistan,452,Kohlu,452002,Mewand,Mewand Urban,29.76,69.08
+4,Balochistan,452,Kohlu,452003,Kahan,Kahan Urban,29.35,69.56
+4,Balochistan,453,Sibi,453001,Sibi,Sibi City,29.54,67.88
+4,Balochistan,453,Sibi,453001,Sibi,Sibi Sadar,29.54,67.88
+4,Balochistan,453,Sibi,453002,Lehri,Lehri Urban,30.15,68.0
+4,Balochistan,454,Ziarat,454001,Ziarat,Ziarat City,30.38,67.73
+4,Balochistan,454,Ziarat,454001,Ziarat,Ziarat Fruit Garden,30.38,67.73
+4,Balochistan,454,Ziarat,454002,Sinjavi,Sinjavi Urban,30.55,68.08
+4,Balochistan,455,Harnai,455001,Harnai,Harnai Urban,30.09,67.94
+4,Balochistan,455,Harnai,455002,SHAHRAG,Shahrag Urban,30.19,68.26
+4,Balochistan,461,Barkhan,461001,Barkhan,Barkhan City,29.9,69.52
+4,Balochistan,461,Barkhan,461001,Barkhan,Barkhan Sadar,29.9,69.52
+4,Balochistan,461,Barkhan,461002,Rakhni,Rakhni Urban,29.75,69.35
+4,Balochistan,462,Killa Saifullah,462001,Killa Saifullah,Killa Saifullah City,30.7,68.14
+4,Balochistan,462,Killa Saifullah,462002,Muslim Bagh,Muslim Bagh Urban,30.58,67.59
+4,Balochistan,463,Loralai,463001,BORI,Bori Urban,30.31,68.58
+4,Balochistan,463,Loralai,463002,Mekhtar,Mekhtar Urban,30.26,68.26
+4,Balochistan,464,Musa Khel,464001,Musa Khel,Musa Khel Urban,29.86,69.83
+4,Balochistan,464,Musa Khel,464002,Kingri,Kingri Urban,29.92,70.07
+4,Balochistan,464,Musa Khel,464003,Drug,Drug Urban,29.94,69.7
+4,Balochistan,464,Musa Khel,464004,Toisar,Toisar Urban,30.11,69.95
+4,Balochistan,465,Zhob,465001,Kaker Khurasan,Kaker Khurasan Urban,31.09,66.92
+4,Balochistan,465,Zhob,465002,Zhob,Zhob City,31.34,69.45
+4,Balochistan,465,Zhob,465002,Zhob,Zhob Sadar,31.34,69.45
+4,Balochistan,466,Sherani,466001,Sherani,Sherani Urban,31.62,69.85
+4,Balochistan,467,Duki,467001,Dukki,Duki City,30.14,68.73
+4,Balochistan,467,Duki,467002,Thaal Chutiali,Thall Chutiali Urban,30.38,68.85
+4,Balochistan,467,Duki,467003,Luni,Luni Urban,30.25,68.58
+5,Azad Jammu & Kashmir,511,Bhimber,511001,Bhimber,Bhimber City,32.97,74.06
+5,Azad Jammu & Kashmir,511,Bhimber,511001,Bhimber,Bhimber Sadar,32.97,74.06
+5,Azad Jammu & Kashmir,511,Bhimber,511002,Barnala,Barnala Urban,32.95,73.87
+5,Azad Jammu & Kashmir,511,Bhimber,511003,Samani,Samani Urban,33.01,73.98
+5,Azad Jammu & Kashmir,512,Kotli,512001,Kotli,Kotli City,33.52,73.9
+5,Azad Jammu & Kashmir,512,Kotli,512001,Kotli,Kotli Sadar,33.52,73.9
+5,Azad Jammu & Kashmir,512,Kotli,512002,Nakyal,Nakyal Urban,33.78,73.74
+5,Azad Jammu & Kashmir,512,Kotli,512003,Sehnsa,Sehnsa Urban,33.49,73.7
+5,Azad Jammu & Kashmir,512,Kotli,512004,Charhoi,Charhoi Urban,33.62,73.68
+5,Azad Jammu & Kashmir,512,Kotli,512005,Khuiratta,Khuiratta Urban,33.87,73.99
+5,Azad Jammu & Kashmir,512,Kotli,512006,Dulhia jattan,Dulhia Jattan Urban,33.58,73.82
+5,Azad Jammu & Kashmir,513,Mirpur,513001,Mirpur,Mirpur City,33.15,73.75
+5,Azad Jammu & Kashmir,513,Mirpur,513001,Mirpur,Mirpur New City,33.15,73.75
+5,Azad Jammu & Kashmir,513,Mirpur,513001,Mirpur,Mirpur Mangla Road,33.14,73.74
+5,Azad Jammu & Kashmir,513,Mirpur,513002,Dudyal,Dudyal Urban,33.21,73.65
+5,Azad Jammu & Kashmir,521,Hattian Bala,521001,Chakar,Chakar Urban,34.25,73.51
+5,Azad Jammu & Kashmir,521,Hattian Bala,521002,Hattian,Hattian Bala City,34.32,73.87
+5,Azad Jammu & Kashmir,521,Hattian Bala,521003,leepa,Leepa Urban,34.42,73.96
+5,Azad Jammu & Kashmir,522,Muzaffarabad,522001,Muzaffarabad,Muzaffarabad City,34.36,73.47
+5,Azad Jammu & Kashmir,522,Muzaffarabad,522001,Muzaffarabad,Muzaffarabad Sadar,34.36,73.47
+5,Azad Jammu & Kashmir,522,Muzaffarabad,522002,Naseerabad,Naseerabad Urban,34.27,73.42
+5,Azad Jammu & Kashmir,523,Neelum,523001,Athmuqam,Athmuqam Urban,34.68,73.98
+5,Azad Jammu & Kashmir,523,Neelum,523002,Sharda,Sharda Urban,35.01,74.11
+5,Azad Jammu & Kashmir,531,Bagh,531001,Dhirkot,Dhirkot Urban,33.98,73.78
+5,Azad Jammu & Kashmir,531,Bagh,531002,Harighail,Harighail Urban,33.92,73.88
+5,Azad Jammu & Kashmir,531,Bagh,531003,Bagh,Bagh City,33.98,73.77
+5,Azad Jammu & Kashmir,531,Bagh,531003,Bagh,Bagh Sadar,33.98,73.77
+5,Azad Jammu & Kashmir,532,Haveli,532001,Havali,Haveli Urban,33.75,74.07
+5,Azad Jammu & Kashmir,532,Haveli,532002,Khurashidabad,Khurshidabad Urban,33.72,74.02
+5,Azad Jammu & Kashmir,532,Haveli,532003,Mumtazabad,Mumtazabad Urban,33.78,74.12
+5,Azad Jammu & Kashmir,533,Poonch,533001,Rawalakot,Rawalakot City,33.74,74.1
+5,Azad Jammu & Kashmir,533,Poonch,533001,Rawalakot,Rawalakot Sadar,33.74,74.1
+5,Azad Jammu & Kashmir,533,Poonch,533002,Hajira,Hajira Urban,33.76,74.16
+5,Azad Jammu & Kashmir,533,Poonch,533003,Thorar,Thorar Urban,33.83,74.24
+5,Azad Jammu & Kashmir,533,Poonch,533004,Abasspur,Abbasspur Urban,33.68,74.05
+5,Azad Jammu & Kashmir,534,Sudhnati,534001,Pallandri,Pallandri City,33.72,73.7
+5,Azad Jammu & Kashmir,534,Sudhnati,534001,Pallandri,Pallandri Sadar,33.72,73.7
+5,Azad Jammu & Kashmir,534,Sudhnati,534002,Trarkhal,Trarkhal Urban,33.65,73.62
+5,Azad Jammu & Kashmir,534,Sudhnati,534003,Blouch,Blouch Urban,33.68,73.55
+5,Azad Jammu & Kashmir,534,Sudhnati,534004,Mong,Mong Urban,33.75,73.68
+6,Gilgit-Baltistan,601,Skardu,601001,Skardu,Skardu City,35.3,75.63
+6,Gilgit-Baltistan,601,Skardu,601001,Skardu,Skardu Sadar,35.3,75.63
+6,Gilgit-Baltistan,601,Skardu,601002,Gultari,Gultari Urban,35.58,76.2
+6,Gilgit-Baltistan,601,Skardu,601003,Roundu,Roundu Urban,35.39,75.88
+6,Gilgit-Baltistan,601,Skardu,601004,Gamba Skardu,Gamba Skardu Urban,35.33,75.71
+6,Gilgit-Baltistan,602,Diamer,602001,Tangir,Tangir Urban,36.17,73.34
+6,Gilgit-Baltistan,602,Diamer,602002,Chilas,Chilas City,35.41,74.1
+6,Gilgit-Baltistan,602,Diamer,602002,Chilas,Chilas Sadar,35.41,74.1
+6,Gilgit-Baltistan,602,Diamer,602003,Darel,Darel Urban,35.57,73.76
+6,Gilgit-Baltistan,603,Ghanche,603001,Khaplu,Khaplu City,35.17,76.57
+6,Gilgit-Baltistan,603,Ghanche,603001,Khaplu,Khaplu Sadar,35.17,76.57
+6,Gilgit-Baltistan,603,Ghanche,603002,Mashabrum,Mashabrum Urban,35.65,76.25
+6,Gilgit-Baltistan,603,Ghanche,603003,Daghoni,Daghoni Urban,35.69,76.42
+6,Gilgit-Baltistan,604,Ghizer,604001,Punyal,Punyal Urban,36.15,74.2
+6,Gilgit-Baltistan,604,Ghizer,604002,Yasin,Yasin Urban,36.41,74.03
+6,Gilgit-Baltistan,604,Ghizer,604003,Gupis,Gupis Urban,36.24,73.65
+6,Gilgit-Baltistan,604,Ghizer,604004,Ishkoman,Ishkoman Urban,36.36,74.02
+6,Gilgit-Baltistan,604,Ghizer,604005,Phandar,Phandar Urban,36.44,73.58
+6,Gilgit-Baltistan,605,Gilgit,605001,Daneyor,Daneyor Urban,35.89,74.31
+6,Gilgit-Baltistan,605,Gilgit,605002,Gilgit,Gilgit City,35.92,74.31
+6,Gilgit-Baltistan,605,Gilgit,605002,Gilgit,Gilgit Cantonment,35.92,74.31
+6,Gilgit-Baltistan,605,Gilgit,605002,Gilgit,Jutial,35.93,74.3
+6,Gilgit-Baltistan,605,Gilgit,605003,Jugote,Juglote Urban,35.81,74.55
+6,Gilgit-Baltistan,606,Astore,606001,Astore,Astore Urban,35.37,74.9
+6,Gilgit-Baltistan,606,Astore,606002,Shounter,Shounter Urban,35.43,75.22
+6,Gilgit-Baltistan,607,Hunza,607001,Aliabad,Aliabad Urban,36.32,74.64
+6,Gilgit-Baltistan,607,Hunza,607001,Aliabad,Karimabad,36.32,74.64
+6,Gilgit-Baltistan,607,Hunza,607002,Gulmit Gojal,Gulmit Urban,36.76,75.08
+6,Gilgit-Baltistan,607,Hunza,607002,Gulmit Gojal,Passu Village,36.8,75.0
+6,Gilgit-Baltistan,608,Kharmang,608001,Kharmang,Kharmang Urban,35.18,76.3
+6,Gilgit-Baltistan,609,Nagar,609001,Nagar 1,Nagar I Urban,36.05,74.52
+6,Gilgit-Baltistan,609,Nagar,609002,Nagar 2,Nagar II Urban,36.15,74.6
+6,Gilgit-Baltistan,610,Shigar,610001,Shigar,Shigar Urban,35.49,75.72
+7,Islamabad Capital Territory,701,Islamabad (Rural),701001,CDA,CDA Rural,33.52,72.82
+7,Islamabad Capital Territory,702,Islamabad (Urban),702001,ICT,Islamabad Sector E,33.73,73.09
+7,Islamabad Capital Territory,702,Islamabad (Urban),702001,ICT,Islamabad Sector F,33.72,73.05
+7,Islamabad Capital Territory,702,Islamabad (Urban),702001,ICT,Islamabad Sector G,33.72,73.06
+7,Islamabad Capital Territory,702,Islamabad (Urban),702001,ICT,Islamabad Sector H,33.71,73.04
+7,Islamabad Capital Territory,702,Islamabad (Urban),702001,ICT,Islamabad Sector I,33.67,73.07
+8,FATA / Merged Districts,801,Bajaur,801001,Bajaur,Bajaur Urban,34.69,71.5
+8,FATA / Merged Districts,802,Mohmand,802001,Mohmand,Mohmand Urban,34.39,71.49
+8,FATA / Merged Districts,803,Khyber,803001,Khyber,Khyber Urban,33.96,71.2
+8,FATA / Merged Districts,803,Khyber,803001,Khyber,Torkham Border,34.08,71.1
+8,FATA / Merged Districts,804,Kurram Upper,804001,Kurrum Upper,Kurram Upper Urban,33.55,70.55
+8,FATA / Merged Districts,805,Orakzai,805001,Orakzai,Orakzai Urban,33.57,71.13
+8,FATA / Merged Districts,806,North Waziristan,806001,North Waziristan,North Waziristan Urban,33.07,70.1
+8,FATA / Merged Districts,806,North Waziristan,806001,North Waziristan,Miranshah,33.0,70.07
+8,FATA / Merged Districts,807,South Waziristan,807001,South Waziristan,South Waziristan Urban,32.5,69.84
+8,FATA / Merged Districts,807,South Waziristan,807001,South Waziristan,Wana,32.3,69.57
+8,FATA / Merged Districts,808,FR Peshawar,808001,FR Peshawar,FR Peshawar Urban,34.0,71.55
+8,FATA / Merged Districts,809,FR Kohat,809001,FR Kohat,FR Kohat Urban,33.6,71.45
+8,FATA / Merged Districts,810,FR Bannu,810001,FR Bannu,FR Bannu Urban,32.9,70.5
+8,FATA / Merged Districts,811,FR Lakki,811001,FR Lakki,FR Lakki Urban,32.6,70.9
+8,FATA / Merged Districts,812,FR D.I. Khan,812001,FR D.I. Khan,FR DI Khan Urban,31.8,70.9
+8,FATA / Merged Districts,813,FR Tank,813001,FR Tank,FR Tank Urban,32.2,70.4
+8,FATA / Merged Districts,814,Kurram Lower,814001,Kurrum Lower - Central,Kurram Lower-Central Urban,33.4,70.4

@@ -1,0 +1,221 @@
+[
+  {
+    "timestamp": "2026-06-01T16:51:20.761Z",
+    "step": 1,
+    "agent": "IntentParser",
+    "confidence": 0.95,
+    "input": "g11 me plumber dhundo pipe leakage hogaya hai. kl subah chaheeye",
+    "output": {
+      "service_type": "plumber",
+      "service_raw": "plumber",
+      "location": "G-11",
+      "urgency": "medium",
+      "preferred_time": "tomorrow morning",
+      "budget_sensitivity": "medium",
+      "job_complexity_hint": "intermediate",
+      "language": "roman_urdu",
+      "confidence": 0.95,
+      "clarification_needed": false,
+      "clarification_question": null,
+      "reasoning": "User clearly specified the service as 'plumber', the location as 'G-11', and the urgency/timing. No further clarification is required."
+    }
+  },
+  {
+    "timestamp": "2026-06-01T16:51:21.210Z",
+    "step": 2,
+    "agent": "ProviderMatcher",
+    "output": {
+      "top_providers": [
+        {
+          "provider_id": "p49720",
+          "name": "Zubair Mehmood",
+          "shop_name": "Zubair Mehmood Plumber Experts",
+          "location": {
+            "latitude": 33.672168,
+            "longitude": 73.066418
+          },
+          "city": "Islamabad (Urban)",
+          "city_area": "Ict",
+          "availability_status": "online",
+          "charges": {
+            "base_rate": 499,
+            "travel_rate": 30
+          },
+          "job_role": "Plumber",
+          "service_expertise": [
+            "plumber",
+            "drain_cleaning"
+          ],
+          "rating": 4.9,
+          "on_time_score": 0.99,
+          "cancellation_risk": 0.03,
+          "capacity": 5,
+          "active_jobs": 0,
+          "total_reviews": 467,
+          "total_jobs": 472,
+          "distance_km": 2.6,
+          "score": 95.56,
+          "score_breakdown": {
+            "travel_time": 91,
+            "availability_match": 100,
+            "specialization": 100,
+            "on_time": 99,
+            "review_sentiment": 98,
+            "rate": 75,
+            "cancellation_risk": 97,
+            "capacity": 100
+          },
+          "is_waitlisted": false
+        },
+        {
+          "provider_id": "p49721",
+          "name": "Rehan Rana",
+          "shop_name": "Rehan Rana Plumber Point",
+          "location": {
+            "latitude": 33.66842,
+            "longitude": 73.068787
+          },
+          "city": "Islamabad (Urban)",
+          "city_area": "Ict",
+          "availability_status": "online",
+          "charges": {
+            "base_rate": 554,
+            "travel_rate": 25
+          },
+          "job_role": "Plumber",
+          "service_expertise": [
+            "plumber",
+            "drain_cleaning"
+          ],
+          "rating": 4.7,
+          "on_time_score": 0.92,
+          "cancellation_risk": 0.05,
+          "capacity": 4,
+          "active_jobs": 0,
+          "total_reviews": 499,
+          "total_jobs": 572,
+          "distance_km": 3.1,
+          "score": 92.3,
+          "score_breakdown": {
+            "travel_time": 90,
+            "availability_match": 100,
+            "specialization": 100,
+            "on_time": 92,
+            "review_sentiment": 94,
+            "rate": 62,
+            "cancellation_risk": 95,
+            "capacity": 100
+          },
+          "is_waitlisted": false
+        },
+        {
+          "provider_id": "p49436",
+          "name": "Yasir Gillani",
+          "shop_name": "Yasir Gillani Plumber Workshop",
+          "location": {
+            "latitude": 33.725871,
+            "longitude": 73.090999
+          },
+          "city": "Islamabad (Urban)",
+          "city_area": "Ict",
+          "availability_status": "online",
+          "charges": {
+            "base_rate": 419,
+            "travel_rate": 33
+          },
+          "job_role": "Plumber",
+          "service_expertise": [
+            "plumber",
+            "pipe_fitting",
+            "drain_cleaning"
+          ],
+          "rating": 4.6,
+          "on_time_score": 0.92,
+          "cancellation_risk": 0.04,
+          "capacity": 4,
+          "active_jobs": 0,
+          "total_reviews": 114,
+          "total_jobs": 233,
+          "distance_km": 4.9,
+          "score": 94.69,
+          "score_breakdown": {
+            "travel_time": 84,
+            "availability_match": 100,
+            "specialization": 100,
+            "on_time": 92,
+            "review_sentiment": 92,
+            "rate": 95,
+            "cancellation_risk": 96,
+            "capacity": 100
+          },
+          "is_waitlisted": false
+        }
+      ],
+      "reasoning": "Zubair Mehmood selected: score 95.56%, 2.6km away, 99% on-time reliability.",
+      "fallback_used": false,
+      "matching_trace": "Matched 4101 eligible providers using 8 weighted factors and tiebreaker rules. Top Match: Zubair Mehmood"
+    }
+  },
+  {
+    "timestamp": "2026-06-01T16:51:21.212Z",
+    "agent": "PricingEngine",
+    "phase_after": "pricing_complete",
+    "budget_sensitivity": "medium",
+    "providers_priced": [
+      {
+        "provider_id": "p49720",
+        "name": "Zubair Mehmood",
+        "score": 95.56,
+        "is_budget_pick": false,
+        "quote": {
+          "visit_fee": 150,
+          "base_rate": 499,
+          "distance_fee": 80,
+          "urgency_surcharge": 0,
+          "total": 1230,
+          "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
+        }
+      },
+      {
+        "provider_id": "p49721",
+        "name": "Rehan Rana",
+        "score": 92.3,
+        "is_budget_pick": false,
+        "quote": {
+          "visit_fee": 150,
+          "base_rate": 554,
+          "distance_fee": 80,
+          "urgency_surcharge": 0,
+          "total": 1340,
+          "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
+        }
+      },
+      {
+        "provider_id": "p49436",
+        "name": "Yasir Gillani",
+        "score": 94.69,
+        "is_budget_pick": true,
+        "quote": {
+          "visit_fee": 150,
+          "base_rate": 419,
+          "distance_fee": 160,
+          "urgency_surcharge": 0,
+          "total": 1150,
+          "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
+        }
+      }
+    ]
+  },
+  {
+    "timestamp": "2026-06-01T16:51:34.177Z",
+    "agent": "BookingSimulator",
+    "phase_after": "PENDING_PROVIDER",
+    "booking_id": "SVC-20260601-0022",
+    "provider_id": "p49720",
+    "provider_name": "Zubair Mehmood",
+    "preferred_time_requested": "tomorrow morning",
+    "scheduled_time_assigned": "2026-06-02T13:00:00.000Z",
+    "scheduling_collision_detected": true,
+    "final_price": 1230
+  }
+]

@@ -12,7 +12,11 @@ class ProviderAlertsScreen extends StatelessWidget {
     ];
     return Scaffold(
       backgroundColor: const Color(0xFFF7FAF5),
-      appBar: AppBar(backgroundColor: const Color(0xFF163300), elevation: 0, title: SvgPicture.asset('assets/haazir_logo.svg', height: 26)),
+      appBar: AppBar(automaticallyImplyLeading: false, backgroundColor: const Color(0xFF163300), elevation: 0, title: Text("Notifications",
+            style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: Colors.white))),
       body: ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: alerts.length,

@@ -12,41 +12,58 @@ class JobsScreen extends StatefulWidget {
   State<JobsScreen> createState() => _JobsScreenState();
 }
 
-class _JobsScreenState extends State<JobsScreen> with SingleTickerProviderStateMixin {
+class _JobsScreenState extends State<JobsScreen>
+    with SingleTickerProviderStateMixin {
   late final TabController _tabController;
   StreamSubscription<void>? _refreshSub;
   List<dynamic> _jobs = [];
   bool _isLoading = true;
 
   static const _activeStatuses = {
-    'PENDING_PROVIDER', 'ACCEPTED', 'ARRIVING', 'ARRIVED', 'IN_PROGRESS'
+    'PENDING_PROVIDER',
+    'ACCEPTED',
+    'ARRIVING',
+    'ARRIVED',
+    'IN_PROGRESS'
   };
 
   int _statusPriority(String s) {
     switch (s) {
-      case 'IN_PROGRESS': return 5;
-      case 'ARRIVED': return 4;
-      case 'ARRIVING': return 3;
-      case 'ACCEPTED': return 2;
-      case 'PENDING_PROVIDER': return 1;
-      default: return 0;
+      case 'IN_PROGRESS':
+        return 5;
+      case 'ARRIVED':
+        return 4;
+      case 'ARRIVING':
+        return 3;
+      case 'ACCEPTED':
+        return 2;
+      case 'PENDING_PROVIDER':
+        return 1;
+      default:
+        return 0;
     }
   }
 
   List<dynamic> get _activeJobs {
-    final list = _jobs.where((j) => _activeStatuses.contains(j['status'] as String? ?? '')).toList();
+    final list = _jobs
+        .where((j) => _activeStatuses.contains(j['status'] as String? ?? ''))
+        .toList();
     list.sort((a, b) {
       final pa = _statusPriority(a['status'] as String? ?? '');
       final pb = _statusPriority(b['status'] as String? ?? '');
       if (pa != pb) return pb.compareTo(pa);
-      return ((b['created_at'] as String?) ?? '').compareTo((a['created_at'] as String?) ?? '');
+      return ((b['created_at'] as String?) ?? '')
+          .compareTo((a['created_at'] as String?) ?? '');
     });
     return list;
   }
 
   List<dynamic> get _doneJobs {
-    final list = _jobs.where((j) => !_activeStatuses.contains(j['status'] as String? ?? '')).toList();
-    list.sort((a, b) => ((b['created_at'] as String?) ?? '').compareTo((a['created_at'] as String?) ?? ''));
+    final list = _jobs
+        .where((j) => !_activeStatuses.contains(j['status'] as String? ?? ''))
+        .toList();
+    list.sort((a, b) => ((b['created_at'] as String?) ?? '')
+        .compareTo((a['created_at'] as String?) ?? ''));
     return list;
   }
 
@@ -90,11 +107,18 @@ class _JobsScreenState extends State<JobsScreen> with SingleTickerProviderStateM
     return Scaffold(
       backgroundColor: const Color(0xFFF7FAF5),
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         backgroundColor: const Color(0xFF163300),
         elevation: 0,
-        title: SvgPicture.asset('assets/haazir_logo.svg', height: 26),
+        title: Text("My Jobs",
+            style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: Colors.white)),
         actions: [
-          IconButton(icon: const Icon(Icons.refresh_rounded, color: Colors.white), onPressed: _fetchJobs),
+          IconButton(
+              icon: const Icon(Icons.refresh_rounded, color: Colors.white),
+              onPressed: _fetchJobs),
         ],
         bottom: TabBar(
           controller: _tabController,
@@ -102,7 +126,8 @@ class _JobsScreenState extends State<JobsScreen> with SingleTickerProviderStateM
           indicatorWeight: 2,
           labelColor: Colors.white,
           unselectedLabelColor: Colors.white60,
-          labelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+          labelStyle:
+              const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
           tabs: [
             Tab(
               child: Row(mainAxisSize: MainAxisSize.min, children: [
@@ -110,9 +135,13 @@ class _JobsScreenState extends State<JobsScreen> with SingleTickerProviderStateM
                 if (activeJobs.isNotEmpty) ...[
                   const SizedBox(width: 6),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(color: const Color(0xFF3A9010).withValues(alpha: 0.2), borderRadius: BorderRadius.circular(10)),
-                    child: Text("${activeJobs.length}", style: const TextStyle(fontSize: 11)),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                        color: const Color(0xFF3A9010).withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(10)),
+                    child: Text("${activeJobs.length}",
+                        style: const TextStyle(fontSize: 11)),
                   ),
                 ],
               ]),
@@ -123,9 +152,14 @@ class _JobsScreenState extends State<JobsScreen> with SingleTickerProviderStateM
                 if (doneJobs.isNotEmpty) ...[
                   const SizedBox(width: 6),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(10)),
-                    child: Text("${doneJobs.length}", style: const TextStyle(fontSize: 11, color: const Color(0xFF767773))),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(10)),
+                    child: Text("${doneJobs.length}",
+                        style: const TextStyle(
+                            fontSize: 11, color: const Color(0xFF767773))),
                   ),
                 ],
               ]),
@@ -134,24 +168,30 @@ class _JobsScreenState extends State<JobsScreen> with SingleTickerProviderStateM
         ),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: const Color(0xFF3A9010)))
+          ? const Center(
+              child: CircularProgressIndicator(color: const Color(0xFF3A9010)))
           : TabBarView(
               controller: _tabController,
               children: [
-                _buildJobList(activeJobs, emptyLabel: "No active jobs", heroFirst: true),
+                _buildJobList(activeJobs,
+                    emptyLabel: "No active jobs", heroFirst: true),
                 _buildJobList(doneJobs, emptyLabel: "No completed jobs yet"),
               ],
             ),
     );
   }
 
-  Widget _buildJobList(List<dynamic> jobs, {required String emptyLabel, bool heroFirst = false}) {
+  Widget _buildJobList(List<dynamic> jobs,
+      {required String emptyLabel, bool heroFirst = false}) {
     if (jobs.isEmpty) {
       return Center(
         child: Column(mainAxisSize: MainAxisSize.min, children: [
-          const Icon(Icons.work_off_rounded, color: const Color(0xFFE8EDE6), size: 48),
+          const Icon(Icons.work_off_rounded,
+              color: const Color(0xFFE8EDE6), size: 48),
           const SizedBox(height: 12),
-          Text(emptyLabel, style: const TextStyle(color: const Color(0xFF767773), fontSize: 14)),
+          Text(emptyLabel,
+              style: const TextStyle(
+                  color: const Color(0xFF767773), fontSize: 14)),
         ]),
       );
     }
@@ -180,7 +220,8 @@ class _JobsScreenState extends State<JobsScreen> with SingleTickerProviderStateM
     return GestureDetector(
       onTap: () => Navigator.push(
         context,
-        MaterialPageRoute(builder: (_) => ProviderChatScreen(bookingId: j['booking_id'])),
+        MaterialPageRoute(
+            builder: (_) => ProviderChatScreen(bookingId: j['booking_id'])),
       ).then((_) => _fetchJobs()),
       child: Container(
         margin: const EdgeInsets.only(bottom: 16),
@@ -194,48 +235,70 @@ class _JobsScreenState extends State<JobsScreen> with SingleTickerProviderStateM
           Row(children: [
             Container(
               padding: const EdgeInsets.all(9),
-              decoration: BoxDecoration(color: color.withValues(alpha: 0.13), shape: BoxShape.circle),
+              decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.13), shape: BoxShape.circle),
               child: Icon(icon, color: color, size: 19),
             ),
             const SizedBox(width: 12),
-            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(
-                "${j['service_type']} — ${j['location']}",
-                style: const TextStyle(color: const Color(0xFF21231D), fontSize: 16, fontWeight: FontWeight.bold),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              Text(
-                scheduled,
-                style: const TextStyle(color: Color(0xFF767773), fontSize: 12),
-              ),
-            ])),
+            Expanded(
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                  Text(
+                    "${j['service_type']} — ${j['location']}",
+                    style: const TextStyle(
+                        color: const Color(0xFF21231D),
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Text(
+                    scheduled,
+                    style:
+                        const TextStyle(color: Color(0xFF767773), fontSize: 12),
+                  ),
+                ])),
             Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
                   color: color.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: color.withValues(alpha: 0.3)),
                 ),
-                child: Text(_statusLabel(status), style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.bold)),
+                child: Text(_statusLabel(status),
+                    style: TextStyle(
+                        color: color,
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold)),
               ),
               if (j['final_price'] != null) ...[
                 const SizedBox(height: 4),
-                Text("Rs. ${j['final_price']}", style: const TextStyle(color: const Color(0xFF3A9010), fontWeight: FontWeight.bold, fontSize: 13)),
+                Text("Rs. ${j['final_price']}",
+                    style: const TextStyle(
+                        color: const Color(0xFF3A9010),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13)),
               ],
             ]),
           ]),
           const SizedBox(height: 14),
           Row(children: [
-            const Icon(Icons.person_rounded, size: 13, color: Color(0xFFB0B5AE)),
+            const Icon(Icons.person_rounded,
+                size: 13, color: Color(0xFFB0B5AE)),
             const SizedBox(width: 5),
             Text(
               j['customer_id'] as String? ?? '',
               style: const TextStyle(color: Color(0xFF767773), fontSize: 12),
             ),
             const Spacer(),
-            Text("Tap to open →", style: TextStyle(color: color.withValues(alpha: 0.7), fontSize: 11, fontWeight: FontWeight.w600)),
+            Text("Tap to open →",
+                style: TextStyle(
+                    color: color.withValues(alpha: 0.7),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600)),
           ]),
         ]),
       ),
@@ -255,7 +318,8 @@ class _JobsScreenState extends State<JobsScreen> with SingleTickerProviderStateM
     return GestureDetector(
       onTap: () => Navigator.push(
         context,
-        MaterialPageRoute(builder: (_) => ProviderChatScreen(bookingId: j['booking_id'])),
+        MaterialPageRoute(
+            builder: (_) => ProviderChatScreen(bookingId: j['booking_id'])),
       ).then((_) => _fetchJobs()),
       child: Opacity(
         opacity: 0.65,
@@ -269,24 +333,38 @@ class _JobsScreenState extends State<JobsScreen> with SingleTickerProviderStateM
           ),
           child: Row(children: [
             Container(
-              width: 36, height: 36,
-              decoration: BoxDecoration(color: color.withValues(alpha: 0.1), shape: BoxShape.circle),
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.1), shape: BoxShape.circle),
               child: Icon(icon, color: color, size: 17),
             ),
             const SizedBox(width: 12),
-            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(
-                "${j['service_type']} — ${j['location']}",
-                style: const TextStyle(color: const Color(0xFF21231D), fontSize: 13, fontWeight: FontWeight.w600),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              Text(scheduled, style: const TextStyle(color: const Color(0xFF767773), fontSize: 11)),
-            ])),
+            Expanded(
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                  Text(
+                    "${j['service_type']} — ${j['location']}",
+                    style: const TextStyle(
+                        color: const Color(0xFF21231D),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Text(scheduled,
+                      style: const TextStyle(
+                          color: const Color(0xFF767773), fontSize: 11)),
+                ])),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
-              child: Text(_statusLabel(status), style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.bold)),
+              decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8)),
+              child: Text(_statusLabel(status),
+                  style: TextStyle(
+                      color: color, fontSize: 10, fontWeight: FontWeight.bold)),
             ),
           ]),
         ),
@@ -307,7 +385,8 @@ class _JobsScreenState extends State<JobsScreen> with SingleTickerProviderStateM
     return GestureDetector(
       onTap: () => Navigator.push(
         context,
-        MaterialPageRoute(builder: (_) => ProviderChatScreen(bookingId: j['booking_id'])),
+        MaterialPageRoute(
+            builder: (_) => ProviderChatScreen(bookingId: j['booking_id'])),
       ).then((_) => _fetchJobs()),
       child: Container(
         margin: const EdgeInsets.only(bottom: 10),
@@ -319,26 +398,44 @@ class _JobsScreenState extends State<JobsScreen> with SingleTickerProviderStateM
         ),
         child: Row(children: [
           Container(
-            width: 38, height: 38,
-            decoration: BoxDecoration(color: color.withValues(alpha: 0.1), shape: BoxShape.circle),
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.1), shape: BoxShape.circle),
             child: Icon(icon, size: 18, color: color),
           ),
           const SizedBox(width: 12),
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(
-              "${j['service_type']} — ${j['location']}",
-              style: const TextStyle(color: Color(0xFF21231D), fontSize: 13, fontWeight: FontWeight.w600),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 2),
-            Text(scheduled, style: const TextStyle(color: const Color(0xFF767773), fontSize: 11)),
-          ])),
+          Expanded(
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                Text(
+                  "${j['service_type']} — ${j['location']}",
+                  style: const TextStyle(
+                      color: Color(0xFF21231D),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 2),
+                Text(scheduled,
+                    style: const TextStyle(
+                        color: const Color(0xFF767773), fontSize: 11)),
+              ])),
           Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
             if (j['final_price'] != null)
-              Text("Rs. ${j['final_price']}", style: const TextStyle(color: Color(0xFF3A9010), fontWeight: FontWeight.bold, fontSize: 12)),
+              Text("Rs. ${j['final_price']}",
+                  style: const TextStyle(
+                      color: Color(0xFF3A9010),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12)),
             const SizedBox(height: 3),
-            Text(_statusLabel(status), style: TextStyle(color: color.withValues(alpha: 0.7), fontSize: 10, fontWeight: FontWeight.bold)),
+            Text(_statusLabel(status),
+                style: TextStyle(
+                    color: color.withValues(alpha: 0.7),
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold)),
           ]),
         ]),
       ),
@@ -354,27 +451,43 @@ class _JobsScreenState extends State<JobsScreen> with SingleTickerProviderStateM
 
   IconData _jobIcon(String status) {
     switch (status) {
-      case 'PENDING_PROVIDER': return Icons.notification_important_rounded;
-      case 'ACCEPTED': return Icons.check_rounded;
-      case 'ARRIVING': return Icons.directions_bike_rounded;
-      case 'ARRIVED': return Icons.location_on_rounded;
-      case 'IN_PROGRESS': return Icons.build_rounded;
-      case 'COMPLETED': return Icons.check_circle_rounded;
-      default: return Icons.cancel_rounded;
+      case 'PENDING_PROVIDER':
+        return Icons.notification_important_rounded;
+      case 'ACCEPTED':
+        return Icons.check_rounded;
+      case 'ARRIVING':
+        return Icons.directions_bike_rounded;
+      case 'ARRIVED':
+        return Icons.location_on_rounded;
+      case 'IN_PROGRESS':
+        return Icons.build_rounded;
+      case 'COMPLETED':
+        return Icons.check_circle_rounded;
+      default:
+        return Icons.cancel_rounded;
     }
   }
 
   String _statusLabel(String status) {
     switch (status) {
-      case 'PENDING_PROVIDER': return 'NEW JOB';
-      case 'ACCEPTED': return 'ACCEPTED';
-      case 'ARRIVING': return 'EN ROUTE';
-      case 'ARRIVED': return 'ON SITE';
-      case 'IN_PROGRESS': return 'IN PROGRESS';
-      case 'COMPLETED': return 'COMPLETED';
-      case 'CANCELLED_PROVIDER': return 'DECLINED';
-      case 'CANCELLED_CUSTOMER': return 'CANCELLED';
-      default: return status.replaceAll('_', ' ');
+      case 'PENDING_PROVIDER':
+        return 'NEW JOB';
+      case 'ACCEPTED':
+        return 'ACCEPTED';
+      case 'ARRIVING':
+        return 'EN ROUTE';
+      case 'ARRIVED':
+        return 'ON SITE';
+      case 'IN_PROGRESS':
+        return 'IN PROGRESS';
+      case 'COMPLETED':
+        return 'COMPLETED';
+      case 'CANCELLED_PROVIDER':
+        return 'DECLINED';
+      case 'CANCELLED_CUSTOMER':
+        return 'CANCELLED';
+      default:
+        return status.replaceAll('_', ' ');
     }
   }
 }

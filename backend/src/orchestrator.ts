@@ -60,7 +60,7 @@ export async function runOrchestration(
       updateSession(session.session_id, { phase: "intake" });
       return {
         success: true, session_id: session.session_id, phase: "intake",
-        message: "Assalam o Alaikum! Main Khedmatgar AI hoon. Aaj kya kaam karwana hai aap ko?",
+        message: "Assalam o Alaikum! Main Haazir AI hoon. Aaj kya kaam karwana hai aap ko?",
         chips: ["AC Repair", "Plumber", "Electrician", "Cleaning", "Carpenter", "Other"],
         intent: null, match_result: null, price_quote: null, negotiation_thread_id: null, booking: null, trace,
       };
@@ -106,9 +106,9 @@ export async function runOrchestration(
     if (intent.clarification_needed || intent.confidence < 0.75 || !intent.service_type || !intent.location) {
       updateSession(session.session_id, { parsed_intent: intent, phase: "intake" });
       const q = intent.clarification_question ||
-                (intent.language === "roman_urdu"
-                  ? "Aap ki exact location kya hai aur kab kaam karwana hai?"
-                  : "Could you please specify your exact location and preferred time?");
+        (intent.language === "roman_urdu"
+          ? "Aap ki exact location kya hai aur kab kaam karwana hai?"
+          : "Could you please specify your exact location and preferred time?");
       logFallback("IntentParser", `Low confidence (${Math.round(intent.confidence * 100)}%) or missing fields`, q);
       logTraceEvent(session.session_id, {
         agent: "IntentParser",
@@ -179,8 +179,8 @@ export async function runOrchestration(
       return {
         success: false, session_id: session.session_id, phase: "intake",
         message: intent.language === "roman_urdu"
-          ? "Hum maazrat chahte hain. Is waqt aap ke area mein mazeed koi provider available nahi hai. Hum aap ko waitlist par shamil kar rahe hain. 📞 Call: 0300-KHEDMAT."
-          : "We apologize. No further providers are available in your area at the moment. We are adding you to our waitlist. 📞 Support: 0300-KHEDMAT.",
+          ? "Hum maazrat chahte hain. Is waqt aap ke area mein mazeed koi provider available nahi hai. Hum aap ko waitlist par shamil kar rahe hain. 📞 Call: 0300-HAAZIR."
+          : "We apologize. No further providers are available in your area at the moment. We are adding you to our waitlist. 📞 Support: 0300-HAAZIR.",
         intent, match_result: null, price_quote: null, negotiation_thread_id: null, booking: null, trace,
       };
     }
@@ -247,21 +247,21 @@ export async function runOrchestration(
 
     const budgetLabel = intent.budget_sensitivity === "low" ? "Price-Sensitive"
       : intent.budget_sensitivity === "flexible" ? "Flexible Budget"
-      : "Standard Budget";
+        : "Standard Budget";
     const thinkingSteps = [
-      `🤖 Khedmatgar Engine is searching...`,
-      `✓ Extracted: ${intent.service_type} in ${intent.location}`,
-      `✓ Priority: ${intent.urgency?.toUpperCase() || "STANDARD"} | Budget: ${budgetLabel}`,
-      `✓ Matched ${providersWithQuotes.length} certified professionals`,
-      `✓ Score recalculation complete — ranked by 8 weighted factors`,
+      `Haazir Engine is searching...`,
+      `Extracted: ${intent.service_type} in ${intent.location}`,
+      `Priority: ${intent.urgency?.toUpperCase() || "STANDARD"} | Budget: ${budgetLabel}`,
+      `Matched ${providersWithQuotes.length} certified professionals`,
+      `Score recalculation complete — ranked by 8 weighted factors`,
     ];
 
     return {
       success: true, session_id: session.session_id, phase: "negotiating",
       message: isUrdu
-        ? `✅ Khedmatgar AI ne top match dhoond liye hain!\nNeeche diye gaye options mein se kisi ek ko select karein ya mazeed options ke liye 'More Options' tap karein.`
-        : `✅ Khedmatgar AI found the best matching professionals!\nSelect one of the providers below, or tap 'More Options' to see others.`,
-      chips: ["More Options", "✗ Cancel"],
+        ? `Haazir AI ne top match dhoond liye hain!\nNeeche diye gaye options mein se kisi ek ko select karein ya mazeed options ke liye 'More Options' tap karein.`
+        : `Haazir AI found the best matching professionals!\nSelect one of the providers below, or tap 'More Options' to see others.`,
+      chips: ["More Options", "Cancel"],
       thinking_steps: thinkingSteps,
       countdown_seconds: countdown,
       intent,
@@ -296,7 +296,7 @@ export async function runOrchestration(
       }
 
       // Generate the JOB DETAIL object with status = PENDING_PROVIDER
-      const { booking } = createBooking(
+      const { booking } = await createBooking(
         session.parsed_intent!,
         provider,
         provider.price_quote!,
@@ -320,9 +320,9 @@ export async function runOrchestration(
       return {
         success: true, session_id: session.session_id, phase: "equipment_ack",
         message: isUrdu
-          ? `ℹ️ *Zaroori Maloomat (Equipment/Materials)*:\n\nYeh quote sirf labor charges ke liye hai. Agar kaam mein koi pipeline, screw, wire ya parts istemal hote hain tou un ka cost shamil nahi hai.\n\nKya aap is se agree karte hain?`
-          : `ℹ️ *Important Information (Equipment/Materials)*:\n\nThis quote covers labor only. Any parts, wires, pipes or replacements are NOT included in the estimated total.\n\nDo you understand and agree?`,
-        chips: ["✓ Haan, Agree!", "✗ Cancel Booking"],
+          ? `*Zaroori Maloomat (Equipment/Materials)*:\n\nYeh quote sirf labor charges ke liye hai. Agar kaam mein koi pipeline, screw, wire ya parts istemal hote hain tou un ka cost shamil nahi hai.\n\nKya aap is se agree karte hain?`
+          : `*Important Information (Equipment/Materials)*:\n\nThis quote covers labor only. Any parts, wires, pipes or replacements are NOT included in the estimated total.\n\nDo you understand and agree?`,
+        chips: ["Haan, Agree!", "Cancel Booking"],
         intent: session.parsed_intent,
         match_result: null,
         price_quote: provider.price_quote,
@@ -363,8 +363,8 @@ export async function runOrchestration(
       return {
         success: true, session_id: session.session_id, phase: "booking_confirmed",
         message: isUrdu
-          ? `✅ Shukriya! Aap ki request provider ko bhej di gayi hai.\n\nBooking ID: ${booking.booking_id}\nProvider: ${booking.provider_name}\nScheduled: ${new Date(booking.scheduled_time).toLocaleString("en-PK")}\nTotal: Rs. ${booking.final_price}\n\nAb provider ki confirmation ka intezaar karein. Confirm hone par simulation start ho gi! 🙏`
-          : `✅ Thank you! Your request has been sent to the provider.\n\nBooking ID: ${booking.booking_id}\nProvider: ${booking.provider_name}\nScheduled: ${new Date(booking.scheduled_time).toLocaleString("en-PK")}\nTotal: Rs. ${booking.final_price}\n\nWaiting for provider confirmation. Simulation will start once confirmed! 🙏`,
+          ? `Shukriya! Aap ki request provider ko bhej di gayi hai.\n\nBooking ID: ${booking.booking_id}\nProvider: ${booking.provider_name}\nScheduled: ${new Date(booking.scheduled_time).toLocaleString("en-PK")}\nTotal: Rs. ${booking.final_price}\n\nAb provider ki confirmation ka intezaar karein. Confirm hone par simulation start ho gi! 🙏`
+          : `Thank you! Your request has been sent to the provider.\n\nBooking ID: ${booking.booking_id}\nProvider: ${booking.provider_name}\nScheduled: ${new Date(booking.scheduled_time).toLocaleString("en-PK")}\nTotal: Rs. ${booking.final_price}\n\nWaiting for provider confirmation. Simulation will start once confirmed! 🙏`,
         chips: [],
         intent: session.parsed_intent,
         match_result: null,
@@ -409,7 +409,7 @@ export async function runOrchestration(
 
   return {
     success: true, session_id: session.session_id, phase: session.phase,
-    message: "Assalam o Alaikum! Main Khedmatgar AI hoon. Kya kaam karwana hai?",
+    message: "Assalam o Alaikum! Main Haazir AI hoon. Kya kaam karwana hai?",
     chips: ["AC Repair", "Plumber", "Electrician"],
     intent: null, match_result: null, price_quote: null, negotiation_thread_id: null, booking: null, trace,
   };
@@ -424,7 +424,7 @@ export async function triggerWarmRestart(session: CustomerSession, trace: AgentT
     updateSession(session.session_id, { phase: "intake" });
     return {
       success: false, session_id: session.session_id, phase: "intake",
-      message: `Maazrat, is waqt koi mazeed provider available nahi hai.\n📞 Helpline: 0300-KHEDMAT`,
+      message: `Maazrat, is waqt koi mazeed provider available nahi hai.\n📞 Helpline: 0300-HAAZIR`,
       intent: session.parsed_intent, match_result: null, price_quote: null, negotiation_thread_id: null, booking: null, trace,
       error: "no_more_providers_available",
     };
@@ -435,7 +435,7 @@ export async function triggerWarmRestart(session: CustomerSession, trace: AgentT
 }
 
 export async function confirmBookingAfterNegotiation(intent: ParsedIntent, provider: RankedProvider, priceQuote: PriceQuote, finalPrice: number, negotiationThreadId: string | null = null, customerId: string = "customer_001"): Promise<{ booking: any; trace: AgentTraceStep[] }> {
-  const { booking } = createBooking(intent, provider, priceQuote, finalPrice, negotiationThreadId, customerId);
+  const { booking } = await createBooking(intent, provider, priceQuote, finalPrice, negotiationThreadId, customerId);
   return { booking, trace: [] };
 }
 

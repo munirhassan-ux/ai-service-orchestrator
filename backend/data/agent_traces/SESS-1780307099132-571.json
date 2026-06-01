@@ -1,0 +1,212 @@
+[
+  {
+    "timestamp": "2026-06-01T09:45:00.935Z",
+    "step": 1,
+    "agent": "IntentParser",
+    "confidence": 0.95,
+    "input": "g11 me plumber dhundo pipe leakage hogaya hai. kl subah chaheeye",
+    "output": {
+      "service_type": "plumber",
+      "service_raw": "plumber",
+      "location": "G-11",
+      "urgency": "medium",
+      "preferred_time": "tomorrow morning",
+      "budget_sensitivity": "medium",
+      "job_complexity_hint": "intermediate",
+      "language": "roman_urdu",
+      "confidence": 0.95,
+      "clarification_needed": false,
+      "clarification_question": null,
+      "reasoning": "The user clearly stated the service (plumber), the specific location (G-11), and the nature of the issue (pipe leakage). Since both service and location are provided, no further clarification is needed."
+    }
+  },
+  {
+    "timestamp": "2026-06-01T09:45:01.122Z",
+    "step": 2,
+    "agent": "ProviderMatcher",
+    "output": {
+      "top_providers": [
+        {
+          "provider_id": "p019",
+          "name": "Usman Fast Plumbing",
+          "shop_name": "Usman Fast Plumbing Workshop",
+          "location": {
+            "latitude": 33.6921,
+            "longitude": 73.0537
+          },
+          "city": "Islamabad",
+          "city_area": "G-11",
+          "availability_status": "online",
+          "charges": {
+            "base_rate": 650,
+            "travel_rate": 30
+          },
+          "job_role": "Plumber",
+          "service_expertise": [
+            "plumber",
+            "pipe_repair",
+            "tap_repair"
+          ],
+          "rating": 4.32,
+          "on_time_score": 0.81,
+          "cancellation_risk": 0.12,
+          "capacity": 4,
+          "active_jobs": 0,
+          "total_reviews": 64,
+          "total_jobs": 81,
+          "distance_km": 0.2,
+          "score": 89.48,
+          "score_breakdown": {
+            "travel_time": 99,
+            "availability_match": 100,
+            "specialization": 100,
+            "on_time": 81,
+            "review_sentiment": 86,
+            "rate": 50,
+            "cancellation_risk": 88,
+            "capacity": 100
+          },
+          "is_waitlisted": false
+        },
+        {
+          "provider_id": "p011",
+          "name": "Rizwan Mistri Works",
+          "shop_name": "Rizwan Mistri Works",
+          "location": {
+            "latitude": 33.6601,
+            "longitude": 73.0219
+          },
+          "city": "Islamabad",
+          "city_area": "G-15",
+          "availability_status": "online",
+          "charges": {
+            "base_rate": 550,
+            "travel_rate": 30
+          },
+          "job_role": "Plumber",
+          "service_expertise": [
+            "plumber",
+            "pipe_repair",
+            "tap_repair",
+            "drainage"
+          ],
+          "rating": 4,
+          "on_time_score": 0.72,
+          "cancellation_risk": 0.15,
+          "capacity": 5,
+          "active_jobs": 0,
+          "total_reviews": 36,
+          "total_jobs": 45,
+          "distance_km": 4.8,
+          "score": 88.28,
+          "score_breakdown": {
+            "travel_time": 84,
+            "availability_match": 100,
+            "specialization": 100,
+            "on_time": 72,
+            "review_sentiment": 64,
+            "rate": 100,
+            "cancellation_risk": 85,
+            "capacity": 100
+          },
+          "is_waitlisted": false
+        },
+        {
+          "provider_id": "p004",
+          "name": "Hassan Plumbing Works",
+          "shop_name": "Hassan Plumbing Works",
+          "location": {
+            "latitude": 33.6715,
+            "longitude": 73.0837
+          },
+          "city": "Islamabad",
+          "city_area": "I-8",
+          "availability_status": "online",
+          "charges": {
+            "base_rate": 750,
+            "travel_rate": 30
+          },
+          "job_role": "Plumber",
+          "service_expertise": [
+            "plumber",
+            "pipe_repair",
+            "drainage"
+          ],
+          "rating": 4.5,
+          "on_time_score": 0.88,
+          "cancellation_risk": 0.06,
+          "capacity": 3,
+          "active_jobs": 0,
+          "total_reviews": 161,
+          "total_jobs": 201,
+          "distance_km": 3.6,
+          "score": 84.79,
+          "score_breakdown": {
+            "travel_time": 88,
+            "availability_match": 100,
+            "specialization": 100,
+            "on_time": 88,
+            "review_sentiment": 90,
+            "rate": 0,
+            "cancellation_risk": 94,
+            "capacity": 100
+          },
+          "is_waitlisted": false
+        }
+      ],
+      "reasoning": "Usman Fast Plumbing selected: score 89.48%, 0.2km away, 81% on-time reliability.",
+      "fallback_used": false,
+      "matching_trace": "Matched 3 eligible providers using 8 weighted factors and tiebreaker rules. Top Match: Usman Fast Plumbing"
+    }
+  },
+  {
+    "timestamp": "2026-06-01T09:45:01.123Z",
+    "agent": "PricingEngine",
+    "phase_after": "pricing_complete",
+    "budget_sensitivity": "medium",
+    "providers_priced": [
+      {
+        "provider_id": "p019",
+        "name": "Usman Fast Plumbing",
+        "score": 89.48,
+        "is_budget_pick": false,
+        "quote": {
+          "visit_fee": 150,
+          "base_rate": 650,
+          "distance_fee": 10,
+          "urgency_surcharge": 0,
+          "total": 1460,
+          "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
+        }
+      },
+      {
+        "provider_id": "p011",
+        "name": "Rizwan Mistri Works",
+        "score": 88.28,
+        "is_budget_pick": true,
+        "quote": {
+          "visit_fee": 150,
+          "base_rate": 550,
+          "distance_fee": 140,
+          "urgency_surcharge": 0,
+          "total": 1390,
+          "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
+        }
+      },
+      {
+        "provider_id": "p004",
+        "name": "Hassan Plumbing Works",
+        "score": 84.79,
+        "is_budget_pick": false,
+        "quote": {
+          "visit_fee": 150,
+          "base_rate": 750,
+          "distance_fee": 110,
+          "urgency_surcharge": 0,
+          "total": 1760,
+          "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
+        }
+      }
+    ]
+  }
+]

@@ -54,8 +54,10 @@ class _AlertsScreenState extends State<AlertsScreen> {
       final providerName = b['provider_name'] as String? ?? 'Provider';
       final serviceType = b['service_type'] as String? ?? 'Service';
       final scheduledRaw = b['scheduled_time'] as String?;
-      final updatedRaw = b['updated_at'] as String? ?? b['created_at'] as String?;
-      final updatedTime = updatedRaw != null ? DateTime.tryParse(updatedRaw) : null;
+      final updatedRaw =
+          b['updated_at'] as String? ?? b['created_at'] as String?;
+      final updatedTime =
+          updatedRaw != null ? DateTime.tryParse(updatedRaw) : null;
       final timeAgo = _timeAgo(updatedTime, now);
 
       switch (status) {
@@ -64,7 +66,8 @@ class _AlertsScreenState extends State<AlertsScreen> {
             'icon': Icons.hourglass_top_rounded,
             'color': const Color(0xFFFFB300),
             'title': 'Awaiting Provider',
-            'body': '$serviceType request sent — waiting for $providerName to confirm.',
+            'body':
+                '$serviceType request sent — waiting for $providerName to confirm.',
             'time': timeAgo,
           });
           break;
@@ -74,7 +77,8 @@ class _AlertsScreenState extends State<AlertsScreen> {
             'icon': Icons.check_circle_outline_rounded,
             'color': const Color(0xFF3A9010),
             'title': 'Booking Confirmed!',
-            'body': '$providerName ne aap ki $serviceType booking accept kar li!',
+            'body':
+                '$providerName ne aap ki $serviceType booking accept kar li!',
             'time': timeAgo,
           });
           if (scheduledRaw != null) {
@@ -86,7 +90,8 @@ class _AlertsScreenState extends State<AlertsScreen> {
                   'icon': Icons.timer_rounded,
                   'color': const Color(0xFF7A5400),
                   'title': 'Upcoming Reminder',
-                  'body': '$providerName ${diff.inMinutes} minutes mein aa raha hai. Tayaar rahein!',
+                  'body':
+                      '$providerName ${diff.inMinutes} minutes mein aa raha hai. Tayaar rahein!',
                   'time': timeAgo,
                 });
               }
@@ -129,7 +134,8 @@ class _AlertsScreenState extends State<AlertsScreen> {
             'icon': Icons.star_outline_rounded,
             'color': Colors.blueAccent,
             'title': 'Rate Your Provider',
-            'body': '$providerName ne kaam mukammal kar diya. Apna tajurba share karein!',
+            'body':
+                '$providerName ne kaam mukammal kar diya. Apna tajurba share karein!',
             'time': timeAgo,
           });
           break;
@@ -139,7 +145,8 @@ class _AlertsScreenState extends State<AlertsScreen> {
             'icon': Icons.timer_off_rounded,
             'color': Colors.redAccent,
             'title': 'Request Expired',
-            'body': 'Koi provider waqt par available nahi tha. Dobara try karein.',
+            'body':
+                'Koi provider waqt par available nahi tha. Dobara try karein.',
             'time': timeAgo,
           });
           break;
@@ -150,7 +157,8 @@ class _AlertsScreenState extends State<AlertsScreen> {
             'icon': Icons.cancel_outlined,
             'color': Colors.redAccent,
             'title': 'Booking Cancelled',
-            'body': '$serviceType booking cancel ho gayi. Naya request chat se bhejein.',
+            'body':
+                '$serviceType booking cancel ho gayi. Naya request chat se bhejein.',
             'time': timeAgo,
           });
           break;
@@ -174,25 +182,37 @@ class _AlertsScreenState extends State<AlertsScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF7FAF5),
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         backgroundColor: const Color(0xFF163300),
         elevation: 0,
-        title: SvgPicture.asset('assets/haazir_logo.svg', height: 26),
+        title: Text("Notifications",
+            style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: Colors.white)),
         actions: [
-          IconButton(icon: const Icon(Icons.refresh_rounded), onPressed: _fetchAlerts),
+          IconButton(
+              icon: const Icon(Icons.refresh_rounded), onPressed: _fetchAlerts),
         ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: const Color(0xFF3A9010)))
+          ? const Center(
+              child: CircularProgressIndicator(color: const Color(0xFF3A9010)))
           : _alerts.isEmpty
               ? const Center(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.notifications_off_outlined, color: const Color(0xFFE8EDE6), size: 48),
+                      Icon(Icons.notifications_off_outlined,
+                          color: const Color(0xFFE8EDE6), size: 48),
                       SizedBox(height: 12),
-                      Text("Koi alert nahi", style: TextStyle(color: const Color(0xFF767773), fontSize: 14)),
+                      Text("Koi alert nahi",
+                          style: TextStyle(
+                              color: const Color(0xFF767773), fontSize: 14)),
                       SizedBox(height: 4),
-                      Text("Booking karne par yahan updates milenge", style: TextStyle(color: Color(0xFF767773), fontSize: 12)),
+                      Text("Booking karne par yahan updates milenge",
+                          style: TextStyle(
+                              color: Color(0xFF767773), fontSize: 12)),
                     ],
                   ),
                 )
@@ -217,26 +237,36 @@ class _AlertsScreenState extends State<AlertsScreen> {
                             color: color.withValues(alpha: 0.12),
                             shape: BoxShape.circle,
                           ),
-                          child: Icon(a['icon'] as IconData, color: color, size: 20),
+                          child: Icon(a['icon'] as IconData,
+                              color: color, size: 20),
                         ),
                         const SizedBox(width: 14),
                         Expanded(
-                          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                            Text(
-                              a['title'] as String,
-                              style: const TextStyle(color: const Color(0xFF21231D), fontSize: 14, fontWeight: FontWeight.bold),
-                            ),
-                            const SizedBox(height: 3),
-                            Text(
-                              a['body'] as String,
-                              style: const TextStyle(color: const Color(0xFF565955), fontSize: 12, height: 1.4),
-                            ),
-                          ]),
+                          child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  a['title'] as String,
+                                  style: const TextStyle(
+                                      color: const Color(0xFF21231D),
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                const SizedBox(height: 3),
+                                Text(
+                                  a['body'] as String,
+                                  style: const TextStyle(
+                                      color: const Color(0xFF565955),
+                                      fontSize: 12,
+                                      height: 1.4),
+                                ),
+                              ]),
                         ),
                         const SizedBox(width: 8),
                         Text(
                           a['time'] as String,
-                          style: const TextStyle(color: const Color(0xFF767773), fontSize: 10),
+                          style: const TextStyle(
+                              color: const Color(0xFF767773), fontSize: 10),
                         ),
                       ]),
                     );

@@ -26,7 +26,7 @@ export interface ParsedIntent {
   reasoning: string;
 }
 
-const SYSTEM_PROMPT = `You are an intelligent conversational AI agent for Khedmatgar, a Pakistani home services platform.
+const SYSTEM_PROMPT = `You are an intelligent conversational AI agent for Haazir, a Pakistani home services platform.
 Users write in English, Urdu, or Roman Urdu. Your goal is to extract service intent and maintain a natural conversation flow.
 
 Extract ONLY valid JSON.
@@ -93,7 +93,7 @@ export async function parseIntent(userInput: string, history: any[] = []): Promi
   }
 
   const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY!);
-  const model = genAI.getGenerativeModel({ 
+  const model = genAI.getGenerativeModel({
     model: "gemini-3.1-flash-lite",
     systemInstruction: SYSTEM_PROMPT,
     generationConfig: { responseMimeType: "application/json" }
@@ -107,10 +107,10 @@ export async function parseIntent(userInput: string, history: any[] = []): Promi
     
     ${detectedService ? `\n\nHint: Roman Urdu map suggests service_type = "${detectedService}"` : ""}
   `);
-  
+
   const response = await result.response;
   const raw = response.text();
-  
+
   let parsed: ParsedIntent;
   try {
     parsed = JSON.parse(raw.replace(/```json|```/g, "").trim());

@@ -31,7 +31,7 @@ export async function processDispute(
   customerComment: string
 ): Promise<DisputeResult> {
   const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY!);
-  const model = genAI.getGenerativeModel({ 
+  const model = genAI.getGenerativeModel({
     model: "gemini-2.0-flash",
     generationConfig: { responseMimeType: "application/json" }
   });
@@ -44,7 +44,7 @@ export async function processDispute(
   const provider = providers[providerIndex];
 
   // 2. Use Gemini to determine resolution and reasoning
-  const prompt = `You are the Khedmatgar DisputeAgent. A customer has filed a dispute.
+  const prompt = `You are the Haazir DisputeAgent. A customer has filed a dispute.
   Booking ID: ${bookingId}
   Provider: ${provider.name} (Current Risk: ${provider.risk_score}, Cancel Rate: ${provider.cancellation_rate})
   Issue Type: ${issueType}

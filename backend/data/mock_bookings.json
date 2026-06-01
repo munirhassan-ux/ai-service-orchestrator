@@ -192,6 +192,2715 @@
       "customer_lat": 33.6844,
       "customer_lng": 73.0479,
       "distance_meters": 48
+    },
+    {
+      "booking_id": "SVC-20260601-0003",
+      "provider_id": "p019",
+      "provider_name": "Usman Fast Plumbing",
+      "customer_id": "customer_001",
+      "service_type": "plumber",
+      "location": "G-11",
+      "scheduled_time": "2026-06-02T05:00:00.000Z",
+      "status": "CANCELLED_TIMEOUT",
+      "final_price": 1460,
+      "price_quote": {
+        "base_rate": 650,
+        "distance_fee": 10,
+        "urgency_surcharge": 0,
+        "complexity_premium": 0,
+        "loyalty_discount": 0,
+        "surge_multiplier": 1,
+        "surge_active": false,
+        "visit_fee": 150,
+        "hours_min": 2,
+        "hours_max": 2,
+        "min_total": 1390,
+        "max_total": 1530,
+        "total": 1460,
+        "min_rate_total": 1390,
+        "floor_min": 1310,
+        "floor_max": 1610,
+        "industry_standard_min": 1040,
+        "industry_standard_max": 1690,
+        "currency": "PKR",
+        "breakdown_text": "Visit Fee (non-refundable): Rs. 150\nLabour (Rs. 650/hr × 2hrs): Rs. 1300\nTravel (0.2km): Rs. 10\n─────────────────────────────\nTotal: Rs. 1460",
+        "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
+      },
+      "negotiation_thread_id": null,
+      "confirmation_message": "Booking confirm ho gayi! Usman Fast Plumbing aap ke paas G-11 mein 02/06/2026, 10:00:00 am ko pohunchen ge. Booking ID: SVC-20260601-0003. Total: Rs. 1460.",
+      "reminder_scheduled_at": "2026-06-02T04:00:00.000Z",
+      "checklist": [
+        {
+          "item": "Diagnose leak/blockage",
+          "completed": false
+        },
+        {
+          "item": "Complete repair",
+          "completed": false
+        },
+        {
+          "item": "Test water flow",
+          "completed": false
+        },
+        {
+          "item": "Clean up area",
+          "completed": false
+        }
+      ],
+      "created_at": "2026-06-01T10:12:02.454Z",
+      "updated_at": "2026-06-01T10:23:57.448Z",
+      "state_history": [
+        {
+          "status": "PENDING_PROVIDER",
+          "timestamp": "2026-06-01T10:12:02.454Z"
+        },
+        {
+          "status": "CANCELLED_TIMEOUT",
+          "timestamp": "2026-06-01T10:23:57.448Z"
+        }
+      ],
+      "session_id": "SESS-1780308594179-466",
+      "current_lat": 33.7028,
+      "current_lng": 73.0491,
+      "customer_lat": 33.6938,
+      "customer_lng": 73.0551,
+      "distance_meters": 1201
+    },
+    {
+      "booking_id": "SVC-20260601-0004",
+      "provider_id": "p019",
+      "provider_name": "Usman Fast Plumbing",
+      "customer_id": "customer_001",
+      "service_type": "plumber",
+      "location": "G-11",
+      "scheduled_time": "2026-06-02T07:00:00.000Z",
+      "status": "COMPLETED",
+      "final_price": 1460,
+      "price_quote": {
+        "base_rate": 650,
+        "distance_fee": 10,
+        "urgency_surcharge": 0,
+        "complexity_premium": 0,
+        "loyalty_discount": 0,
+        "surge_multiplier": 1,
+        "surge_active": false,
+        "visit_fee": 150,
+        "hours_min": 2,
+        "hours_max": 2,
+        "min_total": 1390,
+        "max_total": 1530,
+        "total": 1460,
+        "min_rate_total": 1390,
+        "floor_min": 1310,
+        "floor_max": 1610,
+        "industry_standard_min": 1040,
+        "industry_standard_max": 1690,
+        "currency": "PKR",
+        "breakdown_text": "Visit Fee (non-refundable): Rs. 150\nLabour (Rs. 650/hr × 2hrs): Rs. 1300\nTravel (0.2km): Rs. 10\n─────────────────────────────\nTotal: Rs. 1460",
+        "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
+      },
+      "negotiation_thread_id": null,
+      "confirmation_message": "Booking confirm ho gayi! Usman Fast Plumbing aap ke paas G-11 mein 02/06/2026, 12:00:00 pm ko pohunchen ge. Booking ID: SVC-20260601-0004. Total: Rs. 1460.",
+      "reminder_scheduled_at": "2026-06-02T06:00:00.000Z",
+      "checklist": [
+        {
+          "item": "Diagnose leak/blockage",
+          "completed": true
+        },
+        {
+          "item": "Complete repair",
+          "completed": true
+        },
+        {
+          "item": "Test water flow",
+          "completed": true
+        },
+        {
+          "item": "Clean up area",
+          "completed": true
+        }
+      ],
+      "created_at": "2026-06-01T10:24:12.147Z",
+      "updated_at": "2026-06-01T10:26:15.611Z",
+      "state_history": [
+        {
+          "status": "PENDING_PROVIDER",
+          "timestamp": "2026-06-01T10:24:12.147Z"
+        },
+        {
+          "status": "ACCEPTED",
+          "timestamp": "2026-06-01T10:25:55.172Z"
+        },
+        {
+          "status": "COMPLETED",
+          "timestamp": "2026-06-01T10:26:00.150Z"
+        },
+        {
+          "status": "COMPLETED",
+          "timestamp": "2026-06-01T10:26:15.611Z"
+        }
+      ],
+      "session_id": "SESS-1780309444825-929",
+      "current_lat": 33.7028,
+      "current_lng": 73.0491,
+      "customer_lat": 33.6938,
+      "customer_lng": 73.0551,
+      "distance_meters": 1201
+    },
+    {
+      "booking_id": "SVC-20260601-0005",
+      "provider_id": "p019",
+      "provider_name": "Usman Fast Plumbing",
+      "customer_id": "customer_001",
+      "service_type": "plumber",
+      "location": "G-11, Islamabad",
+      "scheduled_time": "2026-06-02T09:00:00.000Z",
+      "status": "CANCELLED_TIMEOUT",
+      "final_price": 1460,
+      "price_quote": {
+        "base_rate": 650,
+        "distance_fee": 10,
+        "urgency_surcharge": 0,
+        "complexity_premium": 0,
+        "loyalty_discount": 0,
+        "surge_multiplier": 1,
+        "surge_active": false,
+        "visit_fee": 150,
+        "hours_min": 2,
+        "hours_max": 2,
+        "min_total": 1390,
+        "max_total": 1530,
+        "total": 1460,
+        "min_rate_total": 1390,
+        "floor_min": 1310,
+        "floor_max": 1610,
+        "industry_standard_min": 1040,
+        "industry_standard_max": 1690,
+        "currency": "PKR",
+        "breakdown_text": "Visit Fee (non-refundable): Rs. 150\nLabour (Rs. 650/hr × 2hrs): Rs. 1300\nTravel (0.2km): Rs. 10\n─────────────────────────────\nTotal: Rs. 1460",
+        "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
+      },
+      "negotiation_thread_id": null,
+      "confirmation_message": "Booking confirm ho gayi! Usman Fast Plumbing aap ke paas G-11, Islamabad mein 02/06/2026, 2:00:00 pm ko pohunchen ge. Booking ID: SVC-20260601-0005. Total: Rs. 1460.",
+      "reminder_scheduled_at": "2026-06-02T08:00:00.000Z",
+      "checklist": [
+        {
+          "item": "Diagnose leak/blockage",
+          "completed": false
+        },
+        {
+          "item": "Complete repair",
+          "completed": false
+        },
+        {
+          "item": "Test water flow",
+          "completed": false
+        },
+        {
+          "item": "Clean up area",
+          "completed": false
+        }
+      ],
+      "created_at": "2026-06-01T10:34:00.383Z",
+      "updated_at": "2026-06-01T10:38:45.794Z",
+      "state_history": [
+        {
+          "status": "PENDING_PROVIDER",
+          "timestamp": "2026-06-01T10:34:00.383Z"
+        },
+        {
+          "status": "CANCELLED_TIMEOUT",
+          "timestamp": "2026-06-01T10:38:45.794Z"
+        }
+      ],
+      "session_id": "SESS-1780310032513-624",
+      "current_lat": 33.7028,
+      "current_lng": 73.0491,
+      "customer_lat": 33.6938,
+      "customer_lng": 73.0551,
+      "distance_meters": 1201
+    },
+    {
+      "booking_id": "SVC-20260601-0006",
+      "provider_id": "p019",
+      "provider_name": "Usman Fast Plumbing",
+      "customer_id": "customer_001",
+      "service_type": "plumber",
+      "location": "G-11",
+      "scheduled_time": "2026-06-02T11:00:00.000Z",
+      "status": "COMPLETED",
+      "final_price": 1460,
+      "price_quote": {
+        "base_rate": 650,
+        "distance_fee": 10,
+        "urgency_surcharge": 0,
+        "complexity_premium": 0,
+        "loyalty_discount": 0,
+        "surge_multiplier": 1,
+        "surge_active": false,
+        "visit_fee": 150,
+        "hours_min": 2,
+        "hours_max": 2,
+        "min_total": 1390,
+        "max_total": 1530,
+        "total": 1460,
+        "min_rate_total": 1390,
+        "floor_min": 1310,
+        "floor_max": 1610,
+        "industry_standard_min": 1040,
+        "industry_standard_max": 1690,
+        "currency": "PKR",
+        "breakdown_text": "Visit Fee (non-refundable): Rs. 150\nLabour (Rs. 650/hr × 2hrs): Rs. 1300\nTravel (0.2km): Rs. 10\n─────────────────────────────\nTotal: Rs. 1460",
+        "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
+      },
+      "negotiation_thread_id": null,
+      "confirmation_message": "Booking confirm ho gayi! Usman Fast Plumbing aap ke paas G-11 mein 02/06/2026, 4:00:00 pm ko pohunchen ge. Booking ID: SVC-20260601-0006. Total: Rs. 1460.",
+      "reminder_scheduled_at": "2026-06-02T10:00:00.000Z",
+      "checklist": [
+        {
+          "item": "Diagnose leak/blockage",
+          "completed": true
+        },
+        {
+          "item": "Complete repair",
+          "completed": true
+        },
+        {
+          "item": "Test water flow",
+          "completed": true
+        },
+        {
+          "item": "Clean up area",
+          "completed": true
+        }
+      ],
+      "created_at": "2026-06-01T10:38:55.327Z",
+      "updated_at": "2026-06-01T10:40:59.493Z",
+      "state_history": [
+        {
+          "status": "PENDING_PROVIDER",
+          "timestamp": "2026-06-01T10:38:55.327Z"
+        },
+        {
+          "status": "ACCEPTED",
+          "timestamp": "2026-06-01T10:39:07.914Z"
+        },
+        {
+          "status": "ACCEPTED",
+          "timestamp": "2026-06-01T10:39:18.949Z"
+        },
+        {
+          "status": "COMPLETED",
+          "timestamp": "2026-06-01T10:40:59.493Z"
+        }
+      ],
+      "session_id": "SESS-1780310329092-213",
+      "current_lat": 33.7028,
+      "current_lng": 73.0491,
+      "customer_lat": 33.6938,
+      "customer_lng": 73.0551,
+      "distance_meters": 1201
+    },
+    {
+      "booking_id": "SVC-20260601-0007",
+      "provider_id": "p019",
+      "provider_name": "Usman Fast Plumbing",
+      "customer_id": "customer_001",
+      "service_type": "plumber",
+      "location": "G-11",
+      "scheduled_time": "2026-06-02T13:00:00.000Z",
+      "status": "COMPLETED",
+      "final_price": 1460,
+      "price_quote": {
+        "base_rate": 650,
+        "distance_fee": 10,
+        "urgency_surcharge": 0,
+        "complexity_premium": 0,
+        "loyalty_discount": 0,
+        "surge_multiplier": 1,
+        "surge_active": false,
+        "visit_fee": 150,
+        "hours_min": 2,
+        "hours_max": 2,
+        "min_total": 1390,
+        "max_total": 1530,
+        "total": 1460,
+        "min_rate_total": 1390,
+        "floor_min": 1310,
+        "floor_max": 1610,
+        "industry_standard_min": 1040,
+        "industry_standard_max": 1690,
+        "currency": "PKR",
+        "breakdown_text": "Visit Fee (non-refundable): Rs. 150\nLabour (Rs. 650/hr × 2hrs): Rs. 1300\nTravel (0.2km): Rs. 10\n─────────────────────────────\nTotal: Rs. 1460",
+        "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
+      },
+      "negotiation_thread_id": null,
+      "confirmation_message": "Booking confirm ho gayi! Usman Fast Plumbing aap ke paas G-11 mein 02/06/2026, 6:00:00 pm ko pohunchen ge. Booking ID: SVC-20260601-0007. Total: Rs. 1460.",
+      "reminder_scheduled_at": "2026-06-02T12:00:00.000Z",
+      "checklist": [
+        {
+          "item": "Diagnose leak/blockage",
+          "completed": true
+        },
+        {
+          "item": "Complete repair",
+          "completed": true
+        },
+        {
+          "item": "Test water flow",
+          "completed": true
+        },
+        {
+          "item": "Clean up area",
+          "completed": true
+        }
+      ],
+      "created_at": "2026-06-01T10:54:24.249Z",
+      "updated_at": "2026-06-01T10:54:52.642Z",
+      "state_history": [
+        {
+          "status": "PENDING_PROVIDER",
+          "timestamp": "2026-06-01T10:54:24.249Z"
+        },
+        {
+          "status": "ACCEPTED",
+          "timestamp": "2026-06-01T10:54:34.635Z"
+        },
+        {
+          "status": "COMPLETED",
+          "timestamp": "2026-06-01T10:54:40.371Z"
+        },
+        {
+          "status": "COMPLETED",
+          "timestamp": "2026-06-01T10:54:52.642Z"
+        }
+      ],
+      "session_id": "SESS-1780311256382-917",
+      "current_lat": 33.7028,
+      "current_lng": 73.0491,
+      "customer_lat": 33.6938,
+      "customer_lng": 73.0551,
+      "distance_meters": 1201
+    },
+    {
+      "booking_id": "SVC-20260601-0008",
+      "provider_id": "p019",
+      "provider_name": "Usman Fast Plumbing",
+      "customer_id": "customer_001",
+      "service_type": "plumber",
+      "location": "G-11",
+      "scheduled_time": "2026-06-02T15:00:00.000Z",
+      "status": "COMPLETED",
+      "final_price": 1460,
+      "price_quote": {
+        "base_rate": 650,
+        "distance_fee": 10,
+        "urgency_surcharge": 0,
+        "complexity_premium": 0,
+        "loyalty_discount": 0,
+        "surge_multiplier": 1,
+        "surge_active": false,
+        "visit_fee": 150,
+        "hours_min": 2,
+        "hours_max": 2,
+        "min_total": 1390,
+        "max_total": 1530,
+        "total": 1460,
+        "min_rate_total": 1390,
+        "floor_min": 1310,
+        "floor_max": 1610,
+        "industry_standard_min": 1040,
+        "industry_standard_max": 1690,
+        "currency": "PKR",
+        "breakdown_text": "Visit Fee (non-refundable): Rs. 150\nLabour (Rs. 650/hr × 2hrs): Rs. 1300\nTravel (0.2km): Rs. 10\n─────────────────────────────\nTotal: Rs. 1460",
+        "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
+      },
+      "negotiation_thread_id": null,
+      "confirmation_message": "Booking confirm ho gayi! Usman Fast Plumbing aap ke paas G-11 mein 02/06/2026, 8:00:00 pm ko pohunchen ge. Booking ID: SVC-20260601-0008. Total: Rs. 1460.",
+      "reminder_scheduled_at": "2026-06-02T14:00:00.000Z",
+      "checklist": [
+        {
+          "item": "Diagnose leak/blockage",
+          "completed": true
+        },
+        {
+          "item": "Complete repair",
+          "completed": true
+        },
+        {
+          "item": "Test water flow",
+          "completed": true
+        },
+        {
+          "item": "Clean up area",
+          "completed": true
+        }
+      ],
+      "created_at": "2026-06-01T10:58:56.002Z",
+      "updated_at": "2026-06-01T10:59:15.565Z",
+      "state_history": [
+        {
+          "status": "PENDING_PROVIDER",
+          "timestamp": "2026-06-01T10:58:56.002Z"
+        },
+        {
+          "status": "ACCEPTED",
+          "timestamp": "2026-06-01T10:59:10.796Z"
+        },
+        {
+          "status": "COMPLETED",
+          "timestamp": "2026-06-01T10:59:15.565Z"
+        }
+      ],
+      "session_id": "SESS-1780311529255-397",
+      "current_lat": 33.7028,
+      "current_lng": 73.0491,
+      "customer_lat": 33.6938,
+      "customer_lng": 73.0551,
+      "distance_meters": 1201
+    },
+    {
+      "booking_id": "SVC-20260601-0009",
+      "provider_id": "p019",
+      "provider_name": "Usman Fast Plumbing",
+      "customer_id": "customer_001",
+      "service_type": "plumber",
+      "location": "G-11, Islamabad",
+      "scheduled_time": "2026-06-02T17:00:00.000Z",
+      "status": "COMPLETED",
+      "final_price": 1460,
+      "price_quote": {
+        "base_rate": 650,
+        "distance_fee": 10,
+        "urgency_surcharge": 0,
+        "complexity_premium": 0,
+        "loyalty_discount": 0,
+        "surge_multiplier": 1,
+        "surge_active": false,
+        "visit_fee": 150,
+        "hours_min": 2,
+        "hours_max": 2,
+        "min_total": 1390,
+        "max_total": 1530,
+        "total": 1460,
+        "min_rate_total": 1390,
+        "floor_min": 1310,
+        "floor_max": 1610,
+        "industry_standard_min": 1040,
+        "industry_standard_max": 1690,
+        "currency": "PKR",
+        "breakdown_text": "Visit Fee (non-refundable): Rs. 150\nLabour (Rs. 650/hr × 2hrs): Rs. 1300\nTravel (0.2km): Rs. 10\n─────────────────────────────\nTotal: Rs. 1460",
+        "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
+      },
+      "negotiation_thread_id": null,
+      "confirmation_message": "Booking confirm ho gayi! Usman Fast Plumbing aap ke paas G-11, Islamabad mein 02/06/2026, 10:00:00 pm ko pohunchen ge. Booking ID: SVC-20260601-0009. Total: Rs. 1460.",
+      "reminder_scheduled_at": "2026-06-02T16:00:00.000Z",
+      "checklist": [
+        {
+          "item": "Diagnose leak/blockage",
+          "completed": true
+        },
+        {
+          "item": "Complete repair",
+          "completed": true
+        },
+        {
+          "item": "Test water flow",
+          "completed": true
+        },
+        {
+          "item": "Clean up area",
+          "completed": true
+        }
+      ],
+      "created_at": "2026-06-01T12:25:02.981Z",
+      "updated_at": "2026-06-01T12:25:14.626Z",
+      "state_history": [
+        {
+          "status": "PENDING_PROVIDER",
+          "timestamp": "2026-06-01T12:25:02.981Z"
+        },
+        {
+          "status": "ACCEPTED",
+          "timestamp": "2026-06-01T12:25:10.199Z"
+        },
+        {
+          "status": "COMPLETED",
+          "timestamp": "2026-06-01T12:25:14.626Z"
+        }
+      ],
+      "session_id": "SESS-1780316696154-766",
+      "current_lat": 33.7028,
+      "current_lng": 73.0491,
+      "customer_lat": 33.6938,
+      "customer_lng": 73.0551,
+      "distance_meters": 1201
+    },
+    {
+      "booking_id": "SVC-20260601-0010",
+      "provider_id": "p019",
+      "provider_name": "Usman Fast Plumbing",
+      "customer_id": "customer_001",
+      "service_type": "plumber",
+      "location": "G-11",
+      "scheduled_time": "2026-06-02T19:00:00.000Z",
+      "status": "COMPLETED",
+      "final_price": 1460,
+      "price_quote": {
+        "base_rate": 650,
+        "distance_fee": 10,
+        "urgency_surcharge": 0,
+        "complexity_premium": 0,
+        "loyalty_discount": 0,
+        "surge_multiplier": 1,
+        "surge_active": false,
+        "visit_fee": 150,
+        "hours_min": 2,
+        "hours_max": 2,
+        "min_total": 1390,
+        "max_total": 1530,
+        "total": 1460,
+        "min_rate_total": 1390,
+        "floor_min": 1310,
+        "floor_max": 1610,
+        "industry_standard_min": 1040,
+        "industry_standard_max": 1690,
+        "currency": "PKR",
+        "breakdown_text": "Visit Fee (non-refundable): Rs. 150\nLabour (Rs. 650/hr × 2hrs): Rs. 1300\nTravel (0.2km): Rs. 10\n─────────────────────────────\nTotal: Rs. 1460",
+        "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
+      },
+      "negotiation_thread_id": null,
+      "confirmation_message": "Booking confirm ho gayi! Usman Fast Plumbing aap ke paas G-11 mein 03/06/2026, 12:00:00 am ko pohunchen ge. Booking ID: SVC-20260601-0010. Total: Rs. 1460.",
+      "reminder_scheduled_at": "2026-06-02T18:00:00.000Z",
+      "checklist": [
+        {
+          "item": "Diagnose leak/blockage",
+          "completed": true
+        },
+        {
+          "item": "Complete repair",
+          "completed": true
+        },
+        {
+          "item": "Test water flow",
+          "completed": true
+        },
+        {
+          "item": "Clean up area",
+          "completed": true
+        }
+      ],
+      "created_at": "2026-06-01T12:32:45.794Z",
+      "updated_at": "2026-06-01T12:35:35.092Z",
+      "state_history": [
+        {
+          "status": "PENDING_PROVIDER",
+          "timestamp": "2026-06-01T12:32:45.794Z"
+        },
+        {
+          "status": "ACCEPTED",
+          "timestamp": "2026-06-01T12:33:02.099Z"
+        },
+        {
+          "status": "ARRIVING",
+          "timestamp": "2026-06-01T12:33:13.757Z"
+        },
+        {
+          "status": "ARRIVED",
+          "timestamp": "2026-06-01T12:35:16.120Z"
+        },
+        {
+          "status": "IN_PROGRESS",
+          "timestamp": "2026-06-01T12:35:16.121Z"
+        },
+        {
+          "status": "COMPLETED",
+          "timestamp": "2026-06-01T12:35:24.792Z"
+        },
+        {
+          "status": "COMPLETED",
+          "timestamp": "2026-06-01T12:35:35.092Z"
+        }
+      ],
+      "session_id": "SESS-1780317158979-495",
+      "current_lat": 33.69417859942372,
+      "current_lng": 73.05484760038418,
+      "customer_lat": 33.6938,
+      "customer_lng": 73.0551,
+      "distance_meters": 48
+    },
+    {
+      "booking_id": "SVC-20260601-0011",
+      "provider_id": "p019",
+      "provider_name": "Usman Fast Plumbing",
+      "customer_id": "customer_001",
+      "service_type": "plumber",
+      "location": "G-11",
+      "scheduled_time": "2026-06-02T21:00:00.000Z",
+      "status": "CANCELLED_CUSTOMER",
+      "final_price": 1460,
+      "price_quote": {
+        "base_rate": 650,
+        "distance_fee": 10,
+        "urgency_surcharge": 0,
+        "complexity_premium": 0,
+        "loyalty_discount": 0,
+        "surge_multiplier": 1,
+        "surge_active": false,
+        "visit_fee": 150,
+        "hours_min": 2,
+        "hours_max": 2,
+        "min_total": 1390,
+        "max_total": 1530,
+        "total": 1460,
+        "min_rate_total": 1390,
+        "floor_min": 1310,
+        "floor_max": 1610,
+        "industry_standard_min": 1040,
+        "industry_standard_max": 1690,
+        "currency": "PKR",
+        "breakdown_text": "Visit Fee (non-refundable): Rs. 150\nLabour (Rs. 650/hr × 2hrs): Rs. 1300\nTravel (0.2km): Rs. 10\n─────────────────────────────\nTotal: Rs. 1460",
+        "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
+      },
+      "negotiation_thread_id": null,
+      "confirmation_message": "Booking confirm ho gayi! Usman Fast Plumbing aap ke paas G-11 mein 03/06/2026, 2:00:00 am ko pohunchen ge. Booking ID: SVC-20260601-0011. Total: Rs. 1460.",
+      "reminder_scheduled_at": "2026-06-02T20:00:00.000Z",
+      "checklist": [
+        {
+          "item": "Diagnose leak/blockage",
+          "completed": false
+        },
+        {
+          "item": "Complete repair",
+          "completed": false
+        },
+        {
+          "item": "Test water flow",
+          "completed": false
+        },
+        {
+          "item": "Clean up area",
+          "completed": false
+        }
+      ],
+      "created_at": "2026-06-01T12:42:05.568Z",
+      "updated_at": "2026-06-01T13:43:03.188Z",
+      "state_history": [
+        {
+          "status": "PENDING_PROVIDER",
+          "timestamp": "2026-06-01T12:42:05.568Z"
+        },
+        {
+          "status": "CANCELLED_PROVIDER",
+          "timestamp": "2026-06-01T12:42:14.209Z"
+        },
+        {
+          "status": "CANCELLED_CUSTOMER",
+          "timestamp": "2026-06-01T13:43:03.188Z"
+        }
+      ],
+      "session_id": "SESS-1780317718749-892",
+      "current_lat": 33.7028,
+      "current_lng": 73.0491,
+      "customer_lat": 33.6938,
+      "customer_lng": 73.0551,
+      "distance_meters": 1201
+    },
+    {
+      "booking_id": "SVC-20260601-0012",
+      "provider_id": "p019",
+      "provider_name": "Usman Fast Plumbing",
+      "customer_id": "customer_001",
+      "service_type": "plumber",
+      "location": "G-11, Islamabad",
+      "scheduled_time": "2026-06-02T23:00:00.000Z",
+      "status": "CANCELLED_CUSTOMER",
+      "final_price": 1460,
+      "price_quote": {
+        "base_rate": 650,
+        "distance_fee": 10,
+        "urgency_surcharge": 0,
+        "complexity_premium": 0,
+        "loyalty_discount": 0,
+        "surge_multiplier": 1,
+        "surge_active": false,
+        "visit_fee": 150,
+        "hours_min": 2,
+        "hours_max": 2,
+        "min_total": 1390,
+        "max_total": 1530,
+        "total": 1460,
+        "min_rate_total": 1390,
+        "floor_min": 1310,
+        "floor_max": 1610,
+        "industry_standard_min": 1040,
+        "industry_standard_max": 1690,
+        "currency": "PKR",
+        "breakdown_text": "Visit Fee (non-refundable): Rs. 150\nLabour (Rs. 650/hr × 2hrs): Rs. 1300\nTravel (0.2km): Rs. 10\n─────────────────────────────\nTotal: Rs. 1460",
+        "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
+      },
+      "negotiation_thread_id": null,
+      "confirmation_message": "Booking confirm ho gayi! Usman Fast Plumbing aap ke paas G-11, Islamabad mein 03/06/2026, 4:00:00 am ko pohunchen ge. Booking ID: SVC-20260601-0012. Total: Rs. 1460.",
+      "reminder_scheduled_at": "2026-06-02T22:00:00.000Z",
+      "checklist": [
+        {
+          "item": "Diagnose leak/blockage",
+          "completed": false
+        },
+        {
+          "item": "Complete repair",
+          "completed": false
+        },
+        {
+          "item": "Test water flow",
+          "completed": false
+        },
+        {
+          "item": "Clean up area",
+          "completed": false
+        }
+      ],
+      "created_at": "2026-06-01T12:51:28.655Z",
+      "updated_at": "2026-06-01T12:52:06.043Z",
+      "state_history": [
+        {
+          "status": "PENDING_PROVIDER",
+          "timestamp": "2026-06-01T12:51:28.655Z"
+        },
+        {
+          "status": "CANCELLED_PROVIDER",
+          "timestamp": "2026-06-01T12:51:38.200Z"
+        },
+        {
+          "status": "CANCELLED_CUSTOMER",
+          "timestamp": "2026-06-01T12:52:06.043Z"
+        }
+      ],
+      "session_id": "SESS-1780318281357-282",
+      "current_lat": 33.7028,
+      "current_lng": 73.0491,
+      "customer_lat": 33.6938,
+      "customer_lng": 73.0551,
+      "distance_meters": 1201
+    },
+    {
+      "booking_id": "SVC-20260601-0013",
+      "provider_id": "p019",
+      "provider_name": "Usman Fast Plumbing",
+      "customer_id": "customer_001",
+      "service_type": "plumber",
+      "location": "G-11, Islamabad",
+      "scheduled_time": "2026-06-03T01:00:00.000Z",
+      "status": "COMPLETED",
+      "final_price": 1460,
+      "price_quote": {
+        "base_rate": 650,
+        "distance_fee": 10,
+        "urgency_surcharge": 0,
+        "complexity_premium": 0,
+        "loyalty_discount": 0,
+        "surge_multiplier": 1,
+        "surge_active": false,
+        "visit_fee": 150,
+        "hours_min": 2,
+        "hours_max": 2,
+        "min_total": 1390,
+        "max_total": 1530,
+        "total": 1460,
+        "min_rate_total": 1390,
+        "floor_min": 1310,
+        "floor_max": 1610,
+        "industry_standard_min": 1040,
+        "industry_standard_max": 1690,
+        "currency": "PKR",
+        "breakdown_text": "Visit Fee (non-refundable): Rs. 150\nLabour (Rs. 650/hr × 2hrs): Rs. 1300\nTravel (0.2km): Rs. 10\n─────────────────────────────\nTotal: Rs. 1460",
+        "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
+      },
+      "negotiation_thread_id": null,
+      "confirmation_message": "Booking confirm ho gayi! Usman Fast Plumbing aap ke paas G-11, Islamabad mein 03/06/2026, 6:00:00 am ko pohunchen ge. Booking ID: SVC-20260601-0013. Total: Rs. 1460.",
+      "reminder_scheduled_at": "2026-06-03T00:00:00.000Z",
+      "checklist": [
+        {
+          "item": "Diagnose leak/blockage",
+          "completed": true
+        },
+        {
+          "item": "Complete repair",
+          "completed": true
+        },
+        {
+          "item": "Test water flow",
+          "completed": true
+        },
+        {
+          "item": "Clean up area",
+          "completed": true
+        }
+      ],
+      "created_at": "2026-06-01T13:23:42.277Z",
+      "updated_at": "2026-06-01T13:25:40.923Z",
+      "state_history": [
+        {
+          "status": "PENDING_PROVIDER",
+          "timestamp": "2026-06-01T13:23:42.277Z"
+        },
+        {
+          "status": "ACCEPTED",
+          "timestamp": "2026-06-01T13:24:09.658Z"
+        },
+        {
+          "status": "ARRIVING",
+          "timestamp": "2026-06-01T13:24:33.653Z"
+        },
+        {
+          "status": "ARRIVED",
+          "timestamp": "2026-06-01T13:24:52.180Z"
+        },
+        {
+          "status": "IN_PROGRESS",
+          "timestamp": "2026-06-01T13:24:52.180Z"
+        },
+        {
+          "status": "COMPLETED",
+          "timestamp": "2026-06-01T13:25:19.087Z"
+        },
+        {
+          "status": "COMPLETED",
+          "timestamp": "2026-06-01T13:25:40.923Z"
+        }
+      ],
+      "session_id": "SESS-1780320196395-757",
+      "current_lat": 33.69417859942372,
+      "current_lng": 73.05484760038418,
+      "customer_lat": 33.6938,
+      "customer_lng": 73.0551,
+      "distance_meters": 48
+    },
+    {
+      "booking_id": "SVC-20260601-0014",
+      "provider_id": "p49720",
+      "provider_name": "Zubair Mehmood",
+      "customer_id": "customer_001",
+      "service_type": "plumber",
+      "location": "G-11",
+      "scheduled_time": "2026-06-02T05:00:00.000Z",
+      "status": "COMPLETED",
+      "final_price": 1230,
+      "price_quote": {
+        "base_rate": 499,
+        "distance_fee": 80,
+        "urgency_surcharge": 0,
+        "complexity_premium": 0,
+        "loyalty_discount": 0,
+        "surge_multiplier": 1,
+        "surge_active": false,
+        "visit_fee": 150,
+        "hours_min": 2,
+        "hours_max": 2,
+        "min_total": 1170,
+        "max_total": 1290,
+        "total": 1230,
+        "min_rate_total": 1170,
+        "floor_min": 1110,
+        "floor_max": 1350,
+        "industry_standard_min": 800,
+        "industry_standard_max": 1300,
+        "currency": "PKR",
+        "breakdown_text": "Visit Fee (non-refundable): Rs. 150\nLabour (Rs. 499/hr × 2hrs): Rs. 1000\nTravel (2.6km): Rs. 80\n─────────────────────────────\nTotal: Rs. 1230",
+        "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
+      },
+      "negotiation_thread_id": null,
+      "confirmation_message": "Booking confirm ho gayi! Zubair Mehmood aap ke paas G-11 mein 02/06/2026, 10:00:00 am ko pohunchen ge. Booking ID: SVC-20260601-0014. Total: Rs. 1230.",
+      "reminder_scheduled_at": "2026-06-02T04:00:00.000Z",
+      "checklist": [
+        {
+          "item": "Diagnose leak/blockage",
+          "completed": true
+        },
+        {
+          "item": "Complete repair",
+          "completed": true
+        },
+        {
+          "item": "Test water flow",
+          "completed": true
+        },
+        {
+          "item": "Clean up area",
+          "completed": true
+        }
+      ],
+      "created_at": "2026-06-01T13:31:36.667Z",
+      "updated_at": "2026-06-01T13:32:51.258Z",
+      "state_history": [
+        {
+          "status": "PENDING_PROVIDER",
+          "timestamp": "2026-06-01T13:31:36.667Z"
+        },
+        {
+          "status": "ACCEPTED",
+          "timestamp": "2026-06-01T13:31:52.890Z"
+        },
+        {
+          "status": "ARRIVING",
+          "timestamp": "2026-06-01T13:32:10.703Z"
+        },
+        {
+          "status": "ARRIVED",
+          "timestamp": "2026-06-01T13:32:38.158Z"
+        },
+        {
+          "status": "IN_PROGRESS",
+          "timestamp": "2026-06-01T13:32:38.158Z"
+        },
+        {
+          "status": "COMPLETED",
+          "timestamp": "2026-06-01T13:32:51.258Z"
+        }
+      ],
+      "session_id": "SESS-1780320689982-209",
+      "current_lat": 33.693404713131855,
+      "current_lng": 73.05530681660383,
+      "customer_lat": 33.6938,
+      "customer_lng": 73.0551,
+      "distance_meters": 48
+    },
+    {
+      "booking_id": "SVC-20260601-0015",
+      "provider_id": "p49720",
+      "provider_name": "Zubair Mehmood",
+      "customer_id": "customer_001",
+      "service_type": "plumber",
+      "location": "G-11",
+      "scheduled_time": "2026-06-02T07:00:00.000Z",
+      "status": "CANCELLED_CUSTOMER",
+      "final_price": 1230,
+      "price_quote": {
+        "base_rate": 499,
+        "distance_fee": 80,
+        "urgency_surcharge": 0,
+        "complexity_premium": 0,
+        "loyalty_discount": 0,
+        "surge_multiplier": 1,
+        "surge_active": false,
+        "visit_fee": 150,
+        "hours_min": 2,
+        "hours_max": 2,
+        "min_total": 1170,
+        "max_total": 1290,
+        "total": 1230,
+        "min_rate_total": 1170,
+        "floor_min": 1110,
+        "floor_max": 1350,
+        "industry_standard_min": 800,
+        "industry_standard_max": 1300,
+        "currency": "PKR",
+        "breakdown_text": "Visit Fee (non-refundable): Rs. 150\nLabour (Rs. 499/hr × 2hrs): Rs. 1000\nTravel (2.6km): Rs. 80\n─────────────────────────────\nTotal: Rs. 1230",
+        "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
+      },
+      "negotiation_thread_id": null,
+      "confirmation_message": "Booking confirm ho gayi! Zubair Mehmood aap ke paas G-11 mein 02/06/2026, 12:00:00 pm ko pohunchen ge. Booking ID: SVC-20260601-0015. Total: Rs. 1230.",
+      "reminder_scheduled_at": "2026-06-02T06:00:00.000Z",
+      "checklist": [
+        {
+          "item": "Diagnose leak/blockage",
+          "completed": false
+        },
+        {
+          "item": "Complete repair",
+          "completed": false
+        },
+        {
+          "item": "Test water flow",
+          "completed": false
+        },
+        {
+          "item": "Clean up area",
+          "completed": false
+        }
+      ],
+      "created_at": "2026-06-01T13:33:37.711Z",
+      "updated_at": "2026-06-01T13:43:00.719Z",
+      "state_history": [
+        {
+          "status": "PENDING_PROVIDER",
+          "timestamp": "2026-06-01T13:33:37.711Z"
+        },
+        {
+          "status": "CANCELLED_PROVIDER",
+          "timestamp": "2026-06-01T13:33:43.861Z"
+        },
+        {
+          "status": "CANCELLED_CUSTOMER",
+          "timestamp": "2026-06-01T13:43:00.719Z"
+        }
+      ],
+      "session_id": "SESS-1780320809413-399",
+      "current_lat": 33.672168,
+      "current_lng": 73.066418,
+      "customer_lat": 33.6938,
+      "customer_lng": 73.0551,
+      "distance_meters": 2710
+    },
+    {
+      "booking_id": "SVC-20260601-0016",
+      "provider_id": "p49720",
+      "provider_name": "Zubair Mehmood",
+      "customer_id": "customer_001",
+      "service_type": "plumber",
+      "location": "G-11",
+      "scheduled_time": "2026-06-02T09:00:00.000Z",
+      "status": "CANCELLED_CUSTOMER",
+      "final_price": 1230,
+      "price_quote": {
+        "base_rate": 499,
+        "distance_fee": 80,
+        "urgency_surcharge": 0,
+        "complexity_premium": 0,
+        "loyalty_discount": 0,
+        "surge_multiplier": 1,
+        "surge_active": false,
+        "visit_fee": 150,
+        "hours_min": 2,
+        "hours_max": 2,
+        "min_total": 1170,
+        "max_total": 1290,
+        "total": 1230,
+        "min_rate_total": 1170,
+        "floor_min": 1110,
+        "floor_max": 1350,
+        "industry_standard_min": 800,
+        "industry_standard_max": 1300,
+        "currency": "PKR",
+        "breakdown_text": "Visit Fee (non-refundable): Rs. 150\nLabour (Rs. 499/hr × 2hrs): Rs. 1000\nTravel (2.6km): Rs. 80\n─────────────────────────────\nTotal: Rs. 1230",
+        "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
+      },
+      "negotiation_thread_id": null,
+      "confirmation_message": "Booking confirm ho gayi! Zubair Mehmood aap ke paas G-11 mein 02/06/2026, 2:00:00 pm ko pohunchen ge. Booking ID: SVC-20260601-0016. Total: Rs. 1230.",
+      "reminder_scheduled_at": "2026-06-02T08:00:00.000Z",
+      "checklist": [
+        {
+          "item": "Diagnose leak/blockage",
+          "completed": false
+        },
+        {
+          "item": "Complete repair",
+          "completed": false
+        },
+        {
+          "item": "Test water flow",
+          "completed": false
+        },
+        {
+          "item": "Clean up area",
+          "completed": false
+        }
+      ],
+      "created_at": "2026-06-01T13:41:42.914Z",
+      "updated_at": "2026-06-01T13:42:58.507Z",
+      "state_history": [
+        {
+          "status": "PENDING_PROVIDER",
+          "timestamp": "2026-06-01T13:41:42.914Z"
+        },
+        {
+          "status": "CANCELLED_PROVIDER",
+          "timestamp": "2026-06-01T13:41:50.667Z"
+        },
+        {
+          "status": "CANCELLED_CUSTOMER",
+          "timestamp": "2026-06-01T13:42:58.507Z"
+        }
+      ],
+      "session_id": "SESS-1780321294367-245",
+      "current_lat": 33.672168,
+      "current_lng": 73.066418,
+      "customer_lat": 33.6938,
+      "customer_lng": 73.0551,
+      "distance_meters": 2710
+    },
+    {
+      "booking_id": "SVC-20260601-0017",
+      "provider_id": "p49436",
+      "provider_name": "Yasir Gillani",
+      "customer_id": "customer_001",
+      "service_type": "plumber",
+      "location": "G-11",
+      "scheduled_time": "2026-06-02T05:00:00.000Z",
+      "status": "CANCELLED_CUSTOMER",
+      "final_price": 1150,
+      "price_quote": {
+        "base_rate": 419,
+        "distance_fee": 160,
+        "urgency_surcharge": 0,
+        "complexity_premium": 0,
+        "loyalty_discount": 0,
+        "surge_multiplier": 1,
+        "surge_active": false,
+        "visit_fee": 150,
+        "hours_min": 2,
+        "hours_max": 2,
+        "min_total": 1090,
+        "max_total": 1210,
+        "total": 1150,
+        "min_rate_total": 1090,
+        "floor_min": 1040,
+        "floor_max": 1270,
+        "industry_standard_min": 670,
+        "industry_standard_max": 1090,
+        "currency": "PKR",
+        "breakdown_text": "Visit Fee (non-refundable): Rs. 150\nLabour (Rs. 419/hr × 2hrs): Rs. 840\nTravel (4.9km): Rs. 160\n─────────────────────────────\nTotal: Rs. 1150",
+        "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
+      },
+      "negotiation_thread_id": null,
+      "confirmation_message": "Booking confirm ho gayi! Yasir Gillani aap ke paas G-11 mein 02/06/2026, 10:00:00 am ko pohunchen ge. Booking ID: SVC-20260601-0017. Total: Rs. 1150.",
+      "reminder_scheduled_at": "2026-06-02T04:00:00.000Z",
+      "checklist": [
+        {
+          "item": "Diagnose leak/blockage",
+          "completed": false
+        },
+        {
+          "item": "Complete repair",
+          "completed": false
+        },
+        {
+          "item": "Test water flow",
+          "completed": false
+        },
+        {
+          "item": "Clean up area",
+          "completed": false
+        }
+      ],
+      "created_at": "2026-06-01T13:42:22.940Z",
+      "updated_at": "2026-06-01T13:42:54.750Z",
+      "state_history": [
+        {
+          "status": "PENDING_PROVIDER",
+          "timestamp": "2026-06-01T13:42:22.940Z"
+        },
+        {
+          "status": "CANCELLED_PROVIDER",
+          "timestamp": "2026-06-01T13:42:31.196Z"
+        },
+        {
+          "status": "CANCELLED_CUSTOMER",
+          "timestamp": "2026-06-01T13:42:54.750Z"
+        }
+      ],
+      "session_id": "SESS-1780321323164-30",
+      "current_lat": 33.725871,
+      "current_lng": 73.090999,
+      "customer_lat": 33.6938,
+      "customer_lng": 73.0551,
+      "distance_meters": 5343
+    },
+    {
+      "booking_id": "SVC-20260601-0018",
+      "provider_id": "p49436",
+      "provider_name": "Yasir Gillani",
+      "customer_id": "customer_001",
+      "service_type": "plumber",
+      "location": "G-11",
+      "scheduled_time": "2026-06-02T07:00:00.000Z",
+      "status": "CANCELLED_TIMEOUT",
+      "final_price": 1150,
+      "price_quote": {
+        "base_rate": 419,
+        "distance_fee": 160,
+        "urgency_surcharge": 0,
+        "complexity_premium": 0,
+        "loyalty_discount": 0,
+        "surge_multiplier": 1,
+        "surge_active": false,
+        "visit_fee": 150,
+        "hours_min": 2,
+        "hours_max": 2,
+        "min_total": 1090,
+        "max_total": 1210,
+        "total": 1150,
+        "min_rate_total": 1090,
+        "floor_min": 1040,
+        "floor_max": 1270,
+        "industry_standard_min": 670,
+        "industry_standard_max": 1090,
+        "currency": "PKR",
+        "breakdown_text": "Visit Fee (non-refundable): Rs. 150\nLabour (Rs. 419/hr × 2hrs): Rs. 840\nTravel (4.9km): Rs. 160\n─────────────────────────────\nTotal: Rs. 1150",
+        "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
+      },
+      "negotiation_thread_id": null,
+      "confirmation_message": "Booking confirm ho gayi! Yasir Gillani aap ke paas G-11 mein 02/06/2026, 12:00:00 pm ko pohunchen ge. Booking ID: SVC-20260601-0018. Total: Rs. 1150.",
+      "reminder_scheduled_at": "2026-06-02T06:00:00.000Z",
+      "checklist": [
+        {
+          "item": "Diagnose leak/blockage",
+          "completed": false
+        },
+        {
+          "item": "Complete repair",
+          "completed": false
+        },
+        {
+          "item": "Test water flow",
+          "completed": false
+        },
+        {
+          "item": "Clean up area",
+          "completed": false
+        }
+      ],
+      "created_at": "2026-06-01T13:57:46.552Z",
+      "updated_at": "2026-06-01T16:35:29.473Z",
+      "state_history": [
+        {
+          "status": "PENDING_PROVIDER",
+          "timestamp": "2026-06-01T13:57:46.552Z"
+        },
+        {
+          "status": "CANCELLED_TIMEOUT",
+          "timestamp": "2026-06-01T16:35:29.473Z"
+        }
+      ],
+      "session_id": "SESS-1780322245926-309",
+      "current_lat": 33.725871,
+      "current_lng": 73.090999,
+      "customer_lat": 33.6938,
+      "customer_lng": 73.0551,
+      "distance_meters": 5343
+    },
+    {
+      "booking_id": "SVC-20260601-0019",
+      "provider_id": "p49721",
+      "provider_name": "Rehan Rana",
+      "customer_id": "customer_001",
+      "service_type": "plumber",
+      "location": "G-11",
+      "scheduled_time": "2026-06-02T05:00:00.000Z",
+      "status": "CANCELLED_CUSTOMER",
+      "final_price": 1340,
+      "price_quote": {
+        "base_rate": 554,
+        "distance_fee": 80,
+        "urgency_surcharge": 0,
+        "complexity_premium": 0,
+        "loyalty_discount": 0,
+        "surge_multiplier": 1,
+        "surge_active": false,
+        "visit_fee": 150,
+        "hours_min": 2,
+        "hours_max": 2,
+        "min_total": 1270,
+        "max_total": 1410,
+        "total": 1340,
+        "min_rate_total": 1270,
+        "floor_min": 1210,
+        "floor_max": 1470,
+        "industry_standard_min": 890,
+        "industry_standard_max": 1440,
+        "currency": "PKR",
+        "breakdown_text": "Visit Fee (non-refundable): Rs. 150\nLabour (Rs. 554/hr × 2hrs): Rs. 1110\nTravel (3.1km): Rs. 80\n─────────────────────────────\nTotal: Rs. 1340",
+        "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
+      },
+      "negotiation_thread_id": null,
+      "confirmation_message": "Booking confirm ho gayi! Rehan Rana aap ke paas G-11 mein 02/06/2026, 10:00:00 am ko pohunchen ge. Booking ID: SVC-20260601-0019. Total: Rs. 1340.",
+      "reminder_scheduled_at": "2026-06-02T04:00:00.000Z",
+      "checklist": [
+        {
+          "item": "Diagnose leak/blockage",
+          "completed": false
+        },
+        {
+          "item": "Complete repair",
+          "completed": false
+        },
+        {
+          "item": "Test water flow",
+          "completed": false
+        },
+        {
+          "item": "Clean up area",
+          "completed": false
+        }
+      ],
+      "created_at": "2026-06-01T16:36:46.621Z",
+      "updated_at": "2026-06-01T16:38:25.882Z",
+      "state_history": [
+        {
+          "status": "PENDING_PROVIDER",
+          "timestamp": "2026-06-01T16:36:46.621Z"
+        },
+        {
+          "status": "CANCELLED_PROVIDER",
+          "timestamp": "2026-06-01T16:38:11.550Z"
+        },
+        {
+          "status": "CANCELLED_CUSTOMER",
+          "timestamp": "2026-06-01T16:38:25.882Z"
+        }
+      ],
+      "session_id": "SESS-1780331761075-705",
+      "current_lat": 33.66842,
+      "current_lng": 73.068787,
+      "customer_lat": 33.6938,
+      "customer_lng": 73.0551,
+      "distance_meters": 3201
+    },
+    {
+      "booking_id": "SVC-20260601-0020",
+      "provider_id": "p49720",
+      "provider_name": "Zubair Mehmood",
+      "customer_id": "customer_001",
+      "service_type": "plumber",
+      "location": "G-11",
+      "scheduled_time": "2026-06-02T11:00:00.000Z",
+      "status": "CANCELLED_CUSTOMER",
+      "final_price": 1230,
+      "price_quote": {
+        "base_rate": 499,
+        "distance_fee": 80,
+        "urgency_surcharge": 0,
+        "complexity_premium": 0,
+        "loyalty_discount": 0,
+        "surge_multiplier": 1,
+        "surge_active": false,
+        "visit_fee": 150,
+        "hours_min": 2,
+        "hours_max": 2,
+        "min_total": 1170,
+        "max_total": 1290,
+        "total": 1230,
+        "min_rate_total": 1170,
+        "floor_min": 1110,
+        "floor_max": 1350,
+        "industry_standard_min": 800,
+        "industry_standard_max": 1300,
+        "currency": "PKR",
+        "breakdown_text": "Visit Fee (non-refundable): Rs. 150\nLabour (Rs. 499/hr × 2hrs): Rs. 1000\nTravel (2.6km): Rs. 80\n─────────────────────────────\nTotal: Rs. 1230",
+        "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
+      },
+      "negotiation_thread_id": null,
+      "confirmation_message": "Booking confirm ho gayi! Zubair Mehmood aap ke paas G-11 mein 02/06/2026, 4:00:00 pm ko pohunchen ge. Booking ID: SVC-20260601-0020. Total: Rs. 1230.",
+      "reminder_scheduled_at": "2026-06-02T10:00:00.000Z",
+      "checklist": [
+        {
+          "item": "Diagnose leak/blockage",
+          "completed": false
+        },
+        {
+          "item": "Complete repair",
+          "completed": false
+        },
+        {
+          "item": "Test water flow",
+          "completed": false
+        },
+        {
+          "item": "Clean up area",
+          "completed": false
+        }
+      ],
+      "created_at": "2026-06-01T16:44:18.704Z",
+      "updated_at": "2026-06-01T16:44:51.377Z",
+      "state_history": [
+        {
+          "status": "PENDING_PROVIDER",
+          "timestamp": "2026-06-01T16:44:18.704Z"
+        },
+        {
+          "status": "CANCELLED_PROVIDER",
+          "timestamp": "2026-06-01T16:44:36.112Z"
+        },
+        {
+          "status": "CANCELLED_CUSTOMER",
+          "timestamp": "2026-06-01T16:44:51.377Z"
+        }
+      ],
+      "session_id": "SESS-1780332233212-795",
+      "current_lat": 33.672168,
+      "current_lng": 73.066418,
+      "customer_lat": 33.6938,
+      "customer_lng": 73.0551,
+      "distance_meters": 2710
+    },
+    {
+      "booking_id": "SVC-20260601-0021",
+      "provider_id": "p49721",
+      "provider_name": "Rehan Rana",
+      "customer_id": "customer_001",
+      "service_type": "plumber",
+      "location": "G-11",
+      "scheduled_time": "2026-06-02T07:00:00.000Z",
+      "status": "COMPLETED",
+      "final_price": 1340,
+      "price_quote": {
+        "base_rate": 554,
+        "distance_fee": 80,
+        "urgency_surcharge": 0,
+        "complexity_premium": 0,
+        "loyalty_discount": 0,
+        "surge_multiplier": 1,
+        "surge_active": false,
+        "visit_fee": 150,
+        "hours_min": 2,
+        "hours_max": 2,
+        "min_total": 1270,
+        "max_total": 1410,
+        "total": 1340,
+        "min_rate_total": 1270,
+        "floor_min": 1210,
+        "floor_max": 1470,
+        "industry_standard_min": 890,
+        "industry_standard_max": 1440,
+        "currency": "PKR",
+        "breakdown_text": "Visit Fee (non-refundable): Rs. 150\nLabour (Rs. 554/hr × 2hrs): Rs. 1110\nTravel (3.1km): Rs. 80\n─────────────────────────────\nTotal: Rs. 1340",
+        "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
+      },
+      "negotiation_thread_id": null,
+      "confirmation_message": "Booking confirm ho gayi! Rehan Rana aap ke paas G-11 mein 02/06/2026, 12:00:00 pm ko pohunchen ge. Booking ID: SVC-20260601-0021. Total: Rs. 1340.",
+      "reminder_scheduled_at": "2026-06-02T06:00:00.000Z",
+      "checklist": [
+        {
+          "item": "Diagnose leak/blockage",
+          "completed": true
+        },
+        {
+          "item": "Complete repair",
+          "completed": true
+        },
+        {
+          "item": "Test water flow",
+          "completed": true
+        },
+        {
+          "item": "Clean up area",
+          "completed": true
+        }
+      ],
+      "created_at": "2026-06-01T16:45:04.451Z",
+      "updated_at": "2026-06-01T16:48:00.607Z",
+      "state_history": [
+        {
+          "status": "PENDING_PROVIDER",
+          "timestamp": "2026-06-01T16:45:04.451Z"
+        },
+        {
+          "status": "ACCEPTED",
+          "timestamp": "2026-06-01T16:45:16.218Z"
+        },
+        {
+          "status": "ARRIVING",
+          "timestamp": "2026-06-01T16:45:26.142Z"
+        },
+        {
+          "status": "ARRIVED",
+          "timestamp": "2026-06-01T16:46:15.128Z"
+        },
+        {
+          "status": "IN_PROGRESS",
+          "timestamp": "2026-06-01T16:46:15.129Z"
+        },
+        {
+          "status": "COMPLETED",
+          "timestamp": "2026-06-01T16:47:43.609Z"
+        },
+        {
+          "status": "COMPLETED",
+          "timestamp": "2026-06-01T16:48:00.607Z"
+        }
+      ],
+      "session_id": "SESS-1780332297181-927",
+      "current_lat": 33.693407460843396,
+      "current_lng": 73.05531168965472,
+      "customer_lat": 33.6938,
+      "customer_lng": 73.0551,
+      "distance_meters": 48
+    },
+    {
+      "booking_id": "SVC-20260601-0022",
+      "provider_id": "p49720",
+      "provider_name": "Zubair Mehmood",
+      "customer_id": "customer_001",
+      "service_type": "plumber",
+      "location": "G-11",
+      "scheduled_time": "2026-06-02T13:00:00.000Z",
+      "status": "CANCELLED_TIMEOUT",
+      "final_price": 1230,
+      "price_quote": {
+        "base_rate": 499,
+        "distance_fee": 80,
+        "urgency_surcharge": 0,
+        "complexity_premium": 0,
+        "loyalty_discount": 0,
+        "surge_multiplier": 1,
+        "surge_active": false,
+        "visit_fee": 150,
+        "hours_min": 2,
+        "hours_max": 2,
+        "min_total": 1170,
+        "max_total": 1290,
+        "total": 1230,
+        "min_rate_total": 1170,
+        "floor_min": 1110,
+        "floor_max": 1350,
+        "industry_standard_min": 800,
+        "industry_standard_max": 1300,
+        "currency": "PKR",
+        "breakdown_text": "Visit Fee (non-refundable): Rs. 150\nLabour (Rs. 499/hr × 2hrs): Rs. 1000\nTravel (2.6km): Rs. 80\n─────────────────────────────\nTotal: Rs. 1230",
+        "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
+      },
+      "negotiation_thread_id": null,
+      "confirmation_message": "Booking confirm ho gayi! Zubair Mehmood aap ke paas G-11 mein 02/06/2026, 6:00:00 pm ko pohunchen ge. Booking ID: SVC-20260601-0022. Total: Rs. 1230.",
+      "reminder_scheduled_at": "2026-06-02T12:00:00.000Z",
+      "checklist": [
+        {
+          "item": "Diagnose leak/blockage",
+          "completed": false
+        },
+        {
+          "item": "Complete repair",
+          "completed": false
+        },
+        {
+          "item": "Test water flow",
+          "completed": false
+        },
+        {
+          "item": "Clean up area",
+          "completed": false
+        }
+      ],
+      "created_at": "2026-06-01T16:51:34.176Z",
+      "updated_at": "2026-06-01T16:54:08.539Z",
+      "state_history": [
+        {
+          "status": "PENDING_PROVIDER",
+          "timestamp": "2026-06-01T16:51:34.176Z"
+        },
+        {
+          "status": "CANCELLED_TIMEOUT",
+          "timestamp": "2026-06-01T16:54:08.539Z"
+        }
+      ],
+      "session_id": "SESS-1780332597385-46",
+      "current_lat": 33.672168,
+      "current_lng": 73.066418,
+      "customer_lat": 33.6938,
+      "customer_lng": 73.0551,
+      "distance_meters": 2710
+    },
+    {
+      "booking_id": "SVC-20260601-0023",
+      "provider_id": "p49720",
+      "provider_name": "Zubair Mehmood",
+      "customer_id": "customer_001",
+      "service_type": "plumber",
+      "location": "G-11",
+      "scheduled_time": "2026-06-02T15:00:00.000Z",
+      "status": "CANCELLED_TIMEOUT",
+      "final_price": 1230,
+      "price_quote": {
+        "base_rate": 499,
+        "distance_fee": 80,
+        "urgency_surcharge": 0,
+        "complexity_premium": 0,
+        "loyalty_discount": 0,
+        "surge_multiplier": 1,
+        "surge_active": false,
+        "visit_fee": 150,
+        "hours_min": 2,
+        "hours_max": 2,
+        "min_total": 1170,
+        "max_total": 1290,
+        "total": 1230,
+        "min_rate_total": 1170,
+        "floor_min": 1110,
+        "floor_max": 1350,
+        "industry_standard_min": 800,
+        "industry_standard_max": 1300,
+        "currency": "PKR",
+        "breakdown_text": "Visit Fee (non-refundable): Rs. 150\nLabour (Rs. 499/hr × 2hrs): Rs. 1000\nTravel (2.6km): Rs. 80\n─────────────────────────────\nTotal: Rs. 1230",
+        "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
+      },
+      "negotiation_thread_id": null,
+      "confirmation_message": "Booking confirm ho gayi! Zubair Mehmood aap ke paas G-11 mein 02/06/2026, 8:00:00 pm ko pohunchen ge. Booking ID: SVC-20260601-0023. Total: Rs. 1230.",
+      "reminder_scheduled_at": "2026-06-02T14:00:00.000Z",
+      "checklist": [
+        {
+          "item": "Diagnose leak/blockage",
+          "completed": false
+        },
+        {
+          "item": "Complete repair",
+          "completed": false
+        },
+        {
+          "item": "Test water flow",
+          "completed": false
+        },
+        {
+          "item": "Clean up area",
+          "completed": false
+        }
+      ],
+      "created_at": "2026-06-01T16:54:20.177Z",
+      "updated_at": "2026-06-01T16:56:41.446Z",
+      "state_history": [
+        {
+          "status": "PENDING_PROVIDER",
+          "timestamp": "2026-06-01T16:54:20.177Z"
+        },
+        {
+          "status": "CANCELLED_TIMEOUT",
+          "timestamp": "2026-06-01T16:56:41.446Z"
+        }
+      ],
+      "session_id": "SESS-1780332852406-513",
+      "current_lat": 33.672168,
+      "current_lng": 73.066418,
+      "customer_lat": 33.6938,
+      "customer_lng": 73.0551,
+      "distance_meters": 2710
+    },
+    {
+      "booking_id": "SVC-20260601-0024",
+      "provider_id": "p49720",
+      "provider_name": "Zubair Mehmood",
+      "customer_id": "customer_001",
+      "service_type": "plumber",
+      "location": "G-11",
+      "scheduled_time": "2026-06-02T17:00:00.000Z",
+      "status": "CANCELLED_CUSTOMER",
+      "final_price": 1230,
+      "price_quote": {
+        "base_rate": 499,
+        "distance_fee": 80,
+        "urgency_surcharge": 0,
+        "complexity_premium": 0,
+        "loyalty_discount": 0,
+        "surge_multiplier": 1,
+        "surge_active": false,
+        "visit_fee": 150,
+        "hours_min": 2,
+        "hours_max": 2,
+        "min_total": 1170,
+        "max_total": 1290,
+        "total": 1230,
+        "min_rate_total": 1170,
+        "floor_min": 1110,
+        "floor_max": 1350,
+        "industry_standard_min": 800,
+        "industry_standard_max": 1300,
+        "currency": "PKR",
+        "breakdown_text": "Visit Fee (non-refundable): Rs. 150\nLabour (Rs. 499/hr × 2hrs): Rs. 1000\nTravel (2.6km): Rs. 80\n─────────────────────────────\nTotal: Rs. 1230",
+        "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
+      },
+      "negotiation_thread_id": null,
+      "confirmation_message": "Booking confirm ho gayi! Zubair Mehmood aap ke paas G-11 mein 02/06/2026, 10:00:00 pm ko pohunchen ge. Booking ID: SVC-20260601-0024. Total: Rs. 1230.",
+      "reminder_scheduled_at": "2026-06-02T16:00:00.000Z",
+      "checklist": [
+        {
+          "item": "Diagnose leak/blockage",
+          "completed": false
+        },
+        {
+          "item": "Complete repair",
+          "completed": false
+        },
+        {
+          "item": "Test water flow",
+          "completed": false
+        },
+        {
+          "item": "Clean up area",
+          "completed": false
+        }
+      ],
+      "created_at": "2026-06-01T16:57:03.169Z",
+      "updated_at": "2026-06-01T17:13:23.445Z",
+      "state_history": [
+        {
+          "status": "PENDING_PROVIDER",
+          "timestamp": "2026-06-01T16:57:03.169Z"
+        },
+        {
+          "status": "ACCEPTED",
+          "timestamp": "2026-06-01T16:57:13.443Z"
+        },
+        {
+          "status": "ARRIVING",
+          "timestamp": "2026-06-01T16:57:25.514Z"
+        },
+        {
+          "status": "ARRIVED",
+          "timestamp": "2026-06-01T16:58:21.826Z"
+        },
+        {
+          "status": "IN_PROGRESS",
+          "timestamp": "2026-06-01T16:58:21.826Z"
+        },
+        {
+          "status": "CANCELLED_PROVIDER",
+          "timestamp": "2026-06-01T16:58:29.143Z"
+        },
+        {
+          "status": "CANCELLED_CUSTOMER",
+          "timestamp": "2026-06-01T17:13:23.445Z"
+        }
+      ],
+      "session_id": "SESS-1780333011430-828",
+      "current_lat": 33.693404713131855,
+      "current_lng": 73.05530681660383,
+      "customer_lat": 33.6938,
+      "customer_lng": 73.0551,
+      "distance_meters": 48
+    },
+    {
+      "booking_id": "SVC-20260601-0025",
+      "provider_id": "p49436",
+      "provider_name": "Yasir Gillani",
+      "customer_id": "customer_001",
+      "service_type": "plumber",
+      "location": "G-11",
+      "scheduled_time": "2026-06-02T09:00:00.000Z",
+      "status": "COMPLETED",
+      "final_price": 1150,
+      "price_quote": {
+        "base_rate": 419,
+        "distance_fee": 160,
+        "urgency_surcharge": 0,
+        "complexity_premium": 0,
+        "loyalty_discount": 0,
+        "surge_multiplier": 1,
+        "surge_active": false,
+        "visit_fee": 150,
+        "hours_min": 2,
+        "hours_max": 2,
+        "min_total": 1090,
+        "max_total": 1210,
+        "total": 1150,
+        "min_rate_total": 1090,
+        "floor_min": 1040,
+        "floor_max": 1270,
+        "industry_standard_min": 670,
+        "industry_standard_max": 1090,
+        "currency": "PKR",
+        "breakdown_text": "Visit Fee (non-refundable): Rs. 150\nLabour (Rs. 419/hr × 2hrs): Rs. 840\nTravel (4.9km): Rs. 160\n─────────────────────────────\nTotal: Rs. 1150",
+        "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
+      },
+      "negotiation_thread_id": null,
+      "confirmation_message": "Booking confirm ho gayi! Yasir Gillani aap ke paas G-11 mein 02/06/2026, 2:00:00 pm ko pohunchen ge. Booking ID: SVC-20260601-0025. Total: Rs. 1150.",
+      "reminder_scheduled_at": "2026-06-02T08:00:00.000Z",
+      "checklist": [
+        {
+          "item": "Diagnose leak/blockage",
+          "completed": true
+        },
+        {
+          "item": "Complete repair",
+          "completed": true
+        },
+        {
+          "item": "Test water flow",
+          "completed": true
+        },
+        {
+          "item": "Clean up area",
+          "completed": true
+        }
+      ],
+      "created_at": "2026-06-01T16:59:08.048Z",
+      "updated_at": "2026-06-01T17:00:40.636Z",
+      "state_history": [
+        {
+          "status": "PENDING_PROVIDER",
+          "timestamp": "2026-06-01T16:59:08.048Z"
+        },
+        {
+          "status": "ACCEPTED",
+          "timestamp": "2026-06-01T16:59:17.654Z"
+        },
+        {
+          "status": "ARRIVING",
+          "timestamp": "2026-06-01T16:59:27.033Z"
+        },
+        {
+          "status": "ARRIVED",
+          "timestamp": "2026-06-01T17:00:25.914Z"
+        },
+        {
+          "status": "IN_PROGRESS",
+          "timestamp": "2026-06-01T17:00:25.914Z"
+        },
+        {
+          "status": "COMPLETED",
+          "timestamp": "2026-06-01T17:00:40.636Z"
+        }
+      ],
+      "session_id": "SESS-1780333124476-111",
+      "current_lat": 33.69412692114084,
+      "current_lng": 73.05546594250367,
+      "customer_lat": 33.6938,
+      "customer_lng": 73.0551,
+      "distance_meters": 50
+    },
+    {
+      "booking_id": "SVC-20260601-0026",
+      "provider_id": "p49436",
+      "provider_name": "Yasir Gillani",
+      "customer_id": "customer_001",
+      "service_type": "plumber",
+      "location": "G-11",
+      "scheduled_time": "2026-06-02T11:00:00.000Z",
+      "status": "CANCELLED_CUSTOMER",
+      "final_price": 1150,
+      "price_quote": {
+        "base_rate": 419,
+        "distance_fee": 160,
+        "urgency_surcharge": 0,
+        "complexity_premium": 0,
+        "loyalty_discount": 0,
+        "surge_multiplier": 1,
+        "surge_active": false,
+        "visit_fee": 150,
+        "hours_min": 2,
+        "hours_max": 2,
+        "min_total": 1090,
+        "max_total": 1210,
+        "total": 1150,
+        "min_rate_total": 1090,
+        "floor_min": 1040,
+        "floor_max": 1270,
+        "industry_standard_min": 670,
+        "industry_standard_max": 1090,
+        "currency": "PKR",
+        "breakdown_text": "Visit Fee (non-refundable): Rs. 150\nLabour (Rs. 419/hr × 2hrs): Rs. 840\nTravel (4.9km): Rs. 160\n─────────────────────────────\nTotal: Rs. 1150",
+        "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
+      },
+      "negotiation_thread_id": null,
+      "confirmation_message": "Booking confirm ho gayi! Yasir Gillani aap ke paas G-11 mein 02/06/2026, 4:00:00 pm ko pohunchen ge. Booking ID: SVC-20260601-0026. Total: Rs. 1150.",
+      "reminder_scheduled_at": "2026-06-02T10:00:00.000Z",
+      "checklist": [
+        {
+          "item": "Diagnose leak/blockage",
+          "completed": false
+        },
+        {
+          "item": "Complete repair",
+          "completed": false
+        },
+        {
+          "item": "Test water flow",
+          "completed": false
+        },
+        {
+          "item": "Clean up area",
+          "completed": false
+        }
+      ],
+      "created_at": "2026-06-01T17:01:11.961Z",
+      "updated_at": "2026-06-01T17:13:19.797Z",
+      "state_history": [
+        {
+          "status": "PENDING_PROVIDER",
+          "timestamp": "2026-06-01T17:01:11.961Z"
+        },
+        {
+          "status": "CANCELLED_PROVIDER",
+          "timestamp": "2026-06-01T17:01:22.621Z"
+        },
+        {
+          "status": "CANCELLED_CUSTOMER",
+          "timestamp": "2026-06-01T17:13:19.797Z"
+        }
+      ],
+      "session_id": "SESS-1780333260605-102",
+      "current_lat": 33.725871,
+      "current_lng": 73.090999,
+      "customer_lat": 33.6938,
+      "customer_lng": 73.0551,
+      "distance_meters": 5343
+    },
+    {
+      "booking_id": "SVC-20260601-0027",
+      "provider_id": "p49720",
+      "provider_name": "Zubair Mehmood",
+      "customer_id": "customer_001",
+      "service_type": "plumber",
+      "location": "G-11",
+      "scheduled_time": "2026-06-02T19:00:00.000Z",
+      "status": "CANCELLED_CUSTOMER",
+      "final_price": 1230,
+      "price_quote": {
+        "base_rate": 499,
+        "distance_fee": 80,
+        "urgency_surcharge": 0,
+        "complexity_premium": 0,
+        "loyalty_discount": 0,
+        "surge_multiplier": 1,
+        "surge_active": false,
+        "visit_fee": 150,
+        "hours_min": 2,
+        "hours_max": 2,
+        "min_total": 1170,
+        "max_total": 1290,
+        "total": 1230,
+        "min_rate_total": 1170,
+        "floor_min": 1110,
+        "floor_max": 1350,
+        "industry_standard_min": 800,
+        "industry_standard_max": 1300,
+        "currency": "PKR",
+        "breakdown_text": "Visit Fee (non-refundable): Rs. 150\nLabour (Rs. 499/hr × 2hrs): Rs. 1000\nTravel (2.6km): Rs. 80\n─────────────────────────────\nTotal: Rs. 1230",
+        "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
+      },
+      "negotiation_thread_id": null,
+      "confirmation_message": "Booking confirm ho gayi! Zubair Mehmood aap ke paas G-11 mein 03/06/2026, 12:00:00 am ko pohunchen ge. Booking ID: SVC-20260601-0027. Total: Rs. 1230.",
+      "reminder_scheduled_at": "2026-06-02T18:00:00.000Z",
+      "checklist": [
+        {
+          "item": "Diagnose leak/blockage",
+          "completed": false
+        },
+        {
+          "item": "Complete repair",
+          "completed": false
+        },
+        {
+          "item": "Test water flow",
+          "completed": false
+        },
+        {
+          "item": "Clean up area",
+          "completed": false
+        }
+      ],
+      "created_at": "2026-06-01T17:01:51.663Z",
+      "updated_at": "2026-06-01T17:13:16.612Z",
+      "state_history": [
+        {
+          "status": "PENDING_PROVIDER",
+          "timestamp": "2026-06-01T17:01:51.663Z"
+        },
+        {
+          "status": "CANCELLED_PROVIDER",
+          "timestamp": "2026-06-01T17:01:59.747Z"
+        },
+        {
+          "status": "CANCELLED_CUSTOMER",
+          "timestamp": "2026-06-01T17:13:16.612Z"
+        }
+      ],
+      "session_id": "SESS-1780333290818-569",
+      "current_lat": 33.672168,
+      "current_lng": 73.066418,
+      "customer_lat": 33.6938,
+      "customer_lng": 73.0551,
+      "distance_meters": 2710
+    },
+    {
+      "booking_id": "SVC-20260601-0028",
+      "provider_id": "p14091",
+      "provider_name": "Arif Bukhari",
+      "customer_id": "customer_001",
+      "service_type": "plumber",
+      "location": "G-11",
+      "scheduled_time": "2026-06-02T05:00:00.000Z",
+      "status": "COMPLETED",
+      "final_price": 1350,
+      "price_quote": {
+        "base_rate": 468,
+        "distance_fee": 260,
+        "urgency_surcharge": 0,
+        "complexity_premium": 0,
+        "loyalty_discount": 0,
+        "surge_multiplier": 1,
+        "surge_active": false,
+        "visit_fee": 150,
+        "hours_min": 2,
+        "hours_max": 2,
+        "min_total": 1280,
+        "max_total": 1420,
+        "total": 1350,
+        "min_rate_total": 1280,
+        "floor_min": 1220,
+        "floor_max": 1490,
+        "industry_standard_min": 750,
+        "industry_standard_max": 1220,
+        "currency": "PKR",
+        "breakdown_text": "Visit Fee (non-refundable): Rs. 150\nLabour (Rs. 468/hr × 2hrs): Rs. 940\nTravel (13.1km): Rs. 260\n─────────────────────────────\nTotal: Rs. 1350",
+        "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
+      },
+      "negotiation_thread_id": null,
+      "confirmation_message": "Booking confirm ho gayi! Arif Bukhari aap ke paas G-11 mein 02/06/2026, 10:00:00 am ko pohunchen ge. Booking ID: SVC-20260601-0028. Total: Rs. 1350.",
+      "reminder_scheduled_at": "2026-06-02T04:00:00.000Z",
+      "checklist": [
+        {
+          "item": "Diagnose leak/blockage",
+          "completed": true
+        },
+        {
+          "item": "Complete repair",
+          "completed": true
+        },
+        {
+          "item": "Test water flow",
+          "completed": true
+        },
+        {
+          "item": "Clean up area",
+          "completed": true
+        }
+      ],
+      "created_at": "2026-06-01T17:11:32.473Z",
+      "updated_at": "2026-06-01T17:13:30.528Z",
+      "state_history": [
+        {
+          "status": "PENDING_PROVIDER",
+          "timestamp": "2026-06-01T17:11:32.473Z"
+        },
+        {
+          "status": "ACCEPTED",
+          "timestamp": "2026-06-01T17:11:42.497Z"
+        },
+        {
+          "status": "ARRIVING",
+          "timestamp": "2026-06-01T17:11:48.780Z"
+        },
+        {
+          "status": "ARRIVED",
+          "timestamp": "2026-06-01T17:12:54.771Z"
+        },
+        {
+          "status": "IN_PROGRESS",
+          "timestamp": "2026-06-01T17:12:54.771Z"
+        },
+        {
+          "status": "COMPLETED",
+          "timestamp": "2026-06-01T17:13:02.515Z"
+        },
+        {
+          "status": "COMPLETED",
+          "timestamp": "2026-06-01T17:13:30.528Z"
+        }
+      ],
+      "session_id": "SESS-1780333883507-132",
+      "current_lat": 33.69344987030625,
+      "current_lng": 73.05542243293995,
+      "customer_lat": 33.6938,
+      "customer_lng": 73.0551,
+      "distance_meters": 49
+    },
+    {
+      "booking_id": "SVC-20260601-0029",
+      "provider_id": "p49564",
+      "provider_name": "Kashif Abbasi",
+      "customer_id": "customer_001",
+      "service_type": "ac_repair",
+      "location": "F7, Islamabad",
+      "scheduled_time": "2026-06-01T19:14:55.079Z",
+      "status": "CANCELLED_CUSTOMER",
+      "final_price": 1860,
+      "price_quote": {
+        "base_rate": 591,
+        "distance_fee": 180,
+        "urgency_surcharge": 350,
+        "complexity_premium": 0,
+        "loyalty_discount": 0,
+        "surge_multiplier": 1,
+        "surge_active": false,
+        "visit_fee": 150,
+        "hours_min": 2,
+        "hours_max": 2,
+        "min_total": 1770,
+        "max_total": 1950,
+        "total": 1860,
+        "min_rate_total": 1770,
+        "floor_min": 1670,
+        "floor_max": 2050,
+        "industry_standard_min": 940,
+        "industry_standard_max": 1530,
+        "currency": "PKR",
+        "breakdown_text": "Visit Fee (non-refundable): Rs. 150\nLabour (Rs. 591/hr × 2hrs): Rs. 1180\nTravel (3.9km): Rs. 180\nUrgency Surcharge: Rs. 350\n─────────────────────────────\nTotal: Rs. 1860",
+        "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
+      },
+      "negotiation_thread_id": null,
+      "confirmation_message": "Booking confirm ho gayi! Kashif Abbasi aap ke paas F7, Islamabad mein 02/06/2026, 12:14:55 am ko pohunchen ge. Booking ID: SVC-20260601-0029. Total: Rs. 1860.",
+      "reminder_scheduled_at": "2026-06-01T18:14:55.079Z",
+      "checklist": [
+        {
+          "item": "Diagnose the issue",
+          "completed": false
+        },
+        {
+          "item": "Complete repair",
+          "completed": false
+        },
+        {
+          "item": "Test AC running",
+          "completed": false
+        },
+        {
+          "item": "Clean up area",
+          "completed": false
+        },
+        {
+          "item": "Show result to customer",
+          "completed": false
+        }
+      ],
+      "created_at": "2026-06-01T17:14:55.080Z",
+      "updated_at": "2026-06-01T17:24:18.073Z",
+      "state_history": [
+        {
+          "status": "PENDING_PROVIDER",
+          "timestamp": "2026-06-01T17:14:55.080Z"
+        },
+        {
+          "status": "ACCEPTED",
+          "timestamp": "2026-06-01T17:15:03.302Z"
+        },
+        {
+          "status": "ARRIVING",
+          "timestamp": "2026-06-01T17:15:09.158Z"
+        },
+        {
+          "status": "ARRIVED",
+          "timestamp": "2026-06-01T17:16:01.157Z"
+        },
+        {
+          "status": "IN_PROGRESS",
+          "timestamp": "2026-06-01T17:16:01.158Z"
+        },
+        {
+          "status": "CANCELLED_PROVIDER",
+          "timestamp": "2026-06-01T17:24:06.443Z"
+        },
+        {
+          "status": "CANCELLED_CUSTOMER",
+          "timestamp": "2026-06-01T17:24:18.073Z"
+        }
+      ],
+      "session_id": "SESS-1780334045157-526",
+      "current_lat": 33.68481957351306,
+      "current_lng": 73.04799119382976,
+      "customer_lat": 33.6844,
+      "customer_lng": 73.0479,
+      "distance_meters": 47
+    },
+    {
+      "booking_id": "SVC-20260601-0030",
+      "provider_id": "p08488",
+      "provider_name": "Sajid Raza",
+      "customer_id": "customer_001",
+      "service_type": "plumber",
+      "location": "johar town",
+      "scheduled_time": "2026-06-02T05:00:00.000Z",
+      "status": "CANCELLED_CUSTOMER",
+      "final_price": 1480,
+      "price_quote": {
+        "base_rate": 462,
+        "distance_fee": 410,
+        "urgency_surcharge": 0,
+        "complexity_premium": 0,
+        "loyalty_discount": 0,
+        "surge_multiplier": 1,
+        "surge_active": false,
+        "visit_fee": 150,
+        "hours_min": 2,
+        "hours_max": 2,
+        "min_total": 1410,
+        "max_total": 1550,
+        "total": 1480,
+        "min_rate_total": 1410,
+        "floor_min": 1330,
+        "floor_max": 1630,
+        "industry_standard_min": 740,
+        "industry_standard_max": 1200,
+        "currency": "PKR",
+        "breakdown_text": "Visit Fee (non-refundable): Rs. 150\nLabour (Rs. 462/hr × 2hrs): Rs. 920\nTravel (9.6km): Rs. 410\n─────────────────────────────\nTotal: Rs. 1480",
+        "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
+      },
+      "negotiation_thread_id": null,
+      "confirmation_message": "Booking confirm ho gayi! Sajid Raza aap ke paas johar town mein 02/06/2026, 10:00:00 am ko pohunchen ge. Booking ID: SVC-20260601-0030. Total: Rs. 1480.",
+      "reminder_scheduled_at": "2026-06-02T04:00:00.000Z",
+      "checklist": [
+        {
+          "item": "Diagnose leak/blockage",
+          "completed": false
+        },
+        {
+          "item": "Complete repair",
+          "completed": false
+        },
+        {
+          "item": "Test water flow",
+          "completed": false
+        },
+        {
+          "item": "Clean up area",
+          "completed": false
+        }
+      ],
+      "created_at": "2026-06-01T17:24:47.863Z",
+      "updated_at": "2026-06-01T17:33:12.071Z",
+      "state_history": [
+        {
+          "status": "PENDING_PROVIDER",
+          "timestamp": "2026-06-01T17:24:47.863Z"
+        },
+        {
+          "status": "ACCEPTED",
+          "timestamp": "2026-06-01T17:24:56.020Z"
+        },
+        {
+          "status": "ARRIVING",
+          "timestamp": "2026-06-01T17:25:03.905Z"
+        },
+        {
+          "status": "ARRIVED",
+          "timestamp": "2026-06-01T17:26:45.882Z"
+        },
+        {
+          "status": "IN_PROGRESS",
+          "timestamp": "2026-06-01T17:26:45.882Z"
+        },
+        {
+          "status": "CANCELLED_PROVIDER",
+          "timestamp": "2026-06-01T17:33:04.712Z"
+        },
+        {
+          "status": "CANCELLED_CUSTOMER",
+          "timestamp": "2026-06-01T17:33:12.071Z"
+        }
+      ],
+      "session_id": "SESS-1780334677487-928",
+      "current_lat": 33.683995982327474,
+      "current_lng": 73.04814472096515,
+      "customer_lat": 33.6844,
+      "customer_lng": 73.0479,
+      "distance_meters": 50
+    },
+    {
+      "booking_id": "SVC-20260601-0031",
+      "provider_id": "p07575",
+      "provider_name": "Sameer Khan",
+      "customer_id": "customer_001",
+      "service_type": "plumber",
+      "location": "johar town",
+      "scheduled_time": "2026-06-02T05:00:00.000Z",
+      "status": "COMPLETED",
+      "final_price": 1060,
+      "price_quote": {
+        "base_rate": 440,
+        "distance_fee": 30,
+        "urgency_surcharge": 0,
+        "complexity_premium": 0,
+        "loyalty_discount": 0,
+        "surge_multiplier": 1,
+        "surge_active": false,
+        "visit_fee": 150,
+        "hours_min": 2,
+        "hours_max": 2,
+        "min_total": 1010,
+        "max_total": 1110,
+        "total": 1060,
+        "min_rate_total": 1010,
+        "floor_min": 950,
+        "floor_max": 1170,
+        "industry_standard_min": 700,
+        "industry_standard_max": 1140,
+        "currency": "PKR",
+        "breakdown_text": "Visit Fee (non-refundable): Rs. 150\nLabour (Rs. 440/hr × 2hrs): Rs. 880\nTravel (0.7km): Rs. 30\n─────────────────────────────\nTotal: Rs. 1060",
+        "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
+      },
+      "negotiation_thread_id": null,
+      "confirmation_message": "Booking confirm ho gayi! Sameer Khan aap ke paas johar town mein 02/06/2026, 10:00:00 am ko pohunchen ge. Booking ID: SVC-20260601-0031. Total: Rs. 1060.",
+      "reminder_scheduled_at": "2026-06-02T04:00:00.000Z",
+      "checklist": [
+        {
+          "item": "Diagnose leak/blockage",
+          "completed": true
+        },
+        {
+          "item": "Complete repair",
+          "completed": true
+        },
+        {
+          "item": "Test water flow",
+          "completed": true
+        },
+        {
+          "item": "Clean up area",
+          "completed": true
+        }
+      ],
+      "created_at": "2026-06-01T17:35:19.782Z",
+      "updated_at": "2026-06-01T17:36:17.048Z",
+      "state_history": [
+        {
+          "status": "PENDING_PROVIDER",
+          "timestamp": "2026-06-01T17:35:19.782Z"
+        },
+        {
+          "status": "ACCEPTED",
+          "timestamp": "2026-06-01T17:35:30.780Z"
+        },
+        {
+          "status": "ARRIVING",
+          "timestamp": "2026-06-01T17:35:36.184Z"
+        },
+        {
+          "status": "ARRIVED",
+          "timestamp": "2026-06-01T17:36:08.187Z"
+        },
+        {
+          "status": "IN_PROGRESS",
+          "timestamp": "2026-06-01T17:36:08.187Z"
+        },
+        {
+          "status": "COMPLETED",
+          "timestamp": "2026-06-01T17:36:17.048Z"
+        }
+      ],
+      "session_id": "SESS-1780335303049-647",
+      "current_lat": 31.46468244642601,
+      "current_lng": 74.28091240952442,
+      "customer_lat": 31.4644549,
+      "customer_lng": 74.2804881,
+      "distance_meters": 48
+    },
+    {
+      "booking_id": "SVC-20260601-0032",
+      "provider_id": "p07580",
+      "provider_name": "Sohail Siddiqui",
+      "customer_id": "customer_001",
+      "service_type": "plumber",
+      "location": "Valencia Town",
+      "scheduled_time": "2026-06-02T05:00:00.000Z",
+      "status": "COMPLETED",
+      "final_price": 1680,
+      "price_quote": {
+        "base_rate": 693,
+        "distance_fee": 140,
+        "urgency_surcharge": 0,
+        "complexity_premium": 0,
+        "loyalty_discount": 0,
+        "surge_multiplier": 1,
+        "surge_active": false,
+        "visit_fee": 150,
+        "hours_min": 2,
+        "hours_max": 2,
+        "min_total": 1600,
+        "max_total": 1760,
+        "total": 1680,
+        "min_rate_total": 1600,
+        "floor_min": 1510,
+        "floor_max": 1850,
+        "industry_standard_min": 1110,
+        "industry_standard_max": 1810,
+        "currency": "PKR",
+        "breakdown_text": "Visit Fee (non-refundable): Rs. 150\nLabour (Rs. 693/hr × 2hrs): Rs. 1390\nTravel (6.8km): Rs. 140\n─────────────────────────────\nTotal: Rs. 1680",
+        "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
+      },
+      "negotiation_thread_id": null,
+      "confirmation_message": "Booking confirm ho gayi! Sohail Siddiqui aap ke paas Valencia Town mein 02/06/2026, 10:00:00 am ko pohunchen ge. Booking ID: SVC-20260601-0032. Total: Rs. 1680.",
+      "reminder_scheduled_at": "2026-06-02T04:00:00.000Z",
+      "checklist": [
+        {
+          "item": "Diagnose leak/blockage",
+          "completed": true
+        },
+        {
+          "item": "Complete repair",
+          "completed": true
+        },
+        {
+          "item": "Test water flow",
+          "completed": true
+        },
+        {
+          "item": "Clean up area",
+          "completed": true
+        }
+      ],
+      "created_at": "2026-06-01T17:36:48.043Z",
+      "updated_at": "2026-06-01T17:39:02.060Z",
+      "state_history": [
+        {
+          "status": "PENDING_PROVIDER",
+          "timestamp": "2026-06-01T17:36:48.043Z"
+        },
+        {
+          "status": "ACCEPTED",
+          "timestamp": "2026-06-01T17:36:58.586Z"
+        },
+        {
+          "status": "ARRIVING",
+          "timestamp": "2026-06-01T17:37:05.150Z"
+        },
+        {
+          "status": "ARRIVED",
+          "timestamp": "2026-06-01T17:38:10.120Z"
+        },
+        {
+          "status": "IN_PROGRESS",
+          "timestamp": "2026-06-01T17:38:10.120Z"
+        },
+        {
+          "status": "COMPLETED",
+          "timestamp": "2026-06-01T17:39:02.060Z"
+        }
+      ],
+      "session_id": "SESS-1780335393401-202",
+      "current_lat": 31.41353288982988,
+      "current_lng": 74.25659763543658,
+      "customer_lat": 31.413127,
+      "customer_lng": 74.2563743,
+      "distance_meters": 50
+    },
+    {
+      "booking_id": "SVC-20260601-0033",
+      "provider_id": "p49721",
+      "provider_name": "Rehan Rana",
+      "customer_id": "customer_001",
+      "service_type": "plumber",
+      "location": "G-11",
+      "scheduled_time": "2026-06-02T09:00:00.000Z",
+      "status": "CANCELLED_CUSTOMER",
+      "final_price": 1340,
+      "price_quote": {
+        "base_rate": 554,
+        "distance_fee": 80,
+        "urgency_surcharge": 0,
+        "complexity_premium": 0,
+        "loyalty_discount": 0,
+        "surge_multiplier": 1,
+        "surge_active": false,
+        "visit_fee": 150,
+        "hours_min": 2,
+        "hours_max": 2,
+        "min_total": 1270,
+        "max_total": 1410,
+        "total": 1340,
+        "min_rate_total": 1270,
+        "floor_min": 1210,
+        "floor_max": 1470,
+        "industry_standard_min": 890,
+        "industry_standard_max": 1440,
+        "currency": "PKR",
+        "breakdown_text": "Visit Fee (non-refundable): Rs. 150\nLabour (Rs. 554/hr × 2hrs): Rs. 1110\nTravel (3.1km): Rs. 80\n─────────────────────────────\nTotal: Rs. 1340",
+        "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
+      },
+      "negotiation_thread_id": null,
+      "confirmation_message": "Booking confirm ho gayi! Rehan Rana aap ke paas G-11 mein 02/06/2026, 2:00:00 pm ko pohunchen ge. Booking ID: SVC-20260601-0033. Total: Rs. 1340.",
+      "reminder_scheduled_at": "2026-06-02T08:00:00.000Z",
+      "checklist": [
+        {
+          "item": "Diagnose leak/blockage",
+          "completed": false
+        },
+        {
+          "item": "Complete repair",
+          "completed": false
+        },
+        {
+          "item": "Test water flow",
+          "completed": false
+        },
+        {
+          "item": "Clean up area",
+          "completed": false
+        }
+      ],
+      "created_at": "2026-06-01T17:39:29.403Z",
+      "updated_at": "2026-06-01T17:39:57.350Z",
+      "state_history": [
+        {
+          "status": "PENDING_PROVIDER",
+          "timestamp": "2026-06-01T17:39:29.403Z"
+        },
+        {
+          "status": "CANCELLED_PROVIDER",
+          "timestamp": "2026-06-01T17:39:44.503Z"
+        },
+        {
+          "status": "CANCELLED_CUSTOMER",
+          "timestamp": "2026-06-01T17:39:57.350Z"
+        }
+      ],
+      "session_id": "SESS-1780335556380-692",
+      "current_lat": 33.66842,
+      "current_lng": 73.068787,
+      "customer_lat": 33.6938,
+      "customer_lng": 73.0551,
+      "distance_meters": 3100
+    },
+    {
+      "booking_id": "SVC-20260601-0034",
+      "provider_id": "p49720",
+      "provider_name": "Zubair Mehmood",
+      "customer_id": "customer_001",
+      "service_type": "plumber",
+      "location": "G-11",
+      "scheduled_time": "2026-06-02T21:00:00.000Z",
+      "status": "CANCELLED_TIMEOUT",
+      "final_price": 1230,
+      "price_quote": {
+        "base_rate": 499,
+        "distance_fee": 80,
+        "urgency_surcharge": 0,
+        "complexity_premium": 0,
+        "loyalty_discount": 0,
+        "surge_multiplier": 1,
+        "surge_active": false,
+        "visit_fee": 150,
+        "hours_min": 2,
+        "hours_max": 2,
+        "min_total": 1170,
+        "max_total": 1290,
+        "total": 1230,
+        "min_rate_total": 1170,
+        "floor_min": 1110,
+        "floor_max": 1350,
+        "industry_standard_min": 800,
+        "industry_standard_max": 1300,
+        "currency": "PKR",
+        "breakdown_text": "Visit Fee (non-refundable): Rs. 150\nLabour (Rs. 499/hr × 2hrs): Rs. 1000\nTravel (2.6km): Rs. 80\n─────────────────────────────\nTotal: Rs. 1230",
+        "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
+      },
+      "negotiation_thread_id": null,
+      "confirmation_message": "Booking confirm ho gayi! Zubair Mehmood aap ke paas G-11 mein 03/06/2026, 2:00:00 am ko pohunchen ge. Booking ID: SVC-20260601-0034. Total: Rs. 1230.",
+      "reminder_scheduled_at": "2026-06-02T20:00:00.000Z",
+      "checklist": [
+        {
+          "item": "Diagnose leak/blockage",
+          "completed": false
+        },
+        {
+          "item": "Complete repair",
+          "completed": false
+        },
+        {
+          "item": "Test water flow",
+          "completed": false
+        },
+        {
+          "item": "Clean up area",
+          "completed": false
+        }
+      ],
+      "created_at": "2026-06-01T17:51:57.631Z",
+      "updated_at": "2026-06-01T17:54:08.055Z",
+      "state_history": [
+        {
+          "status": "PENDING_PROVIDER",
+          "timestamp": "2026-06-01T17:51:57.631Z"
+        },
+        {
+          "status": "CANCELLED_TIMEOUT",
+          "timestamp": "2026-06-01T17:54:08.055Z"
+        }
+      ],
+      "session_id": "SESS-1780336221910-136",
+      "current_lat": 33.672168,
+      "current_lng": 73.066418,
+      "customer_lat": 33.6938,
+      "customer_lng": 73.0551,
+      "distance_meters": 2600
+    },
+    {
+      "booking_id": "SVC-20260601-0035",
+      "provider_id": "p49720",
+      "provider_name": "Zubair Mehmood",
+      "customer_id": "customer_001",
+      "service_type": "plumber",
+      "location": "G-11",
+      "scheduled_time": "2026-06-02T23:00:00.000Z",
+      "status": "COMPLETED",
+      "final_price": 1230,
+      "price_quote": {
+        "base_rate": 499,
+        "distance_fee": 80,
+        "urgency_surcharge": 0,
+        "complexity_premium": 0,
+        "loyalty_discount": 0,
+        "surge_multiplier": 1,
+        "surge_active": false,
+        "visit_fee": 150,
+        "hours_min": 2,
+        "hours_max": 2,
+        "min_total": 1170,
+        "max_total": 1290,
+        "total": 1230,
+        "min_rate_total": 1170,
+        "floor_min": 1110,
+        "floor_max": 1350,
+        "industry_standard_min": 800,
+        "industry_standard_max": 1300,
+        "currency": "PKR",
+        "breakdown_text": "Visit Fee (non-refundable): Rs. 150\nLabour (Rs. 499/hr × 2hrs): Rs. 1000\nTravel (2.6km): Rs. 80\n─────────────────────────────\nTotal: Rs. 1230",
+        "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
+      },
+      "negotiation_thread_id": null,
+      "confirmation_message": "Booking confirm ho gayi! Zubair Mehmood aap ke paas G-11 mein 03/06/2026, 4:00:00 am ko pohunchen ge. Booking ID: SVC-20260601-0035. Total: Rs. 1230.",
+      "reminder_scheduled_at": "2026-06-02T22:00:00.000Z",
+      "checklist": [
+        {
+          "item": "Diagnose leak/blockage",
+          "completed": true
+        },
+        {
+          "item": "Complete repair",
+          "completed": true
+        },
+        {
+          "item": "Test water flow",
+          "completed": true
+        },
+        {
+          "item": "Clean up area",
+          "completed": true
+        }
+      ],
+      "created_at": "2026-06-01T17:54:56.415Z",
+      "updated_at": "2026-06-01T18:00:45.771Z",
+      "state_history": [
+        {
+          "status": "PENDING_PROVIDER",
+          "timestamp": "2026-06-01T17:54:56.415Z"
+        },
+        {
+          "status": "ACCEPTED",
+          "timestamp": "2026-06-01T17:55:31.114Z"
+        },
+        {
+          "status": "ARRIVING",
+          "timestamp": "2026-06-01T17:55:57.949Z"
+        },
+        {
+          "status": "ARRIVED",
+          "timestamp": "2026-06-01T17:57:10.033Z"
+        },
+        {
+          "status": "IN_PROGRESS",
+          "timestamp": "2026-06-01T17:57:10.033Z"
+        },
+        {
+          "status": "COMPLETED",
+          "timestamp": "2026-06-01T17:59:37.927Z"
+        },
+        {
+          "status": "COMPLETED",
+          "timestamp": "2026-06-01T18:00:45.771Z"
+        }
+      ],
+      "session_id": "SESS-1780336488105-374",
+      "current_lat": 33.693404713131855,
+      "current_lng": 73.05530681660383,
+      "customer_lat": 33.6938,
+      "customer_lng": 73.0551,
+      "distance_meters": 48
     }
   ]
 }

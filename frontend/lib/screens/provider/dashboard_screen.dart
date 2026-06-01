@@ -16,7 +16,14 @@ class _ProviderDashboardState extends State<ProviderDashboard> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: SvgPicture.asset('assets/haazir_logo.svg', height: 26),
+        automaticallyImplyLeading: false,
+        backgroundColor: const Color(0xFF163300),
+        elevation: 0,
+        title: Text("Dashboard",
+            style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: Colors.white)),
         actions: [
           Switch(
             value: _isAvailable,
@@ -34,14 +41,20 @@ class _ProviderDashboardState extends State<ProviderDashboard> {
             const SizedBox(height: 32),
             const Text(
               'ACTIVE JOBS',
-              style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.2, color: const Color(0xFF565955)),
+              style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.2,
+                  color: const Color(0xFF565955)),
             ),
             const SizedBox(height: 16),
             _buildJobCard(),
             const SizedBox(height: 32),
             const Text(
               'REPUTATION',
-              style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.2, color: const Color(0xFF565955)),
+              style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.2,
+                  color: const Color(0xFF565955)),
             ),
             const SizedBox(height: 16),
             _buildReputationCard(),
@@ -60,15 +73,19 @@ class _ProviderDashboardState extends State<ProviderDashboard> {
       mainAxisSpacing: 16,
       childAspectRatio: 1.5,
       children: [
-        _buildStatTile('Today\'s Earnings', 'Rs. 4,500', Icons.payments_rounded, Colors.green),
+        _buildStatTile('Today\'s Earnings', 'Rs. 4,500', Icons.payments_rounded,
+            Colors.green),
         _buildStatTile('Completed', '142', Icons.task_alt_rounded, Colors.blue),
-        _buildStatTile('Rating', '4.7 / 5.0', Icons.star_rounded, const Color(0xFF3A9010)),
-        _buildStatTile('Risk Score', '0.08', Icons.security_rounded, Colors.orange),
+        _buildStatTile(
+            'Rating', '4.7 / 5.0', Icons.star_rounded, const Color(0xFF3A9010)),
+        _buildStatTile(
+            'Risk Score', '0.08', Icons.security_rounded, Colors.orange),
       ],
     );
   }
 
-  Widget _buildStatTile(String label, String value, IconData icon, Color color) {
+  Widget _buildStatTile(
+      String label, String value, IconData icon, Color color) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -84,8 +101,12 @@ class _ProviderDashboardState extends State<ProviderDashboard> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              Text(label, style: const TextStyle(fontSize: 12, color: const Color(0xFF565955))),
+              Text(value,
+                  style: const TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.bold)),
+              Text(label,
+                  style: const TextStyle(
+                      fontSize: 12, color: const Color(0xFF565955))),
             ],
           ),
         ],
@@ -118,17 +139,25 @@ class _ProviderDashboardState extends State<ProviderDashboard> {
                 const Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('AC Repair - G-13', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                    Text('Today, 2:00 PM', style: TextStyle(color: const Color(0xFF565955))),
+                    Text('AC Repair - G-13',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold)),
+                    Text('Today, 2:00 PM',
+                        style: TextStyle(color: const Color(0xFF565955))),
                   ],
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
                     color: const Color(0xFF3A9010),
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: const Text('EN ROUTE', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 12)),
+                  child: const Text('EN ROUTE',
+                      style: TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12)),
                 ),
               ],
             ),
@@ -136,8 +165,13 @@ class _ProviderDashboardState extends State<ProviderDashboard> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Agreed Price', style: TextStyle(color: const Color(0xFF3E3F3B))),
-                const Text('Rs. 1,200', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: const Color(0xFF3A9010))),
+                const Text('Agreed Price',
+                    style: TextStyle(color: const Color(0xFF3E3F3B))),
+                const Text('Rs. 1,200',
+                    style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF3A9010))),
               ],
             ),
           ],
@@ -175,19 +209,24 @@ class _ReputationRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Expanded(flex: 3, child: Text(label, style: const TextStyle(color: const Color(0xFF3E3F3B)))),
+        Expanded(
+            flex: 3,
+            child: Text(label,
+                style: const TextStyle(color: const Color(0xFF3E3F3B)))),
         Expanded(
           flex: 7,
           child: LinearProgressIndicator(
             value: value,
             backgroundColor: const Color(0xFFE8EDE6),
-            color: value > 0.8 ? const Color(0xFF3A9010) : const Color(0xFF3A9010),
+            color:
+                value > 0.8 ? const Color(0xFF3A9010) : const Color(0xFF3A9010),
             minHeight: 8,
             borderRadius: BorderRadius.circular(4),
           ),
         ),
         const SizedBox(width: 12),
-        Text('${(value * 100).toInt()}%', style: const TextStyle(fontWeight: FontWeight.bold)),
+        Text('${(value * 100).toInt()}%',
+            style: const TextStyle(fontWeight: FontWeight.bold)),
       ],
     );
   }

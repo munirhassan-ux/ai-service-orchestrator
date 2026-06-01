@@ -121,43 +121,89 @@ function haversine(lat1: number, lng1: number, lat2: number, lng2: number): numb
   const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
     Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLng / 2) *
-      Math.sin(dLng / 2);
+    Math.cos((lat2 * Math.PI) / 180) *
+    Math.sin(dLng / 2) *
+    Math.sin(dLng / 2);
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-const areaCoords: Record<string, { lat: number; lng: number }> = {
+// Static fallback table — used instantly if location matches, avoiding a network call
+const _staticCoords: Record<string, { lat: number; lng: number }> = {
   "g-13": { lat: 33.6844, lng: 73.0479 },
   "g-11": { lat: 33.6938, lng: 73.0551 },
   "g-10": { lat: 33.6952, lng: 73.0621 },
   "g-9":  { lat: 33.6987, lng: 73.0667 },
   "g-14": { lat: 33.6699, lng: 73.0342 },
   "g-15": { lat: 33.6601, lng: 73.0219 },
+  "g-16": { lat: 33.6560, lng: 73.0142 },
   "f-10": { lat: 33.7025, lng: 73.0122 },
   "f-11": { lat: 33.7098, lng: 73.0229 },
   "f-7":  { lat: 33.7196, lng: 73.0551 },
   "f-8":  { lat: 33.7156, lng: 73.0449 },
+  "f-6":  { lat: 33.7282, lng: 73.0618 },
   "e-11": { lat: 33.7290, lng: 73.0130 },
+  "e-7":  { lat: 33.7391, lng: 73.0551 },
   "i-8":  { lat: 33.6715, lng: 73.0837 },
   "i-10": { lat: 33.6741, lng: 73.0721 },
+  "i-11": { lat: 33.6767, lng: 73.0630 },
   "b-17": { lat: 33.7595, lng: 72.9872 },
-  "dha":  { lat: 33.5355, lng: 73.1218 },
   "dha phase 2": { lat: 33.5412, lng: 73.1189 },
+  "dha":  { lat: 33.5355, lng: 73.1218 },
+  "islamabad": { lat: 33.6938, lng: 73.0551 },
+  "rawalpindi": { lat: 33.5651, lng: 73.0169 },
 };
 
-function getAreaCoords(location: string): { lat: number; lng: number } {
-  const key = location.toLowerCase().trim();
-  for (const [area, coords] of Object.entries(areaCoords)) {
-    if (key.includes(area) || area.includes(key)) return coords;
+// In-memory geocode cache — persists for the lifetime of the server process
+const _geocodeCache: Record<string, { lat: number; lng: number }> = {};
+
+// Normalize a location key: lowercase, collapse hyphens/spaces so "f7", "f-7", "f 7" all match
+function _normalise(s: string): string {
+  return s.toLowerCase().replace(/[\s\-.]/g, "");
+}
+
+export async function geocodeLocation(location: string): Promise<{ lat: number; lng: number }> {
+  const cacheKey = location.toLowerCase().trim();
+  if (_geocodeCache[cacheKey]) return _geocodeCache[cacheKey];
+
+  // Fast static lookup first (normalised comparison)
+  const normInput = _normalise(location);
+  for (const [area, coords] of Object.entries(_staticCoords)) {
+    if (normInput.includes(_normalise(area)) || _normalise(area).includes(normInput)) {
+      _geocodeCache[cacheKey] = coords;
+      return coords;
+    }
   }
-  return { lat: 33.6844, lng: 73.0479 }; // Default: G-13
+
+  // Nominatim geocoding (free, no API key)
+  try {
+    const query = location.toLowerCase().includes("pakistan")
+      ? location
+      : `${location}, Pakistan`;
+    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`;
+    const res = await fetch(url, {
+      headers: { "User-Agent": "HaazirApp/1.0 (haazir-platform)" },
+    });
+    const data = await res.json() as Array<{ lat: string; lon: string }>;
+    if (data.length > 0) {
+      const coords = { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+      console.log(`[Geocode] "${location}" → (${coords.lat.toFixed(4)}, ${coords.lng.toFixed(4)})`);
+      _geocodeCache[cacheKey] = coords;
+      return coords;
+    }
+  } catch (err) {
+    console.warn(`[Geocode] Nominatim failed for "${location}":`, err);
+  }
+
+  // Final fallback: Islamabad centre
+  const fallback = { lat: 33.6844, lng: 73.0479 };
+  _geocodeCache[cacheKey] = fallback;
+  return fallback;
 }
 
 export async function matchProviders(intent: ParsedIntent, excludedIds: string[] = []): Promise<MatchResult> {
   const tStart = Date.now();
   const providersData = getProvidersData();
-  const userCoords = getAreaCoords(intent.location);
+  const userCoords = await geocodeLocation(intent.location);
 
   // Real-time capacity and time-window conflict data
   const liveActiveCounts = getLiveActiveBookingCounts();
@@ -353,7 +399,7 @@ export async function matchProviders(intent: ParsedIntent, excludedIds: string[]
       : "";
     const langNote = intent.language === "english" ? "English" : "Urdu / Roman Urdu";
 
-    const reasoningPrompt = `You are Khedmatgar's AI recommendation engine. Write exactly 2 sentences in ${langNote} explaining why ${top3[0].name} is the best match for this request.
+    const reasoningPrompt = `You are Haazir's AI recommendation engine. Write exactly 2 sentences in ${langNote} explaining why ${top3[0].name} is the best match for this request.
 
 Recommended: ${top3[0].name} | ${top3[0].distance_km}km away | ${top3[0].rating}★ | ${Math.round(top3[0].on_time_score * 100)}% on-time | Specialization: ${top3[0].score_breakdown.specialization}/100 | Score: ${top3[0].score}%
 ${top3[1] ? `Runner-up: ${top3[1].name} | ${top3[1].distance_km}km | ${top3[1].rating}★ | Score: ${top3[1].score}%` : ""}
