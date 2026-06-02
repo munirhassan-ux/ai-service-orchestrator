@@ -1,0 +1,230 @@
+[
+  {
+    "timestamp": "2026-06-02T11:56:35.338Z",
+    "step": 1,
+    "agent": "IntentParser",
+    "confidence": 0.95,
+    "input": "kal shaam 5 baje park view men electrician chahiye",
+    "output": {
+      "service_type": "electrician",
+      "service_raw": "electrician",
+      "location": "park view",
+      "urgency": "medium",
+      "preferred_time": "tomorrow 5pm",
+      "budget_sensitivity": "medium",
+      "job_complexity_hint": "basic",
+      "language": "roman_urdu",
+      "confidence": 0.95,
+      "clarification_needed": false,
+      "clarification_question": null,
+      "reasoning": "User specified the service (electrician), location (Park View), and time (kal shaam 5 baje). All necessary information is present."
+    }
+  },
+  {
+    "timestamp": "2026-06-02T11:56:36.197Z",
+    "step": 2,
+    "agent": "ProviderMatcher",
+    "output": {
+      "top_providers": [
+        {
+          "provider_id": "p49709",
+          "name": "Noman Shah",
+          "shop_name": "Noman Shah Electrician Pro",
+          "location": {
+            "latitude": 33.673583,
+            "longitude": 73.069274
+          },
+          "city": "Islamabad (Urban)",
+          "city_area": "Ict",
+          "availability_status": "online",
+          "charges": {
+            "base_rate": 430,
+            "travel_rate": 37
+          },
+          "job_role": "Electrician",
+          "service_expertise": [
+            "electrician",
+            "wiring",
+            "fan_repair"
+          ],
+          "rating": 4.9,
+          "on_time_score": 0.94,
+          "cancellation_risk": 0.05,
+          "capacity": 2,
+          "active_jobs": 0,
+          "total_reviews": 132,
+          "total_jobs": 311,
+          "distance_km": 7.3,
+          "score": 94.15,
+          "score_breakdown": {
+            "travel_time": 76,
+            "availability_match": 100,
+            "specialization": 100,
+            "on_time": 94,
+            "review_sentiment": 98,
+            "rate": 94,
+            "cancellation_risk": 95,
+            "capacity": 100
+          },
+          "is_waitlisted": false
+        },
+        {
+          "provider_id": "p49708",
+          "name": "Saad Karim",
+          "shop_name": "Saad Karim Electrician Workshop",
+          "location": {
+            "latitude": 33.666183,
+            "longitude": 73.067659
+          },
+          "city": "Islamabad (Urban)",
+          "city_area": "Ict",
+          "availability_status": "online",
+          "charges": {
+            "base_rate": 467,
+            "travel_rate": 40
+          },
+          "job_role": "Electrician",
+          "service_expertise": [
+            "electrician",
+            "wiring",
+            "fan_repair"
+          ],
+          "rating": 4.5,
+          "on_time_score": 0.89,
+          "cancellation_risk": 0.11,
+          "capacity": 2,
+          "active_jobs": 0,
+          "total_reviews": 123,
+          "total_jobs": 164,
+          "distance_km": 8,
+          "score": 90.92,
+          "score_breakdown": {
+            "travel_time": 73,
+            "availability_match": 100,
+            "specialization": 100,
+            "on_time": 89,
+            "review_sentiment": 90,
+            "rate": 87,
+            "cancellation_risk": 89,
+            "capacity": 100
+          },
+          "is_waitlisted": false
+        },
+        {
+          "provider_id": "p49432",
+          "name": "Asad Niazi",
+          "shop_name": "Asad Niazi Electrician Point",
+          "location": {
+            "latitude": 33.731161,
+            "longitude": 73.093611
+          },
+          "city": "Islamabad (Urban)",
+          "city_area": "Ict",
+          "availability_status": "online",
+          "charges": {
+            "base_rate": 636,
+            "travel_rate": 31
+          },
+          "job_role": "Electrician",
+          "service_expertise": [
+            "electrician",
+            "wiring"
+          ],
+          "rating": 4.5,
+          "on_time_score": 0.87,
+          "cancellation_risk": 0.06,
+          "capacity": 3,
+          "active_jobs": 0,
+          "total_reviews": 28,
+          "total_jobs": 163,
+          "distance_km": 3.7,
+          "score": 89.89,
+          "score_breakdown": {
+            "travel_time": 88,
+            "availability_match": 100,
+            "specialization": 100,
+            "on_time": 87,
+            "review_sentiment": 90,
+            "rate": 53,
+            "cancellation_risk": 94,
+            "capacity": 100
+          },
+          "is_waitlisted": false
+        }
+      ],
+      "reasoning": "Noman Shah selected: score 94.15%, 7.3km away, 94% on-time reliability.",
+      "fallback_used": false,
+      "matching_trace": "Matched 4025 eligible providers using 8 weighted factors and tiebreaker rules. Top Match: Noman Shah"
+    }
+  },
+  {
+    "timestamp": "2026-06-02T11:56:36.199Z",
+    "agent": "PricingEngine",
+    "phase_after": "pricing_complete",
+    "budget_sensitivity": "medium",
+    "providers_priced": [
+      {
+        "provider_id": "p49709",
+        "name": "Noman Shah",
+        "score": 94.15,
+        "is_budget_pick": true,
+        "quote": {
+          "visit_fee": 150,
+          "base_rate": 430,
+          "distance_fee": 270,
+          "urgency_surcharge": 0,
+          "total": 1280,
+          "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
+        }
+      },
+      {
+        "provider_id": "p49708",
+        "name": "Saad Karim",
+        "score": 90.92,
+        "is_budget_pick": false,
+        "quote": {
+          "visit_fee": 150,
+          "base_rate": 467,
+          "distance_fee": 320,
+          "urgency_surcharge": 0,
+          "total": 1400,
+          "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
+        }
+      },
+      {
+        "provider_id": "p49432",
+        "name": "Asad Niazi",
+        "score": 89.89,
+        "is_budget_pick": false,
+        "quote": {
+          "visit_fee": 150,
+          "base_rate": 636,
+          "distance_fee": 110,
+          "urgency_surcharge": 0,
+          "total": 1530,
+          "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
+        }
+      }
+    ]
+  },
+  {
+    "timestamp": "2026-06-02T11:56:36.246Z",
+    "agent": "BookingSimulator",
+    "phase_after": "PENDING_PROVIDER",
+    "booking_id": "SVC-20260602-0002",
+    "provider_id": "p49709",
+    "provider_name": "Noman Shah",
+    "preferred_time_requested": "tomorrow 5pm",
+    "scheduled_time_assigned": "2026-06-03T07:00:00.000Z",
+    "scheduling_collision_detected": true,
+    "final_price": 1280
+  },
+  {
+    "timestamp": "2026-06-02T11:56:57.353Z",
+    "agent": "StatusMachine",
+    "phase_after": "CANCELLED_PROVIDER",
+    "booking_id": "SVC-20260602-0002",
+    "status_from": "PENDING_PROVIDER",
+    "status_to": "CANCELLED_PROVIDER"
+  }
+]

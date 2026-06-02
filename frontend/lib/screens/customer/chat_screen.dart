@@ -68,8 +68,7 @@ class Message {
   final String id;
   final String text;
   final bool isUser;
-  final String
-      type; // text | thinking | quote | equipment_ack | booking_success | rating
+  final String type; // text | thinking | booking_success | rating
   final Map<String, dynamic>? data;
   final List<String>? chips;
 
@@ -105,8 +104,6 @@ class _ChatScreenState extends State<ChatScreen> {
   bool _loading = false;
   bool _inputDisabled = false;
   String? _sessionId;
-  bool _countdownActive = false;
-  int _countdownSeconds = 180;
   String? _bookingTitle;
   final Set<String> _actedMessages = {};
 
@@ -382,49 +379,44 @@ class _ChatScreenState extends State<ChatScreen> {
     final msg = res['message'] as String? ?? '';
     final chips = (res['chips'] as List?)?.cast<String>();
 
-    if (phase == 'negotiating') {
+    if (phase == 'booking_confirmed') {
+      final bookingId = res['booking']?['booking_id'] as String?;
       final steps = (res['thinking_steps'] as List?)?.cast<String>();
+      setState(() {
+        _inputDisabled = false;
+        _bookingTitle =
+            _formatTitle(res['booking']?['service_type'] as String?);
+      });
+
+      final bookingReason = res['booking_reason'] as String?;
+
+      void showSuccess() {
+        if (bookingReason != null && bookingReason.isNotEmpty) {
+          _addMsg(Message(text: '🤖 $bookingReason', isUser: false));
+        }
+        _addMsg(Message(
+            text: msg,
+            isUser: false,
+            type: 'booking_success',
+            data: res['booking']));
+        if (bookingId != null) {
+          ChatHistoryService.save(bookingId, _messages, _actedMessages);
+          ActiveSessionService.linkBooking(
+              bookingId, res['booking']?['service_type'] as String? ?? '');
+          BookingEvents.refresh();
+        }
+      }
+
       if (steps != null && steps.isNotEmpty) {
         _addMsg(Message(
             text: '', isUser: false, type: 'thinking', data: {'steps': steps}));
         Future.delayed(Duration(milliseconds: 400 * steps.length + 300), () {
           if (!mounted) return;
           setState(() => _messages.removeWhere((m) => m.type == 'thinking'));
-          _addMsg(Message(
-              text: msg,
-              isUser: false,
-              type: 'quote',
-              data: res,
-              chips: chips));
-          _startCountdown((res['countdown_seconds'] as num?)?.toInt() ?? 180);
+          showSuccess();
         });
       } else {
-        _addMsg(Message(
-            text: msg, isUser: false, type: 'quote', data: res, chips: chips));
-        _startCountdown((res['countdown_seconds'] as num?)?.toInt() ?? 180);
-      }
-    } else if (phase == 'equipment_ack') {
-      _countdownActive = false;
-      _addMsg(Message(text: msg, isUser: false, type: 'equipment_ack'));
-      setState(() => _inputDisabled = true); // must use chip
-    } else if (phase == 'booking_confirmed') {
-      _countdownActive = false;
-      final bookingId = res['booking']?['booking_id'] as String?;
-      setState(() {
-        _inputDisabled = false;
-        _bookingTitle =
-            _formatTitle(res['booking']?['service_type'] as String?);
-      });
-      _addMsg(Message(
-          text: msg,
-          isUser: false,
-          type: 'booking_success',
-          data: res['booking']));
-      if (bookingId != null) {
-        ChatHistoryService.save(bookingId, _messages, _actedMessages);
-        ActiveSessionService.linkBooking(
-            bookingId, res['booking']?['service_type'] as String? ?? '');
-        BookingEvents.refresh();
+        showSuccess();
       }
     } else {
       _addMsg(Message(text: msg, isUser: false, chips: chips));
@@ -451,48 +443,8 @@ class _ChatScreenState extends State<ChatScreen> {
         ActiveSessionService.linkBooking(bookingId, svcType);
         BookingEvents.refresh();
       }
-    } else if (phase == 'negotiating') {
-      _messages.add(Message(
-          text: msg, isUser: false, type: 'quote', data: res, chips: chips));
-    } else if (phase == 'equipment_ack') {
-      _messages.add(Message(text: msg, isUser: false, type: 'equipment_ack'));
     } else {
       _messages.add(Message(text: msg, isUser: false, chips: chips));
-    }
-  }
-
-  void _startCountdown(int secs) {
-    setState(() {
-      _countdownActive = true;
-      _countdownSeconds = secs;
-      _inputDisabled = true;
-    });
-  }
-
-  Future<void> _onProviderTimeout() async {
-    if (!_countdownActive || _sessionId == null) return;
-    setState(() {
-      _countdownActive = false;
-      _inputDisabled = true;
-      _loading = true;
-    });
-    _addMsg(Message(
-        text:
-            "Provider didn't respond in time. Finding the next available provider...",
-        isUser: false));
-    try {
-      final res = await ApiService.timeoutNegotiation(_sessionId!);
-      setState(() {
-        _loading = false;
-        _inputDisabled = false;
-      });
-      _handleResponse(res);
-    } catch (e) {
-      setState(() {
-        _loading = false;
-        _inputDisabled = false;
-      });
-      _addMsg(Message(text: "Timeout error: $e", isUser: false));
     }
   }
 
@@ -525,37 +477,6 @@ class _ChatScreenState extends State<ChatScreen> {
       case 'thinking':
         final steps = (msg.data?['steps'] as List?)?.cast<String>();
         return ThinkingBubble(steps: steps);
-
-      case 'quote':
-        final d = msg.data ?? {};
-        final providers = d['match_result']?['top_providers'] as List? ?? [];
-        final reasoning = d['match_result']?['reasoning'] as String? ??
-            'Best matching option selected.';
-        return Top3ProvidersBubble(
-          providers: providers,
-          reasoning: reasoning,
-          disabled: _actedMessages.contains(msg.id),
-          onSelect: (pId) {
-            setState(() => _actedMessages.add(msg.id));
-            _send("Select $pId");
-          },
-          onMoreOptions: () {
-            setState(() => _actedMessages.add(msg.id));
-            _send("More Options");
-          },
-        );
-
-      case 'equipment_ack':
-        return EquipmentAckBubble(
-          disabled: _actedMessages.contains(msg.id),
-          onConfirm: () {
-            setState(() {
-              _actedMessages.add(msg.id);
-              _inputDisabled = false;
-            });
-            _send("Haan, samajh gaya — Aage barhao");
-          },
-        );
 
       case 'booking_success':
         final bk = msg.data ?? {};
@@ -726,7 +647,6 @@ class _ChatScreenState extends State<ChatScreen> {
           onPressed: () {
             setState(() {
               _messages.clear();
-              _countdownActive = false;
               _inputDisabled = false;
             });
             _initSession();
@@ -1119,6 +1039,8 @@ class _LiveTrackingWidgetState extends State<LiveTrackingWidget> {
   int _starsSubmitted = 0;
   bool _disputeSubmitted = false;
   String? _disputeResolution;
+  Map<String, dynamic>? _summary;
+  bool _summaryLoading = false;
 
   @override
   void initState() {
@@ -1167,10 +1089,27 @@ class _LiveTrackingWidgetState extends State<LiveTrackingWidget> {
           if (newStatus == 'COMPLETED') {
             ActiveSessionService.clear();
             BookingEvents.refresh();
+            if (_summary == null && !_summaryLoading) _loadSummary(bId as String);
           }
         }
       }
     } catch (_) {}
+  }
+
+  Future<void> _loadSummary(String bookingId) async {
+    if (!mounted) return;
+    setState(() => _summaryLoading = true);
+    try {
+      final res = await ApiService.generateSummary(bookingId);
+      if (mounted && res['summary'] != null) {
+        setState(() {
+          _summary = res['summary'] as Map<String, dynamic>;
+          _summaryLoading = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) setState(() => _summaryLoading = false);
+    }
   }
 
   void _startSimulation() {
@@ -1315,6 +1254,91 @@ class _LiveTrackingWidgetState extends State<LiveTrackingWidget> {
       ),
     );
   }
+
+  Widget _buildSummaryCard(Map<String, dynamic> summary) {
+    final svc = summary['service_summary'] as Map<String, dynamic>? ?? {};
+    final cost = summary['cost_breakdown'] as Map<String, dynamic>? ?? {};
+    final done = (svc['checklist_completed'] as List?)?.cast<String>() ?? [];
+    final durationMin = svc['duration_minutes'] as int? ?? 0;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF3A9010).withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFF3A9010).withValues(alpha: 0.2)),
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          const Icon(Icons.receipt_long_rounded, color: Color(0xFF3A9010), size: 15),
+          const SizedBox(width: 6),
+          const Text("Service Summary",
+              style: TextStyle(
+                  color: Color(0xFF163300),
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold)),
+          const Spacer(),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+            decoration: BoxDecoration(
+                color: const Color(0xFF3A9010).withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(8)),
+            child: Text("Auto-Generated",
+                style: const TextStyle(
+                    color: Color(0xFF3A9010),
+                    fontSize: 9,
+                    fontWeight: FontWeight.bold)),
+          ),
+        ]),
+        const SizedBox(height: 10),
+        _summaryRow("Provider", svc['provider'] as String? ?? ''),
+        _summaryRow("Duration", "$durationMin min"),
+        _summaryRow("Total", "Rs. ${cost['total'] ?? 0}"),
+        _summaryRow("Payment", cost['payment_method'] as String? ?? 'Cash'),
+        if (done.isNotEmpty) ...[
+          const SizedBox(height: 8),
+          const Text("Completed",
+              style: TextStyle(
+                  color: Color(0xFF565955),
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600)),
+          const SizedBox(height: 4),
+          ...done.map((item) => Padding(
+                padding: const EdgeInsets.only(bottom: 2),
+                child: Row(children: [
+                  const Icon(Icons.check_circle_rounded,
+                      color: Color(0xFF3A9010), size: 11),
+                  const SizedBox(width: 5),
+                  Expanded(
+                      child: Text(item,
+                          style: const TextStyle(
+                              color: Color(0xFF565955), fontSize: 11))),
+                ]),
+              )),
+        ],
+        const SizedBox(height: 8),
+        Text(summary['agent_note'] as String? ?? '',
+            style: const TextStyle(
+                color: Color(0xFFB0B5AE),
+                fontSize: 9,
+                fontStyle: FontStyle.italic)),
+      ]),
+    );
+  }
+
+  Widget _summaryRow(String label, String value) => Padding(
+        padding: const EdgeInsets.only(bottom: 4),
+        child: Row(children: [
+          Text(label,
+              style: const TextStyle(color: Color(0xFF767773), fontSize: 11)),
+          const Spacer(),
+          Text(value,
+              style: const TextStyle(
+                  color: Color(0xFF21231D),
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600)),
+        ]),
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -1505,8 +1529,22 @@ class _LiveTrackingWidgetState extends State<LiveTrackingWidget> {
           ],
           if (status == 'COMPLETED') ...[
             const SizedBox(height: 14),
-            const Divider(color: const Color(0xFFE8EDE6)),
+            const Divider(color: Color(0xFFE8EDE6)),
             const SizedBox(height: 10),
+            if (_summaryLoading)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8),
+                  child: CircularProgressIndicator(
+                      strokeWidth: 2, color: Color(0xFF3A9010)),
+                ),
+              )
+            else if (_summary != null) ...[
+              _buildSummaryCard(_summary!),
+              const SizedBox(height: 14),
+              const Divider(color: Color(0xFFE8EDE6)),
+              const SizedBox(height: 10),
+            ],
             if (_starsSubmitted == 0) ...[
               const Text(
                 "How was your experience?",
