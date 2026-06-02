@@ -208,11 +208,73 @@ class _ChatScreenState extends State<ChatScreen> {
         final savedActed = ActiveSessionService.actedIds;
         if (saved.isNotEmpty) {
           setState(() {
-            // Filter thinking bubbles — they were in-flight when user left
             _messages.addAll(saved.where((m) => m.type != 'thinking'));
             _actedMessages.addAll(savedActed);
           });
         }
+
+        // If we have a user message but no AI response yet, the background
+        // fetch may still be in-flight. Poll ActiveSessionService briefly
+        // to see if _processSilent saves the result before we re-trigger.
+        final lastUserMsg = _messages
+            .where((m) => m.isUser && m.text.isNotEmpty)
+            .lastOrNull;
+        final hasAiResponse =
+            _messages.any((m) => !m.isUser && m.type != 'thinking');
+
+        if (lastUserMsg != null && !hasAiResponse) {
+          _addMsg(Message(text: '', isUser: false, type: 'thinking'));
+
+          // Wait up to 5 seconds for the background orchestrate to finish
+          for (int i = 0; i < 10; i++) {
+            await Future.delayed(const Duration(milliseconds: 500));
+            final latest = ActiveSessionService.messages;
+            final gotResult =
+                latest.any((m) => !m.isUser && m.type != 'thinking');
+            if (gotResult) {
+              if (!mounted) return;
+              setState(() {
+                _messages.clear();
+                _messages.addAll(
+                    latest.where((m) => m.type != 'thinking'));
+                _actedMessages.addAll(ActiveSessionService.actedIds);
+              });
+              _scrollBottom();
+              setState(() => _loading = false);
+              return;
+            }
+          }
+
+          // Background didn't finish in time — create a FRESH session so we
+          // don't re-send to the old session which may be in wrong phase.
+          if (!mounted) return;
+          setState(() => _messages.removeWhere((m) => m.type == 'thinking'));
+          try {
+            final freshSess = await ApiService.createSession("customer_001");
+            _sessionId = freshSess['session_id'] as String?;
+            if (_sessionId != null) ActiveSessionService.startSession(_sessionId!);
+
+            _addMsg(Message(text: '', isUser: false, type: 'thinking'));
+            final response = await ApiService.orchestrate(
+                lastUserMsg.text, [], sessionId: _sessionId);
+            if (!mounted) {
+              _processSilent(response);
+              ActiveSessionService.saveMessages(
+                  _messages.where((m) => m.type != 'thinking').toList(),
+                  _actedMessages);
+              return;
+            }
+            setState(() => _messages.removeWhere((m) => m.type == 'thinking'));
+            _handleResponse(response);
+          } catch (e) {
+            if (!mounted) return;
+            setState(() => _messages.removeWhere((m) => m.type == 'thinking'));
+            _addMsg(Message(
+                text: "Providers dhundhne mein masla aaya. Dobara try karein.",
+                isUser: false));
+          }
+        }
+
         setState(() => _loading = false);
         return;
       }
@@ -243,6 +305,7 @@ class _ChatScreenState extends State<ChatScreen> {
         _handleResponse(greeting);
       }
     } catch (e) {
+      if (!mounted) return; // widget disposed during async work — no setState
       _addMsg(Message(
           text: "Connection error: $e. Please refresh.", isUser: false));
       setState(() => _loading = false);
@@ -258,6 +321,10 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void _addMsg(Message msg) {
+    if (!mounted) {
+      _messages.add(msg); // safe: just mutate list, no setState
+      return;
+    }
     setState(() => _messages.add(msg));
     _scrollBottom();
   }
@@ -900,6 +967,135 @@ class _PinTip extends CustomPainter {
   bool shouldRepaint(_PinTip old) => old.color != color;
 }
 
+// ── SHARED CANCELLATION UI (CANCELLED_PROVIDER / CANCELLED_TIMEOUT) ─────────
+class _CancelledOptions extends StatelessWidget {
+  final Map<String, dynamic> booking;
+  final String message;
+  final IconData icon;
+
+  const _CancelledOptions({
+    required this.booking,
+    required this.message,
+    required this.icon,
+  });
+
+  Future<void> _findNewProvider(BuildContext ctx) async {
+    final serviceType = booking['service_type'] as String? ?? '';
+    final location = booking['location'] as String? ?? '';
+    final cancelledProviderId = booking['provider_id'] as String?;
+    final cancelledBookingId = booking['booking_id'] as String?;
+    try {
+      final session = await ApiService.createSession("customer_001");
+      final newSessionId = session['session_id'] as String? ?? '';
+      if (newSessionId.isNotEmpty) {
+        await ApiService.patch('session/$newSessionId', {
+          'phase': 'thinking',
+          'parsed_intent': {
+            'service_type': serviceType,
+            'location': location.isNotEmpty ? location : 'unknown',
+            'preferred_time': 'flexible',
+            'budget': booking['final_price'],
+            'confidence': 0.95,
+            'clarification_needed': false,
+            'language': 'roman_urdu',
+            'reasoning': 'Reconstructed from cancelled booking',
+          },
+          if (cancelledProviderId != null)
+            'providers_tried': [cancelledProviderId],
+        });
+      }
+      if (!ctx.mounted) return;
+      Navigator.of(ctx).pushAndRemoveUntil(
+        MaterialPageRoute(
+          builder: (_) => ChatScreen(
+            sessionId: newSessionId.isNotEmpty ? newSessionId : null,
+            restoreHistoryFromBookingId: cancelledBookingId,
+          ),
+        ),
+        (route) => route.isFirst,
+      );
+    } catch (_) {
+      if (ctx.mounted) Navigator.of(ctx).popUntil((r) => r.isFirst);
+    }
+  }
+
+  Future<void> _cancelAndEnd(BuildContext ctx) async {
+    final bId = booking['booking_id'];
+    if (bId != null) {
+      try {
+        await ApiService.post('/booking/status',
+            {'booking_id': bId, 'status': 'CANCELLED_CUSTOMER'});
+      } catch (_) {}
+    }
+    ActiveSessionService.clear();
+    BookingEvents.refresh();
+    if (ctx.mounted) Navigator.of(ctx).pop();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.redAccent.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.redAccent.withValues(alpha: 0.25)),
+      ),
+      child: Column(children: [
+        Row(children: [
+          Icon(icon, color: Colors.redAccent, size: 16),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(message,
+                style: const TextStyle(color: Colors.redAccent, fontSize: 12)),
+          ),
+        ]),
+        const SizedBox(height: 12),
+        GestureDetector(
+          onTap: () => _findNewProvider(context),
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            decoration: BoxDecoration(
+              color: const Color(0xFF3A9010),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Center(
+              child: Text("Find New Provider",
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13)),
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        GestureDetector(
+          onTap: () => _cancelAndEnd(context),
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            decoration: BoxDecoration(
+              color: Colors.transparent,
+              borderRadius: BorderRadius.circular(12),
+              border:
+                  Border.all(color: Colors.redAccent.withValues(alpha: 0.5)),
+            ),
+            child: const Center(
+              child: Text("Cancel and End Chat",
+                  style: TextStyle(
+                      color: Colors.redAccent,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13)),
+            ),
+          ),
+        ),
+      ]),
+    );
+  }
+}
+
 // ── STATEFUL LIVE TRACKING & SIMULATION WIDGET ────────────────────────────
 class LiveTrackingWidget extends StatefulWidget {
   final Map<String, dynamic> booking;
@@ -1171,132 +1367,18 @@ class _LiveTrackingWidgetState extends State<LiveTrackingWidget> {
             ],
           ),
           const SizedBox(height: 12),
-          if (status == 'CANCELLED_PROVIDER') ...[
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.redAccent.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(16),
-                border:
-                    Border.all(color: Colors.redAccent.withValues(alpha: 0.25)),
-              ),
-              child: Column(children: [
-                const Row(children: [
-                  Icon(Icons.cancel_outlined,
-                      color: Colors.redAccent, size: 16),
-                  SizedBox(width: 8),
-                  Expanded(
-                      child: Text(
-                    "Provider cancelled. We're sorry for the inconvenience.",
-                    style: TextStyle(color: Colors.redAccent, fontSize: 12),
-                  )),
-                ]),
-                const SizedBox(height: 12),
-                GestureDetector(
-                  onTap: () async {
-                    final serviceType =
-                        _booking['service_type'] as String? ?? '';
-                    final location = _booking['location'] as String? ?? '';
-                    final cancelledProviderId =
-                        _booking['provider_id'] as String?;
-                    final cancelledBookingId =
-                        _booking['booking_id'] as String?;
-                    try {
-                      final session =
-                          await ApiService.createSession("customer_001");
-                      final newSessionId =
-                          session['session_id'] as String? ?? '';
-                      if (newSessionId.isNotEmpty) {
-                        await ApiService.patch('session/$newSessionId', {
-                          'phase': 'thinking',
-                          'parsed_intent': {
-                            'service_type': serviceType,
-                            'location': location.isNotEmpty
-                                ? location
-                                : 'unknown',
-                            'preferred_time': 'flexible',
-                            'budget': _booking['final_price'],
-                            'confidence': 0.95,
-                            'clarification_needed': false,
-                            'language': 'roman_urdu',
-                            'reasoning': 'Reconstructed from cancelled booking',
-                          },
-                          if (cancelledProviderId != null)
-                            'providers_tried': [cancelledProviderId],
-                        });
-                      }
-                      if (!context.mounted) return;
-                      Navigator.of(context).pushAndRemoveUntil(
-                        MaterialPageRoute(
-                          builder: (_) => ChatScreen(
-                            sessionId: newSessionId.isNotEmpty
-                                ? newSessionId
-                                : null,
-                            restoreHistoryFromBookingId: cancelledBookingId,
-                          ),
-                        ),
-                        (route) => route.isFirst,
-                      );
-                    } catch (_) {
-                      if (context.mounted) {
-                        Navigator.of(context).popUntil((r) => r.isFirst);
-                      }
-                    }
-                  },
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF3A9010),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Center(
-                        child: Text(
-                      "Find New Provider",
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13),
-                    )),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                GestureDetector(
-                  onTap: () async {
-                    final bId = _booking['booking_id'];
-                    if (bId != null) {
-                      try {
-                        await ApiService.post('/booking/status', {
-                          'booking_id': bId,
-                          'status': 'CANCELLED_CUSTOMER'
-                        });
-                      } catch (_) {}
-                    }
-                    ActiveSessionService.clear();
-                    BookingEvents.refresh();
-                    if (context.mounted) Navigator.of(context).pop();
-                  },
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                    decoration: BoxDecoration(
-                      color: Colors.transparent,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                          color: Colors.redAccent.withValues(alpha: 0.5)),
-                    ),
-                    child: const Center(
-                        child: Text(
-                      "Cancel and End Chat",
-                      style: TextStyle(
-                          color: Colors.redAccent,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13),
-                    )),
-                  ),
-                ),
-              ]),
+          if (status == 'CANCELLED_TIMEOUT') ...[
+            _CancelledOptions(
+              booking: _booking,
+              message:
+                  "Provider ne time par jawab nahi diya. Naya provider dhundhein ya chat band karein.",
+              icon: Icons.timer_off_outlined,
+            ),
+          ] else if (status == 'CANCELLED_PROVIDER') ...[
+            _CancelledOptions(
+              booking: _booking,
+              message: "Provider cancelled. We're sorry for the inconvenience.",
+              icon: Icons.cancel_outlined,
             ),
           ] else if (status.contains('CANCELLED')) ...[
             Container(

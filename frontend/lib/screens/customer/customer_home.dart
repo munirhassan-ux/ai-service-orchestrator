@@ -17,12 +17,23 @@ class CustomerHome extends StatefulWidget {
 
 class _CustomerHomeState extends State<CustomerHome> {
   int _tab = 0;
-  final _screens = const [
-    CustomerLandingScreen(),
-    BookingsScreen(),
-    AlertsScreen(),
-    ProfileScreen()
-  ];
+  late final List<Widget> _screens;
+
+  @override
+  void initState() {
+    super.initState();
+    _screens = [
+      CustomerLandingScreen(onSwitchToBookings: _goToBookings),
+      const BookingsScreen(),
+      const AlertsScreen(),
+      const ProfileScreen(),
+    ];
+  }
+
+  void _goToBookings() {
+    BookingEvents.refresh();
+    setState(() => _tab = 1);
+  }
 
   void _onTabTap(int i) {
     BookingEvents.refresh();
@@ -122,7 +133,8 @@ class _CustomerHomeState extends State<CustomerHome> {
 }
 
 class CustomerLandingScreen extends StatefulWidget {
-  const CustomerLandingScreen({super.key});
+  final VoidCallback? onSwitchToBookings;
+  const CustomerLandingScreen({super.key, this.onSwitchToBookings});
 
   @override
   State<CustomerLandingScreen> createState() => _CustomerLandingScreenState();
@@ -138,7 +150,7 @@ class _CustomerLandingScreenState extends State<CustomerLandingScreen> {
 
   static const _activeStatuses = {
     'PENDING_PROVIDER', 'ACCEPTED', 'ARRIVING', 'ARRIVED',
-    'IN_PROGRESS', 'CANCELLED_PROVIDER'
+    'IN_PROGRESS', 'CANCELLED_PROVIDER', 'CANCELLED_TIMEOUT'
   };
 
   @override
@@ -194,7 +206,10 @@ class _CustomerLandingScreenState extends State<CustomerLandingScreen> {
     _ctrl.clear();
     Navigator.of(context)
         .push(MaterialPageRoute(builder: (_) => ChatScreen(initialPrompt: text)))
-        .then((_) => _checkState());
+        .then((_) {
+      _checkState();
+      if (ActiveSessionService.hasActive) widget.onSwitchToBookings?.call();
+    });
   }
 
   void _resume() {

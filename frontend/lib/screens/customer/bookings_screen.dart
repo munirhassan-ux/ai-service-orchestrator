@@ -26,6 +26,7 @@ class _BookingsScreenState extends State<BookingsScreen>
     'ARRIVED',
     'IN_PROGRESS',
     'CANCELLED_PROVIDER',
+    'CANCELLED_TIMEOUT',
   };
 
   int _statusPriority(String s) {
@@ -132,19 +133,25 @@ class _BookingsScreenState extends State<BookingsScreen>
             Tab(
               child: Row(mainAxisSize: MainAxisSize.min, children: [
                 const Text("Active"),
-                if (active.isNotEmpty) ...[
-                  const SizedBox(width: 6),
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF3A9010).withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(10),
+                Builder(builder: (ctx) {
+                  final hasSession = ActiveSessionService.hasActive &&
+                      ActiveSessionService.bookingId == null;
+                  final count = active.length + (hasSession ? 1 : 0);
+                  if (count == 0) return const SizedBox.shrink();
+                  return Row(children: [
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF3A9010).withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text("$count",
+                          style: const TextStyle(fontSize: 11)),
                     ),
-                    child: Text("${active.length}",
-                        style: const TextStyle(fontSize: 11)),
-                  ),
-                ],
+                  ]);
+                }),
               ]),
             ),
             Tab(
@@ -183,7 +190,15 @@ class _BookingsScreenState extends State<BookingsScreen>
   }
 
   Widget _buildActiveTab(List<dynamic> bookings) {
-    if (bookings.isEmpty) {
+    // Show session card only when no API booking exists yet.
+    // Once a provider is selected, the backend creates a PENDING_PROVIDER
+    // booking immediately — that card takes over; session card hides.
+    final hasSession = ActiveSessionService.hasActive &&
+        ActiveSessionService.bookingId == null &&
+        ActiveSessionService.sessionId != null &&
+        bookings.isEmpty;
+
+    if (bookings.isEmpty && !hasSession) {
       return const Center(
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           Icon(Icons.event_busy_rounded,
@@ -198,13 +213,114 @@ class _BookingsScreenState extends State<BookingsScreen>
       );
     }
 
-    return ListView.builder(
+    return ListView(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-      itemCount: bookings.length,
-      itemBuilder: (_, i) {
-        if (i == 0) return _buildHeroCard(bookings[i] as Map<String, dynamic>);
-        return _buildMutedCard(bookings[i] as Map<String, dynamic>);
+      children: [
+        if (hasSession) _buildSessionCard(),
+        ...bookings.asMap().entries.map((e) {
+          final b = e.value as Map<String, dynamic>;
+          return e.key == 0 && !hasSession
+              ? _buildHeroCard(b)
+              : _buildMutedCard(b);
+        }),
+      ],
+    );
+  }
+
+  Widget _buildSessionCard() {
+    final msgs = ActiveSessionService.messages;
+    final firstPrompt = msgs
+        .where((m) => m.isUser && m.text.isNotEmpty)
+        .map((m) => m.text)
+        .firstOrNull;
+    final hasProviders = msgs.any((m) => m.type == 'quote');
+
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => ChatScreen(
+                sessionId: ActiveSessionService.sessionId),
+          ),
+        ).then((_) => _fetchBookings());
       },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+              color: const Color(0xFF3A9010).withValues(alpha: 0.35),
+              width: 1.5),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF3A9010).withValues(alpha: 0.08),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: const Color(0xFF3A9010).withValues(alpha: 0.12),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.chat_bubble_rounded,
+                color: Color(0xFF3A9010), size: 20),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(children: [
+                    Text(
+                      hasProviders ? 'Providers Found' : 'Finding Providers...',
+                      style: const TextStyle(
+                          color: Color(0xFF21231D),
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(width: 8),
+                    if (!hasProviders)
+                      const SizedBox(
+                          width: 11,
+                          height: 11,
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Color(0xFF3A9010))),
+                  ]),
+                  const SizedBox(height: 3),
+                  Text(
+                    firstPrompt ?? 'Chat in progress...',
+                    style: const TextStyle(
+                        color: Color(0xFF767773),
+                        fontSize: 12),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ]),
+          ),
+          const SizedBox(width: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: const Color(0xFF3A9010),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: const Text('Resume',
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold)),
+          ),
+        ]),
+      ),
     );
   }
 

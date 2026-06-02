@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hazir — Agent Trace Viewer</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #0d1117;
+    color: #e6edf3;
+    min-height: 100vh;
+    padding: 24px;
+  }
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 28px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #21262d;
+  }
+  h1 { font-size: 20px; font-weight: 700; color: #3fb950; }
+  h1 span { color: #8b949e; font-weight: 400; font-size: 14px; margin-left: 12px; }
+  #status { font-size: 12px; color: #8b949e; }
+  #status.live { color: #3fb950; }
+  #meta {
+    background: #161b22;
+    border: 1px solid #21262d;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+  }
+  .meta-item label { font-size: 10px; color: #8b949e; text-transform: uppercase; letter-spacing: 0.8px; display: block; margin-bottom: 4px; }
+  .meta-item value { font-size: 14px; font-weight: 600; color: #e6edf3; }
+  #pipeline {
+    display: flex;
+    align-items: flex-start;
+    gap: 0;
+    overflow-x: auto;
+    padding-bottom: 12px;
+    margin-bottom: 32px;
+  }
+  .step-wrapper { display: flex; align-items: center; flex-shrink: 0; }
+  .arrow { color: #30363d; font-size: 20px; padding: 0 6px; margin-top: -8px; }
+  .step {
+    background: #161b22;
+    border: 1.5px solid #21262d;
+    border-radius: 10px;
+    padding: 14px 16px;
+    min-width: 140px;
+    max-width: 180px;
+    cursor: pointer;
+    transition: border-color 0.15s, transform 0.1s;
+    position: relative;
+  }
+  .step:hover { transform: translateY(-2px); }
+  .step.success { border-color: #238636; }
+  .step.fallback { border-color: #9e6a03; background: #1a1500; }
+  .step.error   { border-color: #da3633; background: #1a0000; }
+  .step.status  { border-color: #1f6feb; }
+  .step.gps     { border-color: #388bfd; }
+  .step-icon { font-size: 18px; margin-bottom: 6px; }
+  .step-agent { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: #8b949e; margin-bottom: 4px; }
+  .step-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .step.success .step-badge { background: #0f3d1a; color: #3fb950; }
+  .step.fallback .step-badge { background: #2d1e00; color: #d29922; }
+  .step.error   .step-badge { background: #3a0000; color: #f85149; }
+  .step.status  .step-badge { background: #0d2748; color: #58a6ff; }
+  .step.gps     .step-badge { background: #0d2748; color: #79c0ff; }
+  .step-detail  { font-size: 11px; color: #8b949e; line-height: 1.4; }
+  .step-ms { position: absolute; top: 8px; right: 10px; font-size: 10px; color: #484f58; }
+  #detail-panel {
+    background: #161b22;
+    border: 1px solid #21262d;
+    border-radius: 10px;
+    padding: 20px;
+    display: none;
+  }
+  #detail-panel.visible { display: block; }
+  #detail-title { font-size: 14px; font-weight: 700; color: #e6edf3; margin-bottom: 12px; }
+  #detail-json {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 12px;
+    line-height: 1.6;
+    color: #adbac7;
+    white-space: pre-wrap;
+    word-break: break-all;
+    max-height: 400px;
+    overflow-y: auto;
+  }
+  #empty { text-align: center; padding: 60px; color: #484f58; }
+  #empty h2 { font-size: 18px; margin-bottom: 8px; }
+  #refresh-btn {
+    background: #238636;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 14px;
+    font-size: 12px;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  #refresh-btn:hover { background: #2ea043; }
+  .confidence-bar {
+    height: 3px;
+    background: #21262d;
+    border-radius: 2px;
+    margin-top: 6px;
+    overflow: hidden;
+  }
+  .confidence-fill {
+    height: 100%;
+    background: #3fb950;
+    border-radius: 2px;
+    transition: width 0.4s;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>⚡ Hazir Agent Trace <span>Live Viewer</span></h1>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <span id="status">● Connecting...</span>
+    <button id="refresh-btn" onclick="load()">↺ Refresh</button>
+  </div>
+</header>
+
+<div id="meta" style="display:none"></div>
+
+<div id="pipeline"></div>
+
+<div id="detail-panel">
+  <div id="detail-title"></div>
+  <pre id="detail-json"></pre>
+</div>
+
+<div id="empty">
+  <h2>No trace loaded yet</h2>
+  <p>Start a booking flow in the app — the trace will appear here automatically.</p>
+</div>
+
+<script>
+let autoRefresh = true;
+let currentData = null;
+
+function agentIcon(agent) {
+  const icons = {
+    IntentParser: '🧠', ProviderMatcher: '🔍', PricingEngine: '💰',
+    BookingSimulator: '📋', StatusMachine: '🔄', GPS: '📍',
+    NegotiationAgent: '🤝', DisputeAgent: '⚖️', Orchestrator: '🎯',
+    Geocoder: '🗺️', ScoreUpdater: '⭐', NotificationSvc: '🔔',
+  };
+  for (const [k, v] of Object.entries(icons)) {
+    if (agent && agent.includes(k)) return v;
+  }
+  return '⚙️';
+}
+
+function stepClass(step) {
+  if (step.agent === 'StatusMachine') return 'status';
+  if (step.agent === 'GPS' || step.agent === 'LocationTracker') return 'gps';
+  if (step.fallback_triggered) return 'fallback';
+  if (step.error) return 'error';
+  return 'success';
+}
+
+function badgeText(step) {
+  if (step.agent === 'IntentParser') {
+    return step.output?.confidence
+      ? `conf: ${Math.round(step.output.confidence * 100)}%`
+      : step.fallback_triggered ? 'fallback' : '✓';
+  }
+  if (step.agent === 'ProviderMatcher') {
+    const n = step.output?.found ?? step.output?.providers_returned;
+    return n != null ? `${n} found` : (step.fallback_triggered ? 'waitlist' : '✓');
+  }
+  if (step.agent === 'BookingSimulator') {
+    return step.output?.booking_id ? step.output.booking_id.slice(-6) : '✓';
+  }
+  if (step.agent === 'StatusMachine') {
+    return step.status_to || step.output?.status || '→';
+  }
+  if (step.agent === 'GPS') {
+    const d = step.output?.distance_meters;
+    return d != null ? `${d}m` : 'step';
+  }
+  return step.fallback_triggered ? 'fallback' : step.error ? 'error' : '✓';
+}
+
+function detailText(step) {
+  if (step.agent === 'IntentParser') {
+    const o = step.output || {};
+    return `${o.service_type || '?'} · ${o.location || '?'}`;
+  }
+  if (step.agent === 'ProviderMatcher') {
+    const top = step.output?.top_providers?.[0];
+    return top ? `${top.name || ''} ${top.distance_km || ''}km` : step.reasoning?.slice(0, 40) || '';
+  }
+  if (step.agent === 'PricingEngine') {
+    const q = step.output?.price_quote || step.output;
+    return q?.total ? `Rs. ${q.total}` : '';
+  }
+  if (step.agent === 'Geocoder') {
+    return step.output ? `${step.output.resolved_lat?.toFixed(4)}, ${step.output.resolved_lng?.toFixed(4)}` : '';
+  }
+  return step.reasoning?.slice(0, 50) || '';
+}
+
+function renderPipeline(steps) {
+  const pipe = document.getElementById('pipeline');
+  pipe.innerHTML = '';
+  steps.forEach((step, i) => {
+    if (i > 0) {
+      const arrow = document.createElement('div');
+      arrow.className = 'arrow';
+      arrow.textContent = '→';
+      pipe.appendChild(arrow);
+    }
+    const wrapper = document.createElement('div');
+    wrapper.className = 'step-wrapper';
+
+    const card = document.createElement('div');
+    card.className = `step ${stepClass(step)}`;
+    card.onclick = () => showDetail(step);
+
+    const ms = step.duration_ms != null ? `${step.duration_ms}ms` : '';
+    const conf = step.output?.confidence;
+    const bar = conf != null
+      ? `<div class="confidence-bar"><div class="confidence-fill" style="width:${Math.round(conf*100)}%"></div></div>`
+      : '';
+
+    card.innerHTML = `
+      ${ms ? `<div class="step-ms">${ms}</div>` : ''}
+      <div class="step-icon">${agentIcon(step.agent)}</div>
+      <div class="step-agent">${step.agent || 'Step'}</div>
+      <div class="step-badge">${badgeText(step)}</div>
+      <div class="step-detail">${detailText(step)}</div>
+      ${bar}
+    `;
+    wrapper.appendChild(card);
+    pipe.appendChild(wrapper);
+  });
+}
+
+function showDetail(step) {
+  const panel = document.getElementById('detail-panel');
+  document.getElementById('detail-title').textContent = `${agentIcon(step.agent)} ${step.agent} — Step ${step.step ?? ''}`;
+  document.getElementById('detail-json').textContent = JSON.stringify(step, null, 2);
+  panel.classList.add('visible');
+  panel.scrollIntoView({ behavior: 'smooth' });
+}
+
+function renderMeta(data) {
+  const meta = document.getElementById('meta');
+  const duration = data.total_duration_ms
+    ? `${(data.total_duration_ms / 1000).toFixed(1)}s`
+    : data.steps?.length ? `${data.steps.length} steps` : '—';
+  const outcome = data.final_outcome || data.booking_id ? '✓ Booked' : 'In progress';
+  const input = data.steps?.[0]?.input?.user_input || data.user_input || '—';
+  const fallbacks = data.steps?.filter(s => s.fallback_triggered).length || 0;
+  const sid = (data.session_id || '').slice(-12);
+
+  meta.style.display = 'grid';
+  meta.innerHTML = `
+    <div class="meta-item"><label>Session</label><value>${sid || '—'}</value></div>
+    <div class="meta-item"><label>Input</label><value style="font-size:12px">${input.slice(0, 40)}${input.length > 40 ? '…' : ''}</value></div>
+    <div class="meta-item"><label>Total Time</label><value>${duration}</value></div>
+    <div class="meta-item"><label>Outcome</label><value>${outcome}</value></div>
+    <div class="meta-item"><label>Fallbacks Triggered</label><value style="color:${fallbacks > 0 ? '#d29922' : '#3fb950'}">${fallbacks}</value></div>
+    <div class="meta-item"><label>Agents Fired</label><value>${data.steps?.length || 0}</value></div>
+  `;
+}
+
+async function load() {
+  try {
+    const res = await fetch('/api/trace/latest?' + Date.now());
+    if (!res.ok) throw new Error('not found');
+    const data = await res.json();
+
+    if (!data || !data.steps || data.steps.length === 0) {
+      document.getElementById('empty').style.display = 'block';
+      document.getElementById('meta').style.display = 'none';
+      document.getElementById('pipeline').innerHTML = '';
+      document.getElementById('status').textContent = '● No trace yet';
+      document.getElementById('status').className = '';
+      return;
+    }
+
+    document.getElementById('empty').style.display = 'none';
+    document.getElementById('status').textContent = '● Live';
+    document.getElementById('status').className = 'live';
+
+    const isSame = JSON.stringify(data) === JSON.stringify(currentData);
+    if (!isSame) {
+      currentData = data;
+      renderMeta(data);
+      renderPipeline(data.steps);
+    }
+  } catch (e) {
+    document.getElementById('status').textContent = '● Waiting for backend...';
+    document.getElementById('status').className = '';
+  }
+}
+
+load();
+setInterval(() => { if (autoRefresh) load(); }, 3000);
+</script>
+</body>
+</html>
