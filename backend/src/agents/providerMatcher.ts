@@ -374,19 +374,7 @@ export async function matchProviders(intent: ParsedIntent, excludedIds: string[]
   // 1. Higher on_time_score
   // 2. More recent positive review (represented by higher rating here)
   // 3. Lower cancellation_risk
-  const sorted = scored.sort((a, b) => {
-    const diff = Math.abs(a.score - b.score);
-    if (diff <= 3) {
-      if (a.on_time_score !== b.on_time_score) {
-        return b.on_time_score - a.on_time_score;
-      }
-      if (a.rating !== b.rating) {
-        return b.rating - a.rating;
-      }
-      return a.cancellation_risk - b.cancellation_risk;
-    }
-    return b.score - a.score;
-  });
+  const sorted = scored.sort((a, b) => b.score - a.score);
 
   const top3 = sorted.slice(0, 3);
 
