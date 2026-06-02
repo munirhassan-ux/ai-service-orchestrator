@@ -1,0 +1,442 @@
+{
+  "meta": {
+    "export_title": "Haazir AI Orchestrator — Full Session Trace",
+    "session_id": "SESS-DEMO-2026-SHOWCASE",
+    "exported_at": "2026-05-20T17:30:00.000Z",
+    "scenario": "Customer requests AC repair in Roman Urdu across 3 conversational turns. IntentParser triggers clarification twice before extracting full intent. ProviderMatcher ranks 3 providers. First provider times out — system warm-restarts and re-prices for next provider. Customer accepts. Full status machine runs to COMPLETED. 5-star rating submitted.",
+    "agents_involved": [
+      "IntentParser",
+      "ProviderMatcher",
+      "PricingEngine",
+      "NegotiationAgent",
+      "BookingSimulator",
+      "StatusMachine",
+      "RatingEngine"
+    ]
+  },
+  "trace": [
+    {
+      "timestamp": "2026-05-20T16:40:00.000Z",
+      "step": 1,
+      "agent": "IntentParser",
+      "phase": "CLARIFICATION_NEEDED",
+      "model": "gemini-2.0-flash",
+      "input": "AC repair",
+      "confidence": 0.9,
+      "output": {
+        "service_type": "ac_repair",
+        "location": null,
+        "urgency": "medium",
+        "preferred_time": null,
+        "budget_sensitivity": false,
+        "job_complexity_hint": "intermediate",
+        "language": "english",
+        "confidence": 0.9,
+        "clarification_needed": true,
+        "clarification_question": "Sure, I can help with AC repair! Could you please share your area and a preferred time for the technician to visit?",
+        "reasoning": "Service type identified but location and time are missing — two required fields absent. Clarification triggered."
+      },
+      "decision": "FALLBACK — insufficient parameters, requesting clarification (location + time missing)"
+    },
+    {
+      "timestamp": "2026-05-20T16:40:18.000Z",
+      "step": 2,
+      "agent": "IntentParser",
+      "phase": "CLARIFICATION_NEEDED",
+      "model": "gemini-2.0-flash",
+      "input": "Aaj shaam",
+      "confidence": 0.2,
+      "output": {
+        "service_type": null,
+        "location": null,
+        "urgency": "high",
+        "preferred_time": "today evening",
+        "budget_sensitivity": false,
+        "job_complexity_hint": "basic",
+        "language": "roman_urdu",
+        "confidence": 0.2,
+        "clarification_needed": true,
+        "clarification_question": "Ji zaroor! Aap ki location aur service type bhi bata dein — kaunsa kaam karwana hai aur kahan?",
+        "reasoning": "User provided only a time ('this evening') in Roman Urdu. Service type and location still unknown. Confidence 0.2 — second clarification triggered."
+      },
+      "decision": "FALLBACK — confidence 0.2 below threshold (0.7). Language switched to Roman Urdu mid-session. Still missing service type + location."
+    },
+    {
+      "timestamp": "2026-05-20T16:41:05.000Z",
+      "step": 3,
+      "agent": "IntentParser",
+      "phase": "INTENT_CONFIRMED",
+      "model": "gemini-2.0-flash",
+      "input": "mujhe kal shaam 5 baje park view men ac repair karwana he",
+      "confidence": 0.95,
+      "output": {
+        "service_type": "ac_repair",
+        "service_raw": "ac repair",
+        "location": "Park View, Islamabad",
+        "urgency": "medium",
+        "preferred_time": "tomorrow 5 PM",
+        "budget_sensitivity": "flexible",
+        "job_complexity_hint": "intermediate",
+        "language": "roman_urdu",
+        "confidence": 0.95,
+        "clarification_needed": false,
+        "clarification_question": null,
+        "reasoning": "Full intent resolved: service (ac_repair), location (Park View), time (tomorrow 5 PM). All required fields present. Confidence 0.95 — proceeding to ProviderMatcher."
+      },
+      "decision": "CONFIRMED after 2 clarification turns. Handing off to ProviderMatcher."
+    },
+    {
+      "timestamp": "2026-05-20T16:41:06.000Z",
+      "step": 4,
+      "agent": "ProviderMatcher",
+      "phase": "PROVIDERS_RANKED",
+      "model": "gemini-2.0-flash",
+      "input": {
+        "service_type": "ac_repair",
+        "location": "Park View, Islamabad",
+        "preferred_time": "tomorrow 5 PM",
+        "complexity": "intermediate"
+      },
+      "output": {
+        "eligible_pool_size": 5,
+        "returned": 3,
+        "fallback_used": false,
+        "matching_trace": "5 eligible providers scored on 8 weighted factors → top 3 returned. Best: Ali AC Services (96.1%)",
+        "reasoning": "Ali AC Services ranked #1: 0km away, 94% on-time score, 4.7 stars, no active jobs. Faisal AC ranked #2: broader expertise but higher rate. Khalid AC ranked #3: budget-friendly but 10% cancellation risk.",
+        "top_providers": [
+          {
+            "rank": 1,
+            "provider_id": "p001",
+            "name": "Ali AC Services",
+            "city_area": "G-13, Islamabad",
+            "distance_km": 0,
+            "rating": 4.7,
+            "on_time_score": 0.94,
+            "cancellation_risk": 0.04,
+            "risk_score": 0.08,
+            "base_rate_pkr": 800,
+            "jobs_completed": 145,
+            "active_jobs": 0,
+            "skill_level": "intermediate",
+            "certifications": ["AC Technician Level 2"],
+            "composite_score": 96.1,
+            "score_breakdown": {
+              "travel_time": 100,
+              "availability_match": 100,
+              "specialization": 100,
+              "on_time": 94,
+              "review_sentiment": 94,
+              "rate_competitiveness": 60,
+              "cancellation_risk": 96,
+              "capacity": 100
+            }
+          },
+          {
+            "rank": 2,
+            "provider_id": "p020",
+            "name": "Faisal AC & Refrigeration",
+            "city_area": "G-13, Islamabad",
+            "distance_km": 0.6,
+            "rating": 4.6,
+            "on_time_score": 0.91,
+            "cancellation_risk": 0.05,
+            "risk_score": 0.09,
+            "base_rate_pkr": 950,
+            "jobs_completed": 215,
+            "active_jobs": 0,
+            "skill_level": "complex",
+            "certifications": ["AC Technician Level 3"],
+            "composite_score": 93.54,
+            "score_breakdown": {
+              "travel_time": 98,
+              "availability_match": 100,
+              "specialization": 100,
+              "on_time": 91,
+              "review_sentiment": 92,
+              "rate_competitiveness": 30,
+              "cancellation_risk": 95,
+              "capacity": 100
+            }
+          },
+          {
+            "rank": 3,
+            "provider_id": "p017",
+            "name": "Khalid AC Expert",
+            "city_area": "G-13, Islamabad",
+            "distance_km": 0.3,
+            "rating": 4.4,
+            "on_time_score": 0.84,
+            "cancellation_risk": 0.1,
+            "risk_score": 0.17,
+            "base_rate_pkr": 750,
+            "jobs_completed": 103,
+            "active_jobs": 0,
+            "skill_level": "intermediate",
+            "certifications": ["AC Technician Level 2"],
+            "composite_score": 93.74,
+            "score_breakdown": {
+              "travel_time": 99,
+              "availability_match": 100,
+              "specialization": 100,
+              "on_time": 84,
+              "review_sentiment": 88,
+              "rate_competitiveness": 70,
+              "cancellation_risk": 90,
+              "capacity": 100
+            }
+          }
+        ]
+      }
+    },
+    {
+      "timestamp": "2026-05-20T16:41:06.200Z",
+      "step": 5,
+      "agent": "PricingEngine",
+      "phase": "PRICING_COMPLETE",
+      "input": {
+        "providers": ["p001", "p020", "p017"],
+        "urgency": "medium",
+        "complexity": "intermediate",
+        "budget_sensitivity": "flexible"
+      },
+      "output": {
+        "providers_priced": [
+          {
+            "provider_id": "p001",
+            "name": "Ali AC Services",
+            "quote": {
+              "visit_fee": 150,
+              "base_rate": 800,
+              "distance_fee": 0,
+              "urgency_surcharge": 0,
+              "complexity_premium": 150,
+              "total": 1750,
+              "breakdown": "Visit: Rs.150 + Labour: Rs.800/hr × ~2hr + Complexity: Rs.150",
+              "fairness_note": "Within industry standard (Rs.1500–4000). No surge active.",
+              "industry_standard_min": 1500,
+              "industry_standard_max": 4000,
+              "surge_active": false
+            },
+            "is_budget_pick": false
+          },
+          {
+            "provider_id": "p020",
+            "name": "Faisal AC & Refrigeration",
+            "quote": {
+              "visit_fee": 150,
+              "base_rate": 950,
+              "distance_fee": 20,
+              "urgency_surcharge": 0,
+              "complexity_premium": 150,
+              "total": 2070,
+              "breakdown": "Visit: Rs.150 + Labour: Rs.950/hr × ~2hr + Distance: Rs.20 + Complexity: Rs.150",
+              "fairness_note": "Higher rate due to Level 3 certification. Within industry standard.",
+              "industry_standard_min": 1500,
+              "industry_standard_max": 4000,
+              "surge_active": false
+            },
+            "is_budget_pick": false
+          },
+          {
+            "provider_id": "p017",
+            "name": "Khalid AC Expert",
+            "quote": {
+              "visit_fee": 150,
+              "base_rate": 750,
+              "distance_fee": 10,
+              "urgency_surcharge": 0,
+              "complexity_premium": 150,
+              "total": 1660,
+              "breakdown": "Visit: Rs.150 + Labour: Rs.750/hr × ~2hr + Distance: Rs.10 + Complexity: Rs.150",
+              "fairness_note": "Most affordable option. Budget pick flagged.",
+              "industry_standard_min": 1500,
+              "industry_standard_max": 4000,
+              "surge_active": false
+            },
+            "is_budget_pick": true
+          }
+        ]
+      }
+    },
+    {
+      "timestamp": "2026-05-20T16:41:07.000Z",
+      "step": 6,
+      "agent": "NegotiationAgent",
+      "phase": "SLOT_SOFT_LOCKED",
+      "decision": "Soft-locking provider p001 (Ali AC Services) for preferred time: tomorrow 5 PM. Slot held for 3 minutes pending customer acceptance.",
+      "slot_soft_locked": {
+        "provider_id": "p001",
+        "slot_time": "2026-05-21T17:00:00.000Z",
+        "lock_expires_seconds": 180
+      }
+    },
+    {
+      "timestamp": "2026-05-20T16:44:10.000Z",
+      "step": 7,
+      "agent": "Orchestrator",
+      "phase": "PROVIDER_TIMEOUT",
+      "decision": "FALLBACK — Provider p001 (Ali AC Services) did not respond within timeout window. Slot released. Warm-restarting with next ranked provider.",
+      "provider_timeout": {
+        "provider_id": "p001",
+        "provider_name": "Ali AC Services",
+        "timeout_seconds": 180
+      },
+      "warm_restart": {
+        "restart_count": 1,
+        "next_provider": "p020",
+        "excluded_providers": ["p001"]
+      }
+    },
+    {
+      "timestamp": "2026-05-20T16:44:10.200Z",
+      "step": 8,
+      "agent": "PricingEngine",
+      "phase": "REPRICE_ON_RESTART",
+      "decision": "Re-pricing for p020 (Faisal AC & Refrigeration) after warm restart.",
+      "output": {
+        "provider_id": "p020",
+        "name": "Faisal AC & Refrigeration",
+        "quote": {
+          "visit_fee": 150,
+          "base_rate": 950,
+          "distance_fee": 20,
+          "urgency_surcharge": 100,
+          "complexity_premium": 150,
+          "total": 2170,
+          "breakdown": "Visit: Rs.150 + Labour: Rs.950/hr × ~2hr + Distance: Rs.20 + Urgency (warm-restart): Rs.100 + Complexity: Rs.150",
+          "fairness_note": "Urgency surcharge applied on restart — fewer providers remaining.",
+          "surge_active": true,
+          "surge_reason": "warm_restart_urgency"
+        }
+      }
+    },
+    {
+      "timestamp": "2026-05-20T16:44:11.000Z",
+      "step": 9,
+      "agent": "NegotiationAgent",
+      "phase": "SLOT_SOFT_LOCKED",
+      "decision": "Soft-locking provider p020 (Faisal AC & Refrigeration) for tomorrow 5 PM.",
+      "slot_soft_locked": {
+        "provider_id": "p020",
+        "slot_time": "2026-05-21T17:00:00.000Z",
+        "lock_expires_seconds": 180
+      }
+    },
+    {
+      "timestamp": "2026-05-20T16:47:05.000Z",
+      "step": 10,
+      "agent": "BookingSimulator",
+      "phase_after": "PENDING_PROVIDER",
+      "decision": "Customer accepted quote. Booking created.",
+      "booking_id": "SVC-20260520-0042",
+      "provider_id": "p020",
+      "provider_name": "Faisal AC & Refrigeration",
+      "customer_id": "customer_001",
+      "service_type": "ac_repair",
+      "location": "Park View, Islamabad",
+      "preferred_time_requested": "tomorrow 5 PM",
+      "scheduled_time_assigned": "2026-05-21T17:00:00.000Z",
+      "scheduling_collision_detected": false,
+      "final_price_pkr": 2170,
+      "checklist_items": [
+        "Inspect AC unit and diagnose fault",
+        "Check refrigerant levels",
+        "Clean filters and coils",
+        "Test cooling performance after repair",
+        "Confirm completion with customer"
+      ]
+    },
+    {
+      "timestamp": "2026-05-20T16:50:12.000Z",
+      "step": 11,
+      "agent": "StatusMachine",
+      "phase_after": "ACCEPTED",
+      "booking_id": "SVC-20260520-0042",
+      "status_from": "PENDING_PROVIDER",
+      "status_to": "ACCEPTED",
+      "decision": "Provider confirmed the job."
+    },
+    {
+      "timestamp": "2026-05-20T16:51:30.000Z",
+      "step": 12,
+      "agent": "StatusMachine",
+      "phase_after": "ARRIVING",
+      "booking_id": "SVC-20260520-0042",
+      "status_from": "ACCEPTED",
+      "status_to": "ARRIVING",
+      "decision": "Provider departed for customer location. GPS tracking active.",
+      "distance_meters": 1200
+    },
+    {
+      "timestamp": "2026-05-20T16:54:00.000Z",
+      "step": 13,
+      "agent": "StatusMachine",
+      "phase_after": "ARRIVED",
+      "booking_id": "SVC-20260520-0042",
+      "status_from": "ARRIVING",
+      "status_to": "ARRIVED",
+      "decision": "Provider arrived at customer location. Distance threshold crossed (< 50m).",
+      "distance_meters": 30
+    },
+    {
+      "timestamp": "2026-05-20T16:55:10.000Z",
+      "step": 14,
+      "agent": "StatusMachine",
+      "phase_after": "IN_PROGRESS",
+      "booking_id": "SVC-20260520-0042",
+      "status_from": "ARRIVED",
+      "status_to": "IN_PROGRESS",
+      "decision": "Provider began work. Checklist tracking started."
+    },
+    {
+      "timestamp": "2026-05-20T18:22:45.000Z",
+      "step": 15,
+      "agent": "StatusMachine",
+      "phase_after": "COMPLETED",
+      "booking_id": "SVC-20260520-0042",
+      "status_from": "IN_PROGRESS",
+      "status_to": "COMPLETED",
+      "decision": "All checklist items marked complete by provider. Job closed.",
+      "duration_minutes": 87,
+      "on_time": true
+    },
+    {
+      "timestamp": "2026-05-20T18:24:10.000Z",
+      "step": 16,
+      "agent": "RatingEngine",
+      "phase_after": "RATED",
+      "booking_id": "SVC-20260520-0042",
+      "provider_id": "p020",
+      "provider_name": "Faisal AC & Refrigeration",
+      "stars_submitted": 5,
+      "comment": "Bahut acha kaam kiya, AC bilkul theek ho gayi",
+      "on_time": true,
+      "rating_impact": {
+        "old_rating": 4.6,
+        "new_rating": 4.61,
+        "total_reviews_after": 173
+      }
+    }
+  ],
+  "summary": {
+    "total_agents_invoked": 7,
+    "total_steps": 16,
+    "clarification_turns": 2,
+    "provider_timeouts": 1,
+    "warm_restarts": 1,
+    "final_provider": "Faisal AC & Refrigeration (p020)",
+    "final_price_pkr": 2170,
+    "booking_id": "SVC-20260520-0042",
+    "status_final": "COMPLETED",
+    "rating": "5 / 5",
+    "on_time_delivery": true,
+    "total_session_duration_minutes": 104,
+    "languages_detected": ["english", "roman_urdu"],
+    "fallbacks_triggered": [
+      "IntentParser clarification (turn 1) — location + time missing",
+      "IntentParser clarification (turn 2) — confidence 0.2, service type missing",
+      "Provider timeout — Ali AC Services did not respond in 3 minutes",
+      "Warm restart — re-priced and re-offered with Faisal AC & Refrigeration"
+    ]
+  }
+}

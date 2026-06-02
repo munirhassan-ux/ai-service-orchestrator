@@ -109,6 +109,11 @@ class ApiService {
     return jsonDecode(response.body);
   }
 
+  // Generate job completion invoice/summary
+  static Future<Map<String, dynamic>> generateSummary(String bookingId) async {
+    return post('/booking/generate-summary', {'booking_id': bookingId});
+  }
+
   // Generic POST helper
   static Future<Map<String, dynamic>> post(String path, Map<String, dynamic> body) async {
     final response = await http.post(

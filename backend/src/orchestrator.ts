@@ -31,6 +31,8 @@ export interface OrchestrationResult {
   error?: string;
   thinking_steps?: string[];
   countdown_seconds?: number;
+  booking_reason?: string;
+  reassignment_log?: string[];
 }
 
 export async function runOrchestration(
@@ -130,7 +132,7 @@ export async function runOrchestration(
   }
 
   // ── 2. MATCHING & THREAD INIT PHASE ─────────────────────────────────
-  if (session.phase === "thinking" || (session.phase === "negotiating" && cleanInput.toLowerCase().includes("options"))) {
+  if (session.phase === "thinking") {
     step++;
     const tStart = Date.now();
     const intent = session.parsed_intent!;
@@ -229,41 +231,67 @@ export async function runOrchestration(
     const newlyShownIds = matchResult.top_providers.map((p) => p.provider_id);
     const updatedTried = [...excludedIds, ...newlyShownIds];
 
-    logAction(session.session_id, "thinking", "negotiating", {
-      providers: String(providersWithQuotes.length),
-      top: providersWithQuotes[0]?.name,
-      fallback: matchResult.fallback_used ? matchResult.fallback_reason ?? "yes" : "no",
-    }, Date.now() - tStart);
-    session = updateSession(session.session_id, {
-      matched_providers: providersWithQuotes,
-      providers_tried: updatedTried,
-      phase: "negotiating",
-      current_provider_index: 0,
-      price_quote: providersWithQuotes[0].price_quote,
-    });
-
     const isUrdu = intent.language !== "english";
-    const countdown = intent.urgency === "high" ? 180 : intent.urgency === "medium" ? 420 : 900;
-
     const budgetLabel = intent.budget_sensitivity === "low" ? "Price-Sensitive"
       : intent.budget_sensitivity === "flexible" ? "Flexible Budget"
         : "Standard Budget";
-    const thinkingSteps = [
+
+    // Auto-book the top-ranked provider — customer never selects manually
+    const topProvider = providersWithQuotes[0];
+    const { booking } = await createBooking(
+      intent,
+      topProvider,
+      topProvider.price_quote!,
+      topProvider.price_quote!.total,
+      null,
+      customerId,
+      session.session_id
+    );
+
+    const booking_reason = `${topProvider.name} selected — ${topProvider.distance_km}km away, ${topProvider.rating}★ rating, ${Math.round(topProvider.on_time_score * 100)}% on-time across ${topProvider.total_jobs} completed jobs. Highest-scoring ${intent.service_type} provider in ${intent.location}.`;
+
+    const reassignmentSteps: string[] = excludedIds.length > 0 ? [
+      `⚠️ Previous provider cancelled — excluded from pool`,
+      `🔍 Re-running ProviderMatcher (${excludedIds.length} provider${excludedIds.length > 1 ? "s" : ""} excluded)`,
+      `✅ Next best match: ${topProvider.name}`,
+      `📍 ${topProvider.distance_km}km away, rated ${topProvider.rating}/5 stars`,
+      `🤖 Auto-booking ${topProvider.name}...`,
+    ] : [];
+
+    const thinkingSteps = reassignmentSteps.length > 0 ? [
+      ...reassignmentSteps,
+      `Booking confirmed!`,
+    ] : [
       `Haazir Engine is searching...`,
       `Extracted: ${intent.service_type} in ${intent.location}`,
       `Priority: ${intent.urgency?.toUpperCase() || "STANDARD"} | Budget: ${budgetLabel}`,
       `Matched ${providersWithQuotes.length} certified professionals`,
       `Score recalculation complete — ranked by 8 weighted factors`,
+      `Auto-selecting top match: ${topProvider.name}`,
+      `Booking confirmed!`,
     ];
 
+    logAction(session.session_id, "thinking", "booking_confirmed", {
+      provider: topProvider.name,
+      booking: booking.booking_id,
+      price: `Rs. ${booking.final_price}`,
+    }, Date.now() - tStart);
+    session = updateSession(session.session_id, {
+      matched_providers: providersWithQuotes,
+      providers_tried: updatedTried,
+      phase: "booking_confirmed",
+      current_provider_index: 0,
+      price_quote: topProvider.price_quote,
+      active_booking_id: booking.booking_id,
+    });
+
     return {
-      success: true, session_id: session.session_id, phase: "negotiating",
+      success: true, session_id: session.session_id, phase: "booking_confirmed",
       message: isUrdu
-        ? `Haazir AI ne top match dhoond liye hain!\nNeeche diye gaye options mein se kisi ek ko select karein ya mazeed options ke liye 'More Options' tap karein.`
-        : `Haazir AI found the best matching professionals!\nSelect one of the providers below, or tap 'More Options' to see others.`,
-      chips: ["More Options", "Cancel"],
+        ? `Haazir AI ne aap ke liye best provider book kar diya hai!\n\nBooking ID: ${booking.booking_id}\nProvider: ${booking.provider_name}\nScheduled: ${new Date(booking.scheduled_time).toLocaleString("en-PK")}\nTotal: Rs. ${booking.final_price}\n\nAb provider ki confirmation ka intezaar karein. Confirm hone par tracking start ho gi! 🙏`
+        : `Haazir AI automatically booked the best provider for you!\n\nBooking ID: ${booking.booking_id}\nProvider: ${booking.provider_name}\nScheduled: ${new Date(booking.scheduled_time).toLocaleString("en-PK")}\nTotal: Rs. ${booking.final_price}\n\nWaiting for provider confirmation. Tracking will start once confirmed! 🙏`,
+      chips: [],
       thinking_steps: thinkingSteps,
-      countdown_seconds: countdown,
       intent,
       match_result: {
         top_providers: providersWithQuotes,
@@ -272,118 +300,13 @@ export async function runOrchestration(
         fallback_reason: matchResult.fallback_reason,
         matching_trace: matchResult.matching_trace,
       },
-      price_quote: providersWithQuotes[0].price_quote,
+      price_quote: topProvider.price_quote,
       negotiation_thread_id: null,
-      booking: null,
+      booking,
       trace,
+      booking_reason,
+      reassignment_log: reassignmentSteps.length > 0 ? reassignmentSteps : undefined,
     };
-  }
-
-  // ── 3. PROVIDER SELECTION SELECTION PHASE ──────────────────────────
-  if (session.phase === "negotiating") {
-    // If they typed something else or tapped a select button
-    const selectMatch = cleanInput.match(/✓ Select\s+(\w+)/i) || cleanInput.match(/Select\s+(\w+)/i);
-    if (selectMatch) {
-      const selectedId = selectMatch[1];
-      const provider = session.matched_providers.find((p) => p.provider_id === selectedId || p.provider_id.toLowerCase() === selectedId.toLowerCase());
-
-      if (!provider) {
-        return {
-          success: false, session_id: session.session_id, phase: "negotiating",
-          message: "Invalid provider selected. Please choose from the list.",
-          intent: session.parsed_intent, match_result: null, price_quote: null, negotiation_thread_id: null, booking: null, trace,
-        };
-      }
-
-      // Generate the JOB DETAIL object with status = PENDING_PROVIDER
-      const { booking } = await createBooking(
-        session.parsed_intent!,
-        provider,
-        provider.price_quote!,
-        provider.price_quote!.total,
-        null,
-        customerId,
-        session.session_id
-      );
-
-      logAction(session.session_id, "negotiating", "equipment_ack", {
-        provider: provider.name,
-        booking: booking.booking_id,
-        price: `Rs. ${booking.final_price}`,
-      });
-      session = updateSession(session.session_id, {
-        phase: "equipment_ack",
-        active_booking_id: booking.booking_id,
-      });
-
-      const isUrdu = session.parsed_intent?.language !== "english";
-      return {
-        success: true, session_id: session.session_id, phase: "equipment_ack",
-        message: isUrdu
-          ? `*Zaroori Maloomat (Equipment/Materials)*:\n\nYeh quote sirf labor charges ke liye hai. Agar kaam mein koi pipeline, screw, wire ya parts istemal hote hain tou un ka cost shamil nahi hai.\n\nKya aap is se agree karte hain?`
-          : `*Important Information (Equipment/Materials)*:\n\nThis quote covers labor only. Any parts, wires, pipes or replacements are NOT included in the estimated total.\n\nDo you understand and agree?`,
-        chips: ["Haan, Agree!", "Cancel Booking"],
-        intent: session.parsed_intent,
-        match_result: null,
-        price_quote: provider.price_quote,
-        negotiation_thread_id: null,
-        booking,
-        trace,
-      };
-    }
-
-    if (cleanInput.toLowerCase().includes("cancel") || cleanInput.startsWith("✗")) {
-      updateSession(session.session_id, { phase: "intake" });
-      return {
-        success: true, session_id: session.session_id, phase: "intake",
-        message: "Request cancelled. Aap jab chahein naya request start kar sakte hain! 🙏",
-        chips: ["AC Repair", "Plumber", "Electrician"],
-        intent: null, match_result: null, price_quote: null, negotiation_thread_id: null, booking: null, trace,
-      };
-    }
-  }
-
-  // ── 4. EQUIPMENT ACKNOWLEDGEMENT PHASE ──────────────────────────────
-  if (session.phase === "equipment_ack") {
-    const isUrdu = session.parsed_intent?.language !== "english";
-    const bookingId = session.active_booking_id!;
-
-    if (cleanInput.toLowerCase().includes("agree") || cleanInput.includes("Haan") || cleanInput.includes("✓")) {
-      // Booking was already created as PENDING_PROVIDER — keep it that way.
-      // The provider must explicitly accept before we move to ACCEPTED.
-      const booking = getBooking(bookingId);
-      if (!booking) throw new Error(`Booking ${bookingId} not found`);
-
-      logAction(session.session_id, "equipment_ack", "booking_confirmed", {
-        booking: booking.booking_id,
-        status: booking.status,
-      });
-      updateSession(session.session_id, { phase: "booking_confirmed" });
-
-      return {
-        success: true, session_id: session.session_id, phase: "booking_confirmed",
-        message: isUrdu
-          ? `Shukriya! Aap ki request provider ko bhej di gayi hai.\n\nBooking ID: ${booking.booking_id}\nProvider: ${booking.provider_name}\nScheduled: ${new Date(booking.scheduled_time).toLocaleString("en-PK")}\nTotal: Rs. ${booking.final_price}\n\nAb provider ki confirmation ka intezaar karein. Confirm hone par simulation start ho gi! 🙏`
-          : `Thank you! Your request has been sent to the provider.\n\nBooking ID: ${booking.booking_id}\nProvider: ${booking.provider_name}\nScheduled: ${new Date(booking.scheduled_time).toLocaleString("en-PK")}\nTotal: Rs. ${booking.final_price}\n\nWaiting for provider confirmation. Simulation will start once confirmed! 🙏`,
-        chips: [],
-        intent: session.parsed_intent,
-        match_result: null,
-        price_quote: booking.price_quote,
-        negotiation_thread_id: null,
-        booking,
-        trace,
-      };
-    } else {
-      // cancel
-      updateBookingStatus(bookingId, "CANCELLED_CUSTOMER");
-      updateSession(session.session_id, { phase: "intake" });
-      return {
-        success: true, session_id: session.session_id, phase: "intake",
-        message: "Booking cancelled. Naya request likhein...",
-        chips: ["AC Repair", "Plumber"],
-        intent: null, match_result: null, price_quote: null, negotiation_thread_id: null, booking: null, trace,
-      };
-    }
   }
 
   // ── 5. BOOKING CONFIRMED ACTIONS ────────────────────────────────────

@@ -145,13 +145,8 @@ class _CustomerLandingScreenState extends State<CustomerLandingScreen> {
   StreamSubscription<void>? _sub;
 
   bool _hasActive = false;
-  bool _hasActiveBooking = false; // from API or confirmed booking
+  bool _hasActiveBooking = false;
   bool _checking = false;
-
-  static const _activeStatuses = {
-    'PENDING_PROVIDER', 'ACCEPTED', 'ARRIVING', 'ARRIVED',
-    'IN_PROGRESS', 'CANCELLED_PROVIDER', 'CANCELLED_TIMEOUT'
-  };
 
   @override
   void initState() {
@@ -183,17 +178,9 @@ class _CustomerLandingScreenState extends State<CustomerLandingScreen> {
       } catch (_) {}
     }
 
-    // Check API for active bookings
-    bool apiActive = false;
-    try {
-      final res = await ApiService.get('bookings?customer_id=customer_001');
-      apiActive = res is List &&
-          res.any((b) => _activeStatuses.contains(b['status'] as String? ?? ''));
-    } catch (_) {}
-
     if (!mounted) return;
     setState(() {
-      _hasActiveBooking = apiActive || ActiveSessionService.bookingId != null;
+      _hasActiveBooking = ActiveSessionService.bookingId != null;
       _hasActive = _hasActiveBooking || ActiveSessionService.hasActive;
       _checking = false;
     });
@@ -232,6 +219,46 @@ class _CustomerLandingScreenState extends State<CustomerLandingScreen> {
       _hasActive = false;
       _hasActiveBooking = false;
     });
+  }
+
+  void _openWithPrompt(String prompt) {
+    Navigator.of(context)
+        .push(MaterialPageRoute(
+            builder: (_) => ChatScreen(initialPrompt: prompt)))
+        .then((_) {
+      _checkState();
+      if (ActiveSessionService.hasActive) widget.onSwitchToBookings?.call();
+    });
+  }
+
+  Widget _serviceChip(String emoji, String label, String prompt) {
+    return GestureDetector(
+      onTap: () => _openWithPrompt(prompt),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: const Color(0xFFE8EDE6)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(mainAxisSize: MainAxisSize.min, children: [
+          Text(emoji, style: const TextStyle(fontSize: 15)),
+          const SizedBox(width: 6),
+          Text(label,
+              style: const TextStyle(
+                  color: Color(0xFF21231D),
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600)),
+        ]),
+      ),
+    );
   }
 
   @override
@@ -392,6 +419,29 @@ class _CustomerLandingScreenState extends State<CustomerLandingScreen> {
                       ),
                     ],
                   ),
+                ),
+                const SizedBox(height: 24),
+                const Text(
+                  "Popular Services",
+                  style: TextStyle(
+                      color: Color(0xFF767773),
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1.1),
+                ),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  alignment: WrapAlignment.center,
+                  children: [
+                    _serviceChip("🔧", "Plumber", "mujhe plumber chahiye"),
+                    _serviceChip("⚡", "Electrician", "mujhe electrician chahiye"),
+                    _serviceChip("❄️", "AC Repair", "mujhe AC repair karwani hai"),
+                    _serviceChip("🧹", "Cleaning", "ghar ki safai karwani hai"),
+                    _serviceChip("🪚", "Carpenter", "mujhe carpenter chahiye"),
+                    _serviceChip("🎨", "Painter", "mujhe painter chahiye"),
+                  ],
                 ),
               ],
             ],
