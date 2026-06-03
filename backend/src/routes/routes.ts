@@ -362,8 +362,8 @@ router.post("/booking/simulate-step", (req: Request, res: Response) => {
       updateBookingStatus(booking_id, "ARRIVING");
     }
 
-    // GPS Step Fraction = 0.08 (8% per step — longer, more realistic ride)
-    const step_fraction = 0.08;
+    // GPS Step Fraction = 0.75 (75% per step — reaches customer in ~4 steps)
+    const step_fraction = 0.75;
     const customerLat = booking.customer_lat || 33.6938;
     const customerLng = booking.customer_lng || 73.0551;
     const currentLat = booking.current_lat || 33.6844;

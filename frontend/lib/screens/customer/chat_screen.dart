@@ -993,7 +993,14 @@ class _LiveTrackingWidgetState extends State<LiveTrackingWidget> {
     _booking = widget.booking;
     // Defer so we don't call setState on the parent during its own build phase
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) widget.onCancelReady?.call(_cancelAndEnd);
+      if (!mounted) return;
+      final s = _booking['status'] as String? ?? '';
+      // Show cancel only while still pending or during reassignment
+      if (s == 'PENDING_PROVIDER' || s == 'CANCELLED_PROVIDER' || s == 'CANCELLED_TIMEOUT') {
+        widget.onCancelReady?.call(_cancelAndEnd);
+      } else {
+        widget.onCancelReady?.call(null);
+      }
     });
     final status = _booking['status'] as String? ?? '';
     final reassignedTo = _booking['reassigned_to'] as String?;
@@ -1063,6 +1070,13 @@ class _LiveTrackingWidgetState extends State<LiveTrackingWidget> {
         final prevStatus = _booking['status'] as String? ?? '';
         final newStatus = res['status'] as String? ?? '';
         setState(() => _booking = res);
+        // Manage cancel button visibility based on new status
+        if (newStatus == 'ACCEPTED' || newStatus == 'ARRIVING' ||
+            newStatus == 'ARRIVED' || newStatus == 'IN_PROGRESS') {
+          widget.onCancelReady?.call(null); // hide once provider is engaged
+        } else if (newStatus == 'CANCELLED_PROVIDER' || newStatus == 'CANCELLED_TIMEOUT') {
+          widget.onCancelReady?.call(_cancelAndEnd); // show during reassignment
+        }
         // Provider just accepted — auto-start GPS simulation
         if ((newStatus == 'ACCEPTED' || newStatus == 'ARRIVING') &&
             prevStatus == 'PENDING_PROVIDER' &&
