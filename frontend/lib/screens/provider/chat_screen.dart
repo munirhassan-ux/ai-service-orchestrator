@@ -103,8 +103,7 @@ class _ProviderChatScreenState extends State<ProviderChatScreen> {
                 'type': 'job_offer',
                 'job': {
                   'service': b['service_type'],
-                  'problem': b[
-                      'location'], // Using location as mock problem if not available
+                  'problem': b['location'],
                   'location': b['location'],
                   'distance': b['distance_meters']?.toString() ?? '1.2',
                   'time': b['scheduled_time'],
@@ -112,6 +111,8 @@ class _ProviderChatScreenState extends State<ProviderChatScreen> {
                   'min': b['final_price'], 'max': b['final_price'],
                 }
               });
+              // Poll while pending so we detect if customer cancels the search
+              Future.microtask(_startStatusPolling);
             } else if (status == 'ACCEPTED' || status == 'ARRIVING') {
               _jobAccepted = true;
               _messages.add({
@@ -132,6 +133,21 @@ class _ProviderChatScreenState extends State<ProviderChatScreen> {
               _jobAccepted = true;
               _messages
                   .add({'text': null, 'isUser': false, 'type': 'job_history'});
+            } else if (status == 'CANCELLED_PROVIDER') {
+              _messages.add({
+                'text': 'Aapne yeh job decline/cancel kar diya tha.\n\nService: ${b['service_type'] ?? ''}\nLocation: ${b['location'] ?? ''}\nPrice: Rs. ${b['final_price'] ?? ''}',
+                'isUser': false,
+              });
+            } else if (status == 'CANCELLED_CUSTOMER') {
+              _messages.add({
+                'text': 'Customer ne yeh booking cancel kar di thi.\n\nService: ${b['service_type'] ?? ''}\nLocation: ${b['location'] ?? ''}\nPrice: Rs. ${b['final_price'] ?? ''}',
+                'isUser': false,
+              });
+            } else if (status == 'CANCELLED_TIMEOUT') {
+              _messages.add({
+                'text': 'Yeh job timeout ho gayi thi — aapne waqt par jawab nahi diya.\n\nService: ${b['service_type'] ?? ''}\nLocation: ${b['location'] ?? ''}',
+                'isUser': false,
+              });
             }
           });
         }
@@ -179,7 +195,18 @@ class _ProviderChatScreenState extends State<ProviderChatScreen> {
           if (b != null) {
             final status = b['status'] as String? ?? '';
             setState(() => _bookingData = b);
-            if (status == 'ARRIVED' || status == 'IN_PROGRESS') {
+            if (status == 'CANCELLED_CUSTOMER') {
+              _statusPollTimer?.cancel();
+              _statusPollTimer = null;
+              setState(() {
+                _jobOffered = false;
+                _messages.add({
+                  'text': 'Customer ne search cancel kar diya. Yeh job ab available nahi hai.',
+                  'isUser': false,
+                });
+              });
+              _scrollBottom();
+            } else if (status == 'ARRIVED' || status == 'IN_PROGRESS') {
               _statusPollTimer?.cancel();
               _statusPollTimer = null;
               setState(() {

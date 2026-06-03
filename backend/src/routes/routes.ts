@@ -2,6 +2,7 @@ import { Router, Request, Response } from "express";
 import { runOrchestration, confirmBookingAfterNegotiation, rerouteToNextProvider, triggerWarmRestart } from "../orchestrator.js";
 import { providerRespond, customerRespond, acceptMidpoint, declineMidpoint, getThread } from "../agents/negotiationAgent.js";
 import { updateBookingStatus, completeChecklistItem, getBooking, submitBookingRating, handleProviderCancellation } from "../agents/bookingSimulator.js";
+import { matchProviders } from "../agents/providerMatcher.js";
 import * as fs from "fs";
 import * as path from "path";
 import { fileURLToPath } from "url";
@@ -442,6 +443,107 @@ router.post("/booking/cancel-provider", (req: Request, res: Response) => {
     const booking = handleProviderCancellation(booking_id);
     return res.json({ status: "cancelled", booking });
   } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// ── POST /api/booking/auto-reassign ──────────────────────────
+// Auto-find next best provider when current one declines, up to 10 attempts.
+router.post("/booking/auto-reassign", async (req: Request, res: Response) => {
+  const { booking_id } = req.body;
+  if (!booking_id) return res.status(400).json({ error: "booking_id required" });
+
+  try {
+    const bookingsFile = path.join(__dirname, "../../data/mock_bookings.json");
+    const data = JSON.parse(fs.readFileSync(bookingsFile, "utf-8"));
+
+    // Follow the reassigned_to chain to the latest unassigned booking.
+    // This makes the endpoint idempotent — stale booking_ids from the frontend
+    // are silently redirected to the latest active booking in the chain.
+    let currentIdx = data.bookings.findIndex((b: any) => b.booking_id === booking_id);
+    if (currentIdx === -1) return res.status(404).json({ error: "Booking not found" });
+    while (data.bookings[currentIdx].reassigned_to) {
+      const nextIdx = data.bookings.findIndex(
+        (b: any) => b.booking_id === data.bookings[currentIdx].reassigned_to
+      );
+      if (nextIdx === -1) break;
+      currentIdx = nextIdx;
+    }
+    const booking = data.bookings[currentIdx];
+
+    // Compute the complete excluded-provider set by walking the chain backwards.
+    // This is resilient to providers_tried not being propagated correctly.
+    const allTriedProviders = new Set<string>();
+    let chainNode: any = booking;
+    while (chainNode) {
+      const pId = chainNode.provider_id;
+      if (pId) allTriedProviders.add(pId);
+      if (chainNode.reassigned_from) {
+        chainNode = data.bookings.find((b: any) => b.booking_id === chainNode.reassigned_from) ?? null;
+      } else {
+        break;
+      }
+    }
+    const excludedProviders = Array.from(allTriedProviders);
+
+    const MAX_ATTEMPTS = 10;
+    if (excludedProviders.length >= MAX_ATTEMPTS) {
+      return res.json({ status: "no_provider", attempt: excludedProviders.length });
+    }
+
+    const intent: any = {
+      service_type: booking.service_type,
+      location: booking.location,
+      preferred_time: "flexible",
+      budget: booking.final_price,
+      budget_sensitivity: "medium",
+      urgency: "standard",
+      job_complexity_hint: "standard",
+      confidence: 0.95,
+      clarification_needed: false,
+      language: "roman_urdu",
+    };
+
+    const matchResult = await matchProviders(intent, excludedProviders);
+    if (!matchResult.top_providers || matchResult.top_providers.length === 0) {
+      return res.json({ status: "no_provider", attempt: excludedProviders.length });
+    }
+
+    const nextProvider = matchResult.top_providers[0];
+
+    const date = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+    const newBookingId = `SVC-${date}-${String(data.bookings.length + 1).padStart(4, "0")}`;
+
+    const newBooking: any = {
+      ...booking,
+      booking_id: newBookingId,
+      provider_id: nextProvider.provider_id,
+      provider_name: nextProvider.name,
+      status: "PENDING_PROVIDER",
+      providers_tried: excludedProviders,
+      match_score: nextProvider.score,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      state_history: [{ status: "PENDING_PROVIDER", timestamp: new Date().toISOString() }],
+      current_lat: nextProvider.location?.latitude ?? booking.customer_lat,
+      current_lng: nextProvider.location?.longitude ?? booking.customer_lng,
+      distance_meters: Math.round(nextProvider.distance_km * 1000),
+      reassigned_from: booking.booking_id,
+    };
+    delete newBooking.reassigned_to;
+
+    data.bookings[currentIdx].reassigned_to = newBookingId;
+    data.bookings.push(newBooking);
+    fs.writeFileSync(bookingsFile, JSON.stringify(data, null, 2));
+
+    return res.json({
+      status: "reassigned",
+      booking: newBooking,
+      attempt: excludedProviders.length + 1,
+      provider: { name: nextProvider.name, score: nextProvider.score },
+    });
+  } catch (err: any) {
+    console.error("[auto-reassign] error:", err);
     return res.status(500).json({ error: err.message });
   }
 });

@@ -178,14 +178,16 @@ decision happens as a message in the chat thread.
     └── Star rating form sent in chat
     └── ActiveSessionService cleared → home re-enables new booking prompt
 
-7b. Provider cancels
-    └── Booking stays on Active tab (not History)
-    └── Two options shown in chat:
-        ├── "Find New Provider" — restores full conversation history, creates
-        │   new session with cancelled provider excluded, skips intake phase,
-        │   goes directly to matching new providers
-        └── "Cancel and End Chat" — sets status CANCELLED_CUSTOMER,
-            clears session, booking moves to History tab
+7b. Provider declines or cancels
+    └── System automatically searches for next best provider (no user action needed)
+    └── Live Tracking shows "SEARCHING..." with attempt counter (attempt 1 of 10)
+    └── Each reassignment adds a confirmation bubble in the chat thread with new
+        provider's name, booking ID, price, and checklist
+    └── "Cancel Booking" button is always visible at the bottom of the chat screen
+        — customer can stop the search at any point
+    └── After 10 failed attempts: booking auto-marked CANCELLED_CUSTOMER, moves
+        to History tab, chat shows "no provider available" message
+    └── If customer taps "Cancel Booking": status → CANCELLED_CUSTOMER, History tab
 ```
 
 ### Service Provider Flow
@@ -505,32 +507,50 @@ Customer location is used by the ProviderMatcher to calculate:
 
 ```json
 {
-  "booking_id": "BK-20250516-0001",
-  "provider_id": "p00042",
-  "provider_name": "Ali Rehman",
+  "booking_id": "SVC-20260603-0001",
+  "provider_id": "p49720",
+  "provider_name": "Zubair Mehmood",
   "customer_id": "customer_001",
   "service_type": "plumber",
-  "location": "F-7, Islamabad",
-  "scheduled_time": "2025-05-17T10:00:00.000Z",
+  "location": "G-11, Islamabad",
+  "scheduled_time": "2026-06-03T05:00:00.000Z",
   "status": "ACCEPTED",
-  "final_price": 1800,
+  "final_price": 1230,
+  "match_score": 91.5,
   "checklist": [
-    { "item": "Inspect pipe leak", "completed": false },
-    { "item": "Replace fittings", "completed": false },
-    { "item": "Test water flow", "completed": false }
+    { "item": "Diagnose leak/blockage", "completed": false },
+    { "item": "Complete repair",        "completed": false },
+    { "item": "Test water flow",        "completed": false },
+    { "item": "Clean up area",          "completed": false }
   ],
-  "current_lat": 33.7312,
-  "current_lng": 73.0389,
-  "customer_lat": 33.7196,
-  "customer_lng": 73.0551,
-  "distance_meters": 9600,
-  "created_at": "2025-05-16T10:00:00.000Z",
+  "current_lat": 33.6912,
+  "current_lng": 73.0102,
+  "customer_lat": 33.6844,
+  "customer_lng": 73.0479,
+  "distance_meters": 4900,
+  "providers_tried": ["p49720"],
+  "reassigned_to": null,
+  "reassigned_from": null,
+  "created_at": "2026-06-03T04:58:00.000Z",
   "state_history": [
-    { "status": "PENDING_PROVIDER", "timestamp": "2025-05-16T10:00:00.000Z" },
-    { "status": "ACCEPTED",         "timestamp": "2025-05-16T10:04:22.000Z" }
+    { "status": "PENDING_PROVIDER", "timestamp": "2026-06-03T04:58:00.000Z" },
+    { "status": "ACCEPTED",         "timestamp": "2026-06-03T05:01:14.000Z" }
   ]
 }
 ```
+
+### Reassignment Chain Fields
+
+When a provider declines, the auto-reassign endpoint creates a new linked booking:
+
+| Field | Type | Description |
+|---|---|---|
+| `providers_tried` | string[] | All provider IDs tried so far in this chain |
+| `reassigned_from` | string? | `booking_id` of the previous booking in the chain |
+| `reassigned_to` | string? | `booking_id` of the next booking (set when this one is superseded) |
+| `match_score` | float | Composite 8-factor score of the assigned provider |
+
+A booking with `reassigned_to` set is an **intermediate** booking — it is hidden from both the customer's Bookings tab and the provider's Jobs tab. Only the **chain tip** (latest booking, `reassigned_to == null`) is ever displayed.
 
 ### Distance Accuracy
 
@@ -600,22 +620,23 @@ Providers are removed from the candidate pool entirely if:
                       │
             ┌─────────┴──────────┐
             │                    │
-     Provider accepts      Provider cancels
+     Provider accepts      Provider declines / cancels
             │                    │
             ▼                    ▼
-    ┌────────────┐      ┌─────────────────────────┐
-    │  ACCEPTED  │      │  CANCELLED_PROVIDER      │
-    └─────┬──────┘      │  (stays on Active tab)   │
-          │             └─────────┬───────────────┘
-          ▼                       │
-    ┌────────────┐      ┌─────────┴──────────────┐
-    │  ARRIVING  │      │  Customer chooses:      │
-    └─────┬──────┘      ├── Find New Provider     │
-          │             │   → new session created │
-          ▼             │   → excluded from match │
-    ┌────────────┐      └── Cancel and End Chat   │
-    │  ARRIVED   │          → CANCELLED_CUSTOMER  │
-    └─────┬──────┘          → moves to History    │
+    ┌────────────┐      ┌──────────────────────────────────────┐
+    │  ACCEPTED  │      │  CANCELLED_PROVIDER / CANCELLED_TIMEOUT│
+    └─────┬──────┘      └───────────┬──────────────────────────┘
+          │                         │
+          ▼              Auto-reassign (POST /api/booking/auto-reassign)
+    ┌────────────┐                  │
+    │  ARRIVING  │        ┌─────────┴────────────┐
+    └─────┬──────┘        │                      │
+          │         Attempt < 10          Attempt = 10
+          ▼         (provider available)  (all exhausted)
+    ┌────────────┐        │                      │
+    │  ARRIVED   │    New PENDING_PROVIDER    CANCELLED_CUSTOMER
+    └─────┬──────┘    booking created        (auto, moved to History)
+          │           (chain continues)
           │ (checklist unlocked for provider)
           ▼
     ┌─────────────┐
@@ -626,20 +647,26 @@ Providers are removed from the candidate pool entirely if:
     ┌───────────┐
     │ COMPLETED │ ← ActiveSessionService cleared → customer can book again
     └───────────┘
+
+  Customer taps "Cancel Booking" (bottom bar, visible at any point):
+    → current chain-tip booking → CANCELLED_CUSTOMER → History
 ```
 
 ### Status Definitions
 
-| Status | Trigger | Customer Tab |
-|---|---|---|
-| `PENDING_PROVIDER` | Customer selects provider | Active |
-| `ACCEPTED` | Provider accepts | Active |
-| `ARRIVING` | GPS simulation starts | Active |
-| `ARRIVED` | distance_meters < 50 | Active |
-| `IN_PROGRESS` | Checklist items being ticked | Active |
-| `COMPLETED` | Provider marks all done | History |
-| `CANCELLED_PROVIDER` | Provider cancels | Active (until customer acts) |
-| `CANCELLED_CUSTOMER` | Customer taps "Cancel and End Chat" | History |
+| Status | Trigger | Customer Tab | Provider Tab |
+|---|---|---|---|
+| `PENDING_PROVIDER` | Customer selects provider | Active | Active |
+| `ACCEPTED` | Provider accepts | Active | Active |
+| `ARRIVING` | GPS simulation starts | Active | Active |
+| `ARRIVED` | distance_meters < 50 | Active | Active |
+| `IN_PROGRESS` | Checklist items being ticked | Active | Active |
+| `COMPLETED` | Provider marks all done | History | History |
+| `CANCELLED_PROVIDER` | Provider declines/cancels | Hidden (auto-retry fires) | History |
+| `CANCELLED_TIMEOUT` | Provider doesn't respond in time | Hidden (auto-retry fires) | History |
+| `CANCELLED_CUSTOMER` | Customer taps "Cancel Booking" or 10 attempts exhausted | History | History |
+
+> **Chain tip rule**: Bookings with `reassigned_to` set are **intermediate** bookings and are hidden from all tabs on both customer and provider sides. Only the latest booking in the chain (`reassigned_to == null`) is displayed.
 
 ### GPS Simulation
 
@@ -707,13 +734,25 @@ flow to pre-configure a new session with:
 
 | Method | Endpoint | Description |
 |---|---|---|
-| `GET` | `/api/bookings` | List all bookings |
+| `GET` | `/api/bookings` | List all bookings (filtered by `customer_id` or `provider_id`) |
 | `GET` | `/api/booking/:id` | Get full booking record |
 | `POST` | `/api/booking/status` | Update job status |
 | `POST` | `/api/booking/simulate-step` | Advance GPS simulation by one step |
 | `POST` | `/api/booking/checklist` | Mark checklist item complete |
 | `POST` | `/api/booking/submit-rating` | Submit customer star rating |
 | `POST` | `/api/booking/cancel-provider` | Provider cancels a job |
+| `POST` | `/api/booking/auto-reassign` | Auto-assign next best provider when current one declines |
+
+#### Auto-Reassign Endpoint
+
+`POST /api/booking/auto-reassign` is the core of the automatic retry system:
+
+- Accepts a `booking_id` (may be stale — automatically follows `reassigned_to` chain to the latest booking)
+- Traverses the full chain backwards via `reassigned_from` links to build a cumulative exclusion list of all providers tried
+- Calls `matchProviders()` with all tried providers excluded
+- Creates a new `PENDING_PROVIDER` booking linked to the chain via `reassigned_from`
+- Returns `{ status: "reassigned", booking, attempt }` or `{ status: "no_provider" }` after 10 attempts
+- Idempotent: duplicate calls with the same stale `booking_id` are silently redirected to the chain tip
 
 ### External Tools and Services
 
@@ -948,15 +987,19 @@ Flow: Geocode G-13 → match AC technicians → select provider →
       checklist unlocks on ARRIVED → complete → rating form
 ```
 
-**Scenario 2 — Provider cancels, rematch with context**
+**Scenario 2 — Provider declines, automatic reassignment chain**
 ```
 Input: Any booking
-Action: Provider taps Cancel
-Customer sees:
-  "Find New Provider" → new chat with full conversation history restored
-                        cancelled provider excluded from results
-  OR
-  "Cancel and End Chat" → booking moves to History, can start fresh
+Action: Provider declines job
+
+Customer sees (automatically, no tap required):
+  Live tracking: "SEARCHING... (attempt 1)" → next best provider assigned
+  Chat: confirmation bubble with new provider name and booking ID
+  If that provider also declines → "SEARCHING... (attempt 2)" → next best
+  ...continues up to 10 attempts, each attempt excludes all previously tried providers...
+  After 10 failures → booking auto-cancelled, "Koi provider available nahi hai" shown
+
+At any point: "Cancel Booking" button at bottom of chat → stops search → History tab
 ```
 
 **Scenario 3 — English input, any Pakistan city**
@@ -1033,17 +1076,47 @@ submission, reflecting real UX testing feedback.
   If user navigates back mid-request, orchestration completes in background
   and result saved — "Resume Chat" appears on home screen.
 
-### Provider Cancellation Flow
-- `CANCELLED_PROVIDER` added to the Active booking statuses. Booking stays
-  on the Active tab until the customer explicitly acts.
-- Two-option UI: **Find New Provider** (rematches with context, excludes
-  cancelled provider) and **Cancel and End Chat** (sets `CANCELLED_CUSTOMER`,
-  moves to History).
-- "Find New Provider" pre-configures a new backend session with
-  `phase: "thinking"`, the original `parsed_intent` from the booking,
-  and `providers_tried: [cancelled_provider_id]`. The orchestrator skips
-  intake and goes directly to matching, excluding the cancelled provider.
-  Full prior conversation is restored via `ChatHistoryService`.
+### Automatic Provider Reassignment (Auto-Retry)
+
+The previous "Find New Provider" button flow has been replaced by a fully
+automatic reassignment system.
+
+**How it works:**
+
+When a provider declines or cancels, the customer-side `LiveTrackingWidget`
+immediately calls `POST /api/booking/auto-reassign` without any user input.
+
+The backend endpoint:
+1. Follows the `reassigned_to` chain to the latest active booking (handles stale frontend IDs)
+2. Traverses the full chain via `reassigned_from` links to build a cumulative exclusion list
+3. Calls `matchProviders()` with all tried providers excluded from the 8-factor scoring
+4. Creates a new linked `PENDING_PROVIDER` booking and returns it
+
+The frontend:
+1. Swaps `_booking` to the new booking — live tracking widget continues seamlessly
+2. Adds a `booking_reassigned` confirmation bubble in the chat showing the new provider's name, booking ID, price, and checklist
+3. Shows `SEARCHING...` status chip with attempt counter during the API call
+4. After 10 failures (or no providers available): auto-marks booking as `CANCELLED_CUSTOMER`, fires `BookingEvents.refresh()`, shows "no provider available" message
+
+**Guard against double-calls:**
+- Stale poll responses are discarded if `_booking` has already advanced to a new booking_id
+- `_autoRetrying` flag prevents concurrent calls
+- Backend is idempotent — if a booking already has `reassigned_to`, it follows the chain
+
+**Cancel Booking:**
+- A persistent **"Cancel Booking"** button is shown at the bottom of the customer chat screen at all times during an active booking
+- Tapping it posts `CANCELLED_CUSTOMER`, clears the session, and moves the booking to History
+- Uses `addPostFrameCallback` to safely register the cancel callback from `initState` without triggering a setState-during-build error
+
+**Booking chain visibility:**
+- Intermediate bookings (`reassigned_to != null`) are hidden from both the customer's Bookings tab and the provider's Jobs tab
+- `_isChainTip()` filter applied in both `bookings_screen.dart` and provider `jobs_screen.dart`
+- Only the latest booking in a chain (the one currently being acted on) is ever shown
+
+**Provider side:**
+- Provider's chat screen now polls even in `PENDING_PROVIDER` state
+- If customer cancels while the job offer is showing, provider sees: "Customer ne search cancel kar diya. Yeh job ab available nahi hai." and the Accept/Decline buttons are disabled
+- Cancelled job history cards now show meaningful detail (what was cancelled, why, service/location/price) instead of a blank screen
 
 ### Checklist Timing
 - Provider checklist is **not shown** on ACCEPTED or ARRIVING.

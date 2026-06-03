@@ -46,9 +46,15 @@ class _BookingsScreenState extends State<BookingsScreen>
     }
   }
 
+  // Intermediate bookings in a reassignment chain (those with reassigned_to set)
+  // are never displayed — only the chain tip (latest booking) is shown.
+  static bool _isChainTip(dynamic b) => b['reassigned_to'] == null;
+
   List<dynamic> get _activeBookings {
     final list = _bookings
-        .where((b) => _activeStatuses.contains(b['status'] as String? ?? ''))
+        .where((b) =>
+            _isChainTip(b) &&
+            _activeStatuses.contains(b['status'] as String? ?? ''))
         .toList();
     list.sort((a, b) {
       final pa = _statusPriority(a['status'] as String? ?? '');
@@ -62,7 +68,9 @@ class _BookingsScreenState extends State<BookingsScreen>
 
   List<dynamic> get _historyBookings {
     final list = _bookings
-        .where((b) => !_activeStatuses.contains(b['status'] as String? ?? ''))
+        .where((b) =>
+            _isChainTip(b) &&
+            !_activeStatuses.contains(b['status'] as String? ?? ''))
         .toList();
     list.sort((a, b) => ((b['created_at'] as String?) ?? '')
         .compareTo((a['created_at'] as String?) ?? ''));

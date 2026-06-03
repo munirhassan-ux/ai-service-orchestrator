@@ -44,9 +44,15 @@ class _JobsScreenState extends State<JobsScreen>
     }
   }
 
+  // Intermediate bookings in a reassignment chain (reassigned_to is set)
+  // are never shown — the provider already declined them.
+  static bool _isChainTip(dynamic j) => j['reassigned_to'] == null;
+
   List<dynamic> get _activeJobs {
     final list = _jobs
-        .where((j) => _activeStatuses.contains(j['status'] as String? ?? ''))
+        .where((j) =>
+            _isChainTip(j) &&
+            _activeStatuses.contains(j['status'] as String? ?? ''))
         .toList();
     list.sort((a, b) {
       final pa = _statusPriority(a['status'] as String? ?? '');
@@ -60,7 +66,9 @@ class _JobsScreenState extends State<JobsScreen>
 
   List<dynamic> get _doneJobs {
     final list = _jobs
-        .where((j) => !_activeStatuses.contains(j['status'] as String? ?? ''))
+        .where((j) =>
+            _isChainTip(j) &&
+            !_activeStatuses.contains(j['status'] as String? ?? ''))
         .toList();
     list.sort((a, b) => ((b['created_at'] as String?) ?? '')
         .compareTo((a['created_at'] as String?) ?? ''));

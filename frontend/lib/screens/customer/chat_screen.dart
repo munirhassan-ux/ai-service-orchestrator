@@ -106,6 +106,7 @@ class _ChatScreenState extends State<ChatScreen> {
   String? _sessionId;
   String? _bookingTitle;
   final Set<String> _actedMessages = {};
+  Future<void> Function()? _cancelBookingFn;
 
   String _formatTitle(String? raw) {
     if (raw == null || raw.isEmpty) return 'New Booking';
@@ -501,6 +502,36 @@ class _ChatScreenState extends State<ChatScreen> {
                         "Your rating has been submitted. Thank you for using Haazir!",
                     isUser: false));
               },
+              onReassigned: (newBooking, attempt) {
+                final name = newBooking['provider_name'] ?? 'Naya Provider';
+                _addMsg(Message(
+                  text: "Provider cancel ho gaya. Attempt $attempt: $name ko assign kiya gaya.",
+                  isUser: false,
+                  type: 'booking_reassigned',
+                  data: newBooking,
+                ));
+              },
+              onCancelReady: (fn) {
+                if (mounted) setState(() => _cancelBookingFn = fn);
+              },
+            ),
+          ],
+        );
+
+      case 'booking_reassigned':
+        final bk = msg.data ?? {};
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _textBubble(msg.text),
+            SuccessBubble(
+              providerName: bk['provider_name'] ?? 'Provider',
+              scheduledTime: bk['scheduled_time'] != null
+                  ? bk['scheduled_time'].toString().substring(0, 16)
+                  : 'Tomorrow',
+              price: (bk['final_price'] as num?)?.toInt() ?? 1000,
+              bookingId: bk['booking_id'] ?? 'BK-XXXX',
+              checklist: bk['checklist'] ?? [],
             ),
           ],
         );
@@ -570,6 +601,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       height: 20,
                       child: CircularProgressIndicator(
                           strokeWidth: 2, color: const Color(0xFF3A9010))))),
+        if (_cancelBookingFn != null) _buildCancelBookingBar(),
         if (!_messages.any((m) => m.type == 'booking_success') &&
             widget.bookingId == null)
           _buildInput(),
@@ -690,6 +722,41 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
         ),
       ]),
+    );
+  }
+
+  Widget _buildCancelBookingBar() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(top: BorderSide(color: Color(0xFFE8EDE6))),
+      ),
+      child: GestureDetector(
+        onTap: () async {
+          final fn = _cancelBookingFn;
+          setState(() => _cancelBookingFn = null);
+          await fn?.call();
+        },
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.redAccent.withValues(alpha: 0.45)),
+          ),
+          child: const Center(
+            child: Text(
+              "Cancel Booking",
+              style: TextStyle(
+                color: Colors.redAccent,
+                fontWeight: FontWeight.w600,
+                fontSize: 13,
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
@@ -887,144 +954,19 @@ class _PinTip extends CustomPainter {
   bool shouldRepaint(_PinTip old) => old.color != color;
 }
 
-// ── SHARED CANCELLATION UI (CANCELLED_PROVIDER / CANCELLED_TIMEOUT) ─────────
-class _CancelledOptions extends StatelessWidget {
-  final Map<String, dynamic> booking;
-  final String message;
-  final IconData icon;
-
-  const _CancelledOptions({
-    required this.booking,
-    required this.message,
-    required this.icon,
-  });
-
-  Future<void> _findNewProvider(BuildContext ctx) async {
-    final serviceType = booking['service_type'] as String? ?? '';
-    final location = booking['location'] as String? ?? '';
-    final cancelledProviderId = booking['provider_id'] as String?;
-    final cancelledBookingId = booking['booking_id'] as String?;
-    try {
-      final session = await ApiService.createSession("customer_001");
-      final newSessionId = session['session_id'] as String? ?? '';
-      if (newSessionId.isNotEmpty) {
-        await ApiService.patch('session/$newSessionId', {
-          'phase': 'thinking',
-          'parsed_intent': {
-            'service_type': serviceType,
-            'location': location.isNotEmpty ? location : 'unknown',
-            'preferred_time': 'flexible',
-            'budget': booking['final_price'],
-            'confidence': 0.95,
-            'clarification_needed': false,
-            'language': 'roman_urdu',
-            'reasoning': 'Reconstructed from cancelled booking',
-          },
-          if (cancelledProviderId != null)
-            'providers_tried': [cancelledProviderId],
-        });
-      }
-      if (!ctx.mounted) return;
-      Navigator.of(ctx).pushAndRemoveUntil(
-        MaterialPageRoute(
-          builder: (_) => ChatScreen(
-            sessionId: newSessionId.isNotEmpty ? newSessionId : null,
-            restoreHistoryFromBookingId: cancelledBookingId,
-          ),
-        ),
-        (route) => route.isFirst,
-      );
-    } catch (_) {
-      if (ctx.mounted) Navigator.of(ctx).popUntil((r) => r.isFirst);
-    }
-  }
-
-  Future<void> _cancelAndEnd(BuildContext ctx) async {
-    final bId = booking['booking_id'];
-    if (bId != null) {
-      try {
-        await ApiService.post('/booking/status',
-            {'booking_id': bId, 'status': 'CANCELLED_CUSTOMER'});
-      } catch (_) {}
-    }
-    ActiveSessionService.clear();
-    BookingEvents.refresh();
-    if (ctx.mounted) Navigator.of(ctx).pop();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.redAccent.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.redAccent.withValues(alpha: 0.25)),
-      ),
-      child: Column(children: [
-        Row(children: [
-          Icon(icon, color: Colors.redAccent, size: 16),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(message,
-                style: const TextStyle(color: Colors.redAccent, fontSize: 12)),
-          ),
-        ]),
-        const SizedBox(height: 12),
-        GestureDetector(
-          onTap: () => _findNewProvider(context),
-          child: Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 10),
-            decoration: BoxDecoration(
-              color: const Color(0xFF3A9010),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Center(
-              child: Text("Find New Provider",
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 13)),
-            ),
-          ),
-        ),
-        const SizedBox(height: 8),
-        GestureDetector(
-          onTap: () => _cancelAndEnd(context),
-          child: Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 10),
-            decoration: BoxDecoration(
-              color: Colors.transparent,
-              borderRadius: BorderRadius.circular(12),
-              border:
-                  Border.all(color: Colors.redAccent.withValues(alpha: 0.5)),
-            ),
-            child: const Center(
-              child: Text("Cancel and End Chat",
-                  style: TextStyle(
-                      color: Colors.redAccent,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 13)),
-            ),
-          ),
-        ),
-      ]),
-    );
-  }
-}
-
 // ── STATEFUL LIVE TRACKING & SIMULATION WIDGET ────────────────────────────
 class LiveTrackingWidget extends StatefulWidget {
   final Map<String, dynamic> booking;
   final Function(int stars) onRated;
+  final void Function(Map<String, dynamic> newBooking, int attempt)? onReassigned;
+  final void Function(Future<void> Function()?)? onCancelReady;
 
   const LiveTrackingWidget({
     super.key,
     required this.booking,
     required this.onRated,
+    this.onReassigned,
+    this.onCancelReady,
   });
 
   @override
@@ -1041,16 +983,59 @@ class _LiveTrackingWidgetState extends State<LiveTrackingWidget> {
   String? _disputeResolution;
   Map<String, dynamic>? _summary;
   bool _summaryLoading = false;
+  bool _autoRetrying = false;
+  bool _noProviderFound = false;
+  int _retryAttempt = 0;
 
   @override
   void initState() {
     super.initState();
     _booking = widget.booking;
-    _startPolling();
+    // Defer so we don't call setState on the parent during its own build phase
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) widget.onCancelReady?.call(_cancelAndEnd);
+    });
     final status = _booking['status'] as String? ?? '';
+    final reassignedTo = _booking['reassigned_to'] as String?;
     if (status == 'ACCEPTED' || status == 'ARRIVING') {
+      _startPolling();
       Future.delayed(const Duration(milliseconds: 600), _startSimulation);
+    } else if ((status == 'CANCELLED_PROVIDER' || status == 'CANCELLED_TIMEOUT') &&
+        reassignedTo != null) {
+      Future.microtask(_resumeFromChain);
+    } else if (status == 'CANCELLED_PROVIDER' || status == 'CANCELLED_TIMEOUT') {
+      Future.microtask(_autoReassign);
+    } else {
+      _startPolling();
     }
+  }
+
+  Future<void> _resumeFromChain() async {
+    String nextId = (_booking['reassigned_to'] as String?) ?? '';
+    while (nextId.isNotEmpty) {
+      try {
+        final res = await ApiService.get('booking/$nextId');
+        if (!mounted) return;
+        if (res is! Map<String, dynamic> || res['booking_id'] == null) break;
+        final chainNext = res['reassigned_to'] as String?;
+        if (chainNext != null && chainNext.isNotEmpty) {
+          nextId = chainNext;
+        } else {
+          setState(() => _booking = res);
+          final latestStatus = res['status'] as String? ?? '';
+          if (latestStatus == 'CANCELLED_PROVIDER' || latestStatus == 'CANCELLED_TIMEOUT') {
+            _autoReassign();
+          } else if (latestStatus == 'ACCEPTED' || latestStatus == 'ARRIVING') {
+            _startPolling();
+            Future.delayed(const Duration(milliseconds: 600), _startSimulation);
+          } else {
+            _startPolling();
+          }
+          return;
+        }
+      } catch (_) { break; }
+    }
+    _startPolling();
   }
 
   @override
@@ -1072,6 +1057,8 @@ class _LiveTrackingWidgetState extends State<LiveTrackingWidget> {
     try {
       final res = await ApiService.get('booking/$bId');
       if (!mounted) return;
+      // Discard stale response if _booking was updated to a new booking while in-flight
+      if (_booking['booking_id'] != bId) return;
       if (res is Map<String, dynamic> && res['booking_id'] != null) {
         final prevStatus = _booking['status'] as String? ?? '';
         final newStatus = res['status'] as String? ?? '';
@@ -1090,10 +1077,73 @@ class _LiveTrackingWidgetState extends State<LiveTrackingWidget> {
             ActiveSessionService.clear();
             BookingEvents.refresh();
             if (_summary == null && !_summaryLoading) _loadSummary(bId as String);
+            widget.onCancelReady?.call(null); // hide Cancel Booking bar
+          }
+          // Auto-search next provider on provider/timeout cancel
+          if ((newStatus == 'CANCELLED_PROVIDER' || newStatus == 'CANCELLED_TIMEOUT') &&
+              !_noProviderFound &&
+              !_autoRetrying) {
+            _autoReassign();
           }
         }
       }
     } catch (_) {}
+  }
+
+  Future<void> _autoReassign() async {
+    if (!mounted) return;
+    _pollTimer?.cancel();
+    _pollTimer = null;
+    setState(() => _autoRetrying = true);
+    final bId = _booking['booking_id'];
+    if (bId == null) {
+      setState(() { _autoRetrying = false; _noProviderFound = true; });
+      return;
+    }
+    try {
+      final res = await ApiService.post('/booking/auto-reassign', {'booking_id': bId});
+      if (!mounted) return;
+      if (res['status'] == 'no_provider') {
+        // Auto-cancel so the chain tip moves to History immediately
+        final bId2 = _booking['booking_id'];
+        if (bId2 != null) {
+          try {
+            await ApiService.post('/booking/status',
+                {'booking_id': bId2, 'status': 'CANCELLED_CUSTOMER'});
+          } catch (_) {}
+        }
+        BookingEvents.refresh();
+        widget.onCancelReady?.call(null);
+        setState(() { _autoRetrying = false; _noProviderFound = true; });
+        return;
+      }
+      if (res['status'] == 'reassigned' && res['booking'] != null) {
+        final newBooking = res['booking'] as Map<String, dynamic>;
+        final attempt = res['attempt'] as int? ?? _retryAttempt + 1;
+        setState(() {
+          _booking = newBooking;
+          _retryAttempt = attempt;
+          _autoRetrying = false;
+        });
+        widget.onReassigned?.call(newBooking, attempt);
+        _startPolling();
+      }
+    } catch (_) {
+      if (mounted) setState(() { _autoRetrying = false; _noProviderFound = true; });
+    }
+  }
+
+  Future<void> _cancelAndEnd() async {
+    setState(() => _autoRetrying = false);
+    final bId = _booking['booking_id'];
+    if (bId != null) {
+      try {
+        await ApiService.post('/booking/status', {'booking_id': bId, 'status': 'CANCELLED_CUSTOMER'});
+      } catch (_) {}
+    }
+    ActiveSessionService.clear();
+    BookingEvents.refresh();
+    if (mounted) Navigator.of(context).pop();
   }
 
   Future<void> _loadSummary(String bookingId) async {
@@ -1346,11 +1396,19 @@ class _LiveTrackingWidgetState extends State<LiveTrackingWidget> {
     final dist = _booking['distance_meters'] as num? ?? 2000;
     final checklist = _booking['checklist'] as List? ?? [];
 
+    final displayStatus = _noProviderFound
+        ? 'NO PROVIDER'
+        : _autoRetrying
+            ? 'SEARCHING...'
+            : status;
+
     Color statusColor = const Color(0xFF3A9010);
     if (status == 'ARRIVED' || status == 'IN_PROGRESS')
       statusColor = Colors.blueAccent;
     if (status == 'COMPLETED') statusColor = const Color(0xFF3A9010);
-    if (status.startsWith('CANCELLED')) statusColor = Colors.redAccent;
+    if (_autoRetrying) statusColor = Colors.orange;
+    if (_noProviderFound || status.startsWith('CANCELLED'))
+      statusColor = Colors.redAccent;
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8),
@@ -1381,7 +1439,7 @@ class _LiveTrackingWidgetState extends State<LiveTrackingWidget> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
-                  status,
+                  displayStatus,
                   style: TextStyle(
                       color: statusColor,
                       fontSize: 9,
@@ -1391,18 +1449,71 @@ class _LiveTrackingWidgetState extends State<LiveTrackingWidget> {
             ],
           ),
           const SizedBox(height: 12),
-          if (status == 'CANCELLED_TIMEOUT') ...[
-            _CancelledOptions(
-              booking: _booking,
-              message:
-                  "Provider ne time par jawab nahi diya. Naya provider dhundhein ya chat band karein.",
-              icon: Icons.timer_off_outlined,
+          if (_noProviderFound) ...[
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.redAccent.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.redAccent.withValues(alpha: 0.25)),
+              ),
+              child: Column(children: [
+                const Row(children: [
+                  Icon(Icons.search_off_rounded, color: Colors.redAccent, size: 16),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      "Koi provider available nahi hai. Baad mein dobara koshish karein.",
+                      style: TextStyle(color: Colors.redAccent, fontSize: 12),
+                    ),
+                  ),
+                ]),
+                const SizedBox(height: 12),
+                GestureDetector(
+                  onTap: _cancelAndEnd,
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    decoration: BoxDecoration(
+                      color: Colors.transparent,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.redAccent.withValues(alpha: 0.5)),
+                    ),
+                    child: const Center(
+                      child: Text("Close",
+                          style: TextStyle(
+                              color: Colors.redAccent,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13)),
+                    ),
+                  ),
+                ),
+              ]),
             ),
-          ] else if (status == 'CANCELLED_PROVIDER') ...[
-            _CancelledOptions(
-              booking: _booking,
-              message: "Provider cancelled. We're sorry for the inconvenience.",
-              icon: Icons.cancel_outlined,
+          ] else if (_autoRetrying) ...[
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+              decoration: BoxDecoration(
+                color: Colors.orange.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.orange.withValues(alpha: 0.25)),
+              ),
+              child: Row(children: [
+                const SizedBox(
+                  width: 14,
+                  height: 14,
+                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.orange),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    "Agle best provider ko dhundha ja raha hai...${ _retryAttempt > 0 ? ' (attempt $_retryAttempt)' : ''}",
+                    style: const TextStyle(color: Colors.orange, fontSize: 12),
+                  ),
+                ),
+              ]),
             ),
           ] else if (status.contains('CANCELLED')) ...[
             Container(
