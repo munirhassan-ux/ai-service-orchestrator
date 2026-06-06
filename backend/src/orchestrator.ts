@@ -9,6 +9,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { redact, checkOutput } from "./middleware/guardrail.js";
 import { runNegotiation, linkBookingToContract } from "./agents/negotiationEngine.js";
 import { geocodeLocation } from "./agents/providerMatcher.js";
+import { exec } from "child_process";
 
 export interface AgentTraceStep {
   step: number;
@@ -309,6 +310,13 @@ export async function runOrchestration(
     );
 
     logBookingCreated(booking);
+
+    // Auto-open provider app when deal is locked
+    const providerAppUrl = "http://localhost:57654";
+    console.log(`\x1b[32m\x1b[1m🚀 Auto-launching provider app for ${topProvider.name} → ${providerAppUrl}\x1b[0m\n`);
+    exec(`open "${providerAppUrl}"`, (err) => {
+      if (err) console.warn("[Orchestrator] Could not auto-open provider app:", err.message);
+    });
 
     // Link booking back to the signed contract
     if (negotiationResult.contract) {

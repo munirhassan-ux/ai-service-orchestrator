@@ -11,6 +11,26 @@ import { runAuction, AuctionInput } from "./customerAgent.js";
 import { RankedProvider } from "./providerMatcher.js";
 import { ParsedIntent } from "./intentParser.js";
 
+// ── Terminal colour helpers (local) ──────────────────────────────────────────
+const C = {
+  reset: "\x1b[0m", bold: "\x1b[1m", dim: "\x1b[2m",
+  cyan: "\x1b[36m", green: "\x1b[32m", yellow: "\x1b[33m",
+  red: "\x1b[31m", magenta: "\x1b[35m", blue: "\x1b[34m",
+};
+const W = 62;
+const hline = (ch = "─") => ch.repeat(W);
+function _sleep(ms: number) { return new Promise(r => setTimeout(r, ms)); }
+function _tag(role: "CA" | "PA", name: string) {
+  const col = role === "CA" ? C.cyan : C.magenta;
+  return `${col}${C.bold}[${role === "CA" ? "CustomerAgent" : `ProviderAgent:${name}`}]${C.reset}`;
+}
+function _banner(title: string) {
+  console.log(`\n${C.cyan}${C.bold}╔${"═".repeat(W - 2)}╗${C.reset}`);
+  const pad = Math.floor((W - 2 - title.length) / 2);
+  console.log(`${C.cyan}${C.bold}║${" ".repeat(pad)}${title}${" ".repeat(W - 2 - pad - title.length)}║${C.reset}`);
+  console.log(`${C.cyan}${C.bold}╚${"═".repeat(W - 2)}╝${C.reset}\n`);
+}
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -70,18 +90,41 @@ export async function runNegotiation(
   const cfp: CFP = {
     job_spec:       `${intent.service_type} in ${intent.location}`,
     service_type:   intent.service_type,
-    area:           intent.location,          // area only — exact address withheld until CONFIRM
+    area:           intent.location,
     complexity:     (intent as any).complexity ?? "basic",
     budget_ceiling: (intent as any).budget_ceiling ?? 0,
     urgency:        intent.urgency ?? "medium",
     preferred_time: intent.preferred_time ?? "flexible",
   };
 
+  // ── LIVE TERMINAL: Session header ────────────────────────────────────
+  _banner("  HAAZIR — A2A NEGOTIATION SESSION  ");
+  console.log(`${_tag("CA", "")} Broadcast CFP → ${top5.length} provider agent(s)`);
+  console.log(`${C.dim}  Job: ${cfp.job_spec} | Urgency: ${(cfp.urgency).toUpperCase()} | Time: ${cfp.preferred_time}${C.reset}`);
+  console.log(`\n${C.cyan}${hline()}${C.reset}`);
+  await _sleep(200);
+
   // ── Round 1: Broadcast CFP and collect bids ──────────────────────────
-  const round1Bids: Bid[] = top5.map(p => {
+  console.log(`\n${C.bold}  ROUND 1 — CFP RESPONSE COLLECTION${C.reset}`);
+  const round1Bids: Bid[] = [];
+  for (const p of top5) {
     const dist = _haversine(customerLat, customerLng, p.location.latitude, p.location.longitude);
-    return evaluateCFP(p, cfp, dist);
-  });
+    console.log(`\n${_tag("PA", p.name)} Evaluating CFP... (distance: ${dist.toFixed(1)}km, rating: ${p.rating}★)`);
+    await _sleep(180);
+    const bid = evaluateCFP(p, cfp, dist);
+    if (bid.accepted) {
+      console.log(`${_tag("PA", p.name)} ${C.green}✅ BID SUBMITTED${C.reset} — Rs.${bid.price} | ETA: ${bid.eta_min}min | Confidence: ${Math.round(bid.confidence * 100)}%`);
+    } else {
+      console.log(`${_tag("PA", p.name)} ${C.red}❌ DECLINED${C.reset} — ${bid.reject_reason}`);
+    }
+    await _sleep(150);
+    round1Bids.push(bid);
+  }
+
+  const accepted1 = round1Bids.filter(b => b.accepted);
+  console.log(`\n${C.cyan}${hline()}${C.reset}`);
+  console.log(`${_tag("CA", "")} ${accepted1.length} bid(s) received. Scoring with utility function...`);
+  await _sleep(300);
 
   const auctionInput: AuctionInput = {
     bids:             round1Bids,
@@ -92,6 +135,13 @@ export async function runNegotiation(
 
   const decision = await runAuction(auctionInput);
   let rounds = 1;
+
+  // Log CustomerAgent decision reasoning
+  if (decision.accepted_bid) {
+    console.log(`${_tag("CA", "")} ${C.yellow}Top bid:${C.reset} ${decision.accepted_bid.provider_id} — Rs.${decision.accepted_bid.price}`);
+  }
+  console.log(`${_tag("CA", "")} ${C.dim}Reasoning: ${decision.reasoning.slice(0, 80)}...${C.reset}`);
+  await _sleep(200);
 
   const traceBase: Omit<AuctionTrace, "outcome" | "contract_id"> = {
     phase:     "negotiation",
@@ -108,7 +158,10 @@ export async function runNegotiation(
 
   // ── Deal accepted in Round 1 ─────────────────────────────────────────
   if (decision.action === "accept" && decision.accepted_bid) {
+    console.log(`\n${_tag("CA", "")} ${C.green}${C.bold}✅ ACCEPT — Rs.${decision.accepted_bid.price} from ${decision.accepted_bid.provider_id}${C.reset}`);
     const contract = _lockDeal(decision.accepted_bid, round1Bids, customerId, rounds);
+    console.log(`${C.green}${C.bold}🔒 DEAL LOCKED — Contract: ${contract.contract_id}${C.reset}`);
+    console.log(`${C.cyan}${hline()}${C.reset}\n`);
     return {
       contract,
       trace: { ...traceBase, rounds, outcome: "deal_locked", contract_id: contract.contract_id },
@@ -118,6 +171,11 @@ export async function runNegotiation(
   // ── Round 2: Counter-offer ───────────────────────────────────────────
   if (decision.action === "counter" && decision.counter_targets) {
     rounds = 2;
+    console.log(`\n${C.cyan}${hline()}${C.reset}`);
+    console.log(`\n${C.bold}  ROUND 2 — COUNTER-OFFER${C.reset}`);
+    console.log(`${_tag("CA", "")} ${C.yellow}Budget ceiling exceeded — sending counter-offers...${C.reset}`);
+    await _sleep(250);
+
     const counterRound: AuctionTrace["counter_round"] = [];
     const round2Bids: Bid[] = [];
 
@@ -127,6 +185,11 @@ export async function runNegotiation(
       const providerData = top5.find(p => p.provider_id === target.provider_id);
       if (!providerData) continue;
 
+      console.log(`\n${_tag("CA", "")} → ${C.yellow}Counter to ${target.provider_id}:${C.reset} Rs.${target.counter_price}`);
+      await _sleep(200);
+      console.log(`${_tag("PA", providerData.name)} Evaluating counter...`);
+      await _sleep(250);
+
       const response = respondToCounter(providerData, originalBid, target.counter_price);
       counterRound.push({
         provider:       target.provider_id,
@@ -134,14 +197,23 @@ export async function runNegotiation(
         response_price: response.price,
         accepted:       response.accepted,
       });
-      if (response.accepted) round2Bids.push(response);
+
+      if (response.accepted) {
+        console.log(`${_tag("PA", providerData.name)} ${C.green}✅ ACCEPTED Rs.${response.price}${C.reset} (strategy: meet-in-middle)`);
+        round2Bids.push(response);
+      } else {
+        console.log(`${_tag("PA", providerData.name)} ${C.red}❌ REJECTED${C.reset} — ${response.reject_reason ?? "floor price not met"}`);
+      }
+      await _sleep(150);
     }
 
     if (round2Bids.length > 0) {
-      // Accept cheapest accepted counter response
       round2Bids.sort((a, b) => a.price - b.price);
       const best = round2Bids[0];
+      console.log(`\n${_tag("CA", "")} ${C.green}${C.bold}✅ ACCEPT — Rs.${best.price} from ${best.provider_id}${C.reset}`);
       const contract = _lockDeal(best, [...round1Bids, ...round2Bids], customerId, rounds);
+      console.log(`${C.green}${C.bold}🔒 DEAL LOCKED — Contract: ${contract.contract_id}${C.reset}`);
+      console.log(`${C.cyan}${hline()}${C.reset}\n`);
       return {
         contract,
         trace: {
@@ -157,6 +229,8 @@ export async function runNegotiation(
   }
 
   // ── No deal after all rounds ─────────────────────────────────────────
+  console.log(`\n${C.red}${C.bold}❌ NO DEAL — All negotiation rounds exhausted.${C.reset}`);
+  console.log(`${C.cyan}${hline()}${C.reset}\n`);
   return {
     contract: null,
     trace: { ...traceBase, rounds, outcome: "no_deal" },
