@@ -154,8 +154,9 @@ class _ProviderChatScreenState extends State<ProviderChatScreen> {
                   .add({'text': null, 'isUser': false, 'type': 'checklist'});
             } else if (status == 'COMPLETED') {
               _jobAccepted = true;
-              _messages
-                  .add({'text': null, 'isUser': false, 'type': 'job_history'});
+              _messages.add({'text': null, 'isUser': false, 'type': 'job_history'});
+              // Show reliability dashboard after completed job
+              _messages.add({'text': null, 'isUser': false, 'type': 'reliability_dashboard'});
             } else if (status == 'CANCELLED_PROVIDER') {
               _messages.add({
                 'text': 'Aapne yeh job decline/cancel kar diya tha.\n\nService: ${b['service_type'] ?? ''}\nLocation: ${b['location'] ?? ''}\nPrice: Rs. ${b['final_price'] ?? ''}',
@@ -585,6 +586,11 @@ class _ProviderChatScreenState extends State<ProviderChatScreen> {
       return _agentMessagesCard(msg['messages'] as List<dynamic>);
     if (msg['type'] == 'checklist') return _checklistCard();
     if (msg['type'] == 'job_history') return _jobHistoryCard();
+    if (msg['type'] == 'reliability_dashboard') {
+      final pid = _bookingData?['provider_id'] as String?;
+      if (pid != null) return ReliabilityDashboard(providerId: pid);
+      return const SizedBox.shrink();
+    }
 
     final isUser = msg['isUser'] as bool;
     final text = msg['text'] as String? ?? '';
@@ -1041,4 +1047,150 @@ class _ProviderChatScreenState extends State<ProviderChatScreen> {
         ]),
       );
 
+}
+
+// ── Provider Reliability Dashboard ───────────────────────────────────────────
+class ReliabilityDashboard extends StatefulWidget {
+  final String providerId;
+  const ReliabilityDashboard({super.key, required this.providerId});
+  @override
+  State<ReliabilityDashboard> createState() => _ReliabilityDashboardState();
+}
+
+class _ReliabilityDashboardState extends State<ReliabilityDashboard> {
+  Map<String, dynamic>? _data;
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    try {
+      final res = await ApiService.get('provider/${widget.providerId}/reliability');
+      if (mounted) setState(() { _data = res as Map<String, dynamic>?; _loading = false; });
+    } catch (_) {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_loading) return const SizedBox(height: 60, child: Center(child: CircularProgressIndicator(strokeWidth: 2)));
+    if (_data == null) return const SizedBox.shrink();
+
+    final score  = (_data!['score'] as num?)?.toDouble() ?? 0;
+    final ledger = (_data!['ledger'] as List?) ?? [];
+    final color  = score >= 80 ? const Color(0xFF079455) : score >= 60 ? const Color(0xFFf59e0b) : const Color(0xFFda2721);
+
+    // Improvement tips based on score
+    final tips = <String>[];
+    if (score < 90) tips.add('Arrive within 10 min of ETA → +3 pts per job');
+    if (score < 80) tips.add('Avoid cancellations — each one costs −15 pts');
+    if (score < 70) tips.add('Complete every checklist item → builds completion rate');
+    if (score >= 90) tips.add('Great score! Maintain it to stay in top results');
+
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 10),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFE8EDE6)),
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 2))],
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        // Header + score gauge
+        Row(children: [
+          // Circular score gauge
+          SizedBox(width: 72, height: 72,
+            child: Stack(alignment: Alignment.center, children: [
+              CircularProgressIndicator(
+                value: score / 100,
+                strokeWidth: 7,
+                backgroundColor: color.withValues(alpha: 0.12),
+                valueColor: AlwaysStoppedAnimation(color),
+              ),
+              Column(mainAxisSize: MainAxisSize.min, children: [
+                Text(score.toStringAsFixed(1),
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: color)),
+                Text('/100', style: TextStyle(fontSize: 9, color: color.withValues(alpha: 0.7))),
+              ]),
+            ]),
+          ),
+          const SizedBox(width: 14),
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            const Text('Reliability Score',
+                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Color(0xFF21231D))),
+            const SizedBox(height: 4),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(6)),
+              child: Text(
+                score >= 90 ? 'Excellent — Top Tier' : score >= 80 ? 'Good Standing' : score >= 60 ? 'Needs Improvement' : 'At Risk',
+                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: color),
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text('Affects your ranking in search results',
+                style: const TextStyle(fontSize: 10, color: Color(0xFF888E86))),
+          ])),
+          IconButton(icon: const Icon(Icons.refresh_rounded, size: 18, color: Color(0xFF888E86)), onPressed: _load),
+        ]),
+
+        // Improvement tip
+        if (tips.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: const Color(0xFF6938ef).withValues(alpha: 0.06),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: const Color(0xFF6938ef).withValues(alpha: 0.15)),
+            ),
+            child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              const Icon(Icons.lightbulb_outline_rounded, size: 14, color: Color(0xFF6938ef)),
+              const SizedBox(width: 7),
+              Expanded(child: Text(tips.first,
+                  style: const TextStyle(fontSize: 11, color: Color(0xFF3E3F3B)))),
+            ]),
+          ),
+        ],
+
+        // Last 5 ledger events
+        if (ledger.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          const Text('Recent activity',
+              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF565955))),
+          const SizedBox(height: 6),
+          ...ledger.take(5).map((e) {
+            final ev = e as Map<String, dynamic>;
+            final delta = ev['delta'] as int? ?? 0;
+            final isPos = delta >= 0;
+            final ts = ev['ts'] as String? ?? '';
+            final time = ts.length >= 16 ? ts.substring(0, 10) : '';
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 5),
+              child: Row(children: [
+                Icon(isPos ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded,
+                    size: 12, color: isPos ? const Color(0xFF079455) : const Color(0xFFda2721)),
+                const SizedBox(width: 5),
+                Expanded(child: Text(
+                  (ev['reason'] as String? ?? ev['event'] as String? ?? '').replaceAll('_', ' '),
+                  style: const TextStyle(fontSize: 11, color: Color(0xFF3E3F3B)),
+                )),
+                Text('${isPos ? '+' : ''}$delta pts',
+                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600,
+                        color: isPos ? const Color(0xFF079455) : const Color(0xFFda2721))),
+                const SizedBox(width: 8),
+                Text(time, style: const TextStyle(fontSize: 9, color: Color(0xFFB0B5AE))),
+              ]),
+            );
+          }),
+        ],
+      ]),
+    );
+  }
 }

@@ -36,6 +36,49 @@ const __dirname = path.dirname(__filename);
 
 const contractsFile = path.join(__dirname, "../../data/mock_contracts.json");
 
+function _utility(price: number, reliability: number, etaMin: number, budgetCeiling: number): number {
+  const priceScore = budgetCeiling > 0 ? Math.max(0, 1 - price / budgetCeiling) : 0.5;
+  const relScore   = reliability / 100;
+  const etaScore   = Math.max(0, 1 - etaMin / 90);
+  return 0.40 * relScore + 0.35 * priceScore + 0.25 * etaScore;
+}
+
+function _rejectionReason(bid: Bid, winner: Bid): string {
+  const relDiff   = winner.reliability_snapshot - bid.reliability_snapshot;
+  const priceDiff = bid.price - winner.price;
+  const etaDiff   = bid.eta_min - winner.eta_min;
+  if (relDiff > 8)    return `Lower reliability (${Math.round(bid.reliability_snapshot)} vs ${Math.round(winner.reliability_snapshot)})`;
+  if (priceDiff > 100) return `Higher price (Rs. ${bid.price} vs Rs. ${winner.price})`;
+  if (etaDiff > 10)   return `Slower arrival (${bid.eta_min} min vs ${winner.eta_min} min)`;
+  return "Lower composite score";
+}
+
+function _buildEvaluations(top5: RankedProvider[], round1Bids: Bid[], winner: Bid | undefined, budgetCeiling: number): BidEvaluation[] {
+  return top5.map(p => {
+    const bid = round1Bids.find(b => b.provider_id === p.provider_id);
+    if (!bid || !bid.accepted) {
+      return {
+        provider: p.provider_id,
+        provider_name: p.name,
+        status: "declined" as const,
+        rejection_reason: bid?.reject_reason ?? "Provider unavailable",
+      };
+    }
+    const isWinner = winner && bid.provider_id === winner.provider_id;
+    const utility  = Math.round(_utility(bid.price, bid.reliability_snapshot, bid.eta_min, budgetCeiling) * 100) / 100;
+    return {
+      provider:       bid.provider_id,
+      provider_name:  p.name,
+      price:          bid.price,
+      eta_min:        bid.eta_min,
+      reliability:    Math.round(bid.reliability_snapshot),
+      utility_score:  utility,
+      status:         isWinner ? "selected" as const : "not_selected" as const,
+      rejection_reason: isWinner ? null : (winner ? _rejectionReason(bid, winner) : "Not selected"),
+    };
+  });
+}
+
 export interface Contract {
   contract_id: string;
   booking_id: string | null;
@@ -50,11 +93,23 @@ export interface Contract {
   created_at: string;
 }
 
+export interface BidEvaluation {
+  provider: string;
+  provider_name: string;
+  price?: number;
+  eta_min?: number;
+  reliability?: number;
+  utility_score?: number;
+  status: "selected" | "not_selected" | "declined";
+  rejection_reason: string | null;
+}
+
 export interface AuctionTrace {
   phase: "negotiation";
   cfp_sent_to: string[];
   proposals: Array<{ provider: string; provider_name: string; price: number; eta_min: number; confidence: number }>;
   counter_round?: Array<{ provider: string; provider_name: string; counter_price: number; response_price: number; accepted: boolean }>;
+  bid_evaluations?: BidEvaluation[];
   customer_agent_reasoning: string;
   rounds: number;
   outcome: "deal_locked" | "no_deal";
@@ -153,6 +208,7 @@ export async function runNegotiation(
       eta_min:        b.eta_min,
       confidence:     b.confidence,
     })),
+    bid_evaluations: _buildEvaluations(top5, round1Bids, decision.accepted_bid, cfp.budget_ceiling),
     customer_agent_reasoning: decision.reasoning,
     rounds,
   };

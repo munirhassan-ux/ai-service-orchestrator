@@ -110,6 +110,8 @@ class _ChatScreenState extends State<ChatScreen> {
   final Set<String> _actedMessages = {};
   Future<void> Function()? _cancelBookingFn;
   int _privacyRedactionCount = 0;
+  bool _glassBoxOpen = false;
+  List<dynamic> _glassBoxSteps = [];
 
   String _formatTitle(String? raw) {
     if (raw == null || raw.isEmpty) return 'New Booking';
@@ -648,6 +650,9 @@ class _ChatScreenState extends State<ChatScreen> {
       backgroundColor: const Color(0xFFF7FAF5),
       appBar: _buildAppBar(),
       body: Column(children: [
+        // Glass Box: live agent reasoning panel
+        if (_glassBoxOpen)
+          _GlassBoxPanel(steps: _glassBoxSteps, sessionId: _sessionId),
         Expanded(
             child: ListView.builder(
           controller: _scroll,
@@ -688,6 +693,24 @@ class _ChatScreenState extends State<ChatScreen> {
           style: TextStyle(
               fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white)),
       actions: [
+        // Glass Box toggle — shows live agent reasoning feed
+        IconButton(
+          tooltip: _glassBoxOpen ? 'Hide Agent Reasoning' : 'Show Agent Reasoning',
+          icon: Icon(
+            _glassBoxOpen ? Icons.developer_mode : Icons.developer_mode_outlined,
+            color: _glassBoxOpen ? const Color(0xFF7FE37F) : Colors.white.withValues(alpha: 0.7),
+            size: 20,
+          ),
+          onPressed: () async {
+            if (!_glassBoxOpen && _sessionId != null) {
+              try {
+                final trace = await ApiService.get('trace/session/$_sessionId');
+                if (mounted) setState(() => _glassBoxSteps = (trace as List?) ?? []);
+              } catch (_) {}
+            }
+            if (mounted) setState(() => _glassBoxOpen = !_glassBoxOpen);
+          },
+        ),
         if (_sessionId != null)
           Padding(
             padding: const EdgeInsets.only(right: 6),
@@ -1984,5 +2007,102 @@ class _AgentMessagesWidgetState extends State<AgentMessagesWidget> {
           ]),
         ),
     ]);
+  }
+}
+
+// ── Glass Box: live agent reasoning panel ─────────────────────────────────────
+class _GlassBoxPanel extends StatelessWidget {
+  final List<dynamic> steps;
+  final String? sessionId;
+  const _GlassBoxPanel({required this.steps, this.sessionId});
+
+  static const _agentColors = {
+    'Guardrail':        Color(0xFFe67e00),
+    'IntentParser':     Color(0xFF6938ef),
+    'ProviderMatcher':  Color(0xFF0070f3),
+    'PricingEngine':    Color(0xFF0891b2),
+    'NegotiationEngine': Color(0xFF079455),
+    'BookingSimulator': Color(0xFF163300),
+    'StatusMachine':    Color(0xFF3A9010),
+    'DisputeAgent':     Color(0xFFda2721),
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      constraints: const BoxConstraints(maxHeight: 220),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0D1117),
+        border: Border(bottom: BorderSide(color: Colors.white.withValues(alpha: 0.08))),
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        // Header
+        Padding(
+          padding: const EdgeInsets.fromLTRB(14, 8, 14, 4),
+          child: Row(children: [
+            Container(width: 8, height: 8,
+                decoration: const BoxDecoration(color: Color(0xFF3A9010), shape: BoxShape.circle)),
+            const SizedBox(width: 6),
+            const Text('Agent Reasoning Log',
+                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700,
+                    color: Color(0xFF7FE37F), letterSpacing: 0.5)),
+            const Spacer(),
+            if (sessionId != null)
+              Text(sessionId!.substring(0, 16),
+                  style: TextStyle(fontSize: 9, color: Colors.white.withValues(alpha: 0.3),
+                      fontFamily: 'monospace')),
+          ]),
+        ),
+        // Steps
+        Expanded(
+          child: steps.isEmpty
+              ? Center(child: Text('Book something to see agent reasoning',
+                  style: TextStyle(fontSize: 11, color: Colors.white.withValues(alpha: 0.3))))
+              : ListView.builder(
+                  reverse: true,
+                  padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+                  itemCount: steps.length,
+                  itemBuilder: (_, i) {
+                    final s = steps[steps.length - 1 - i] as Map<String, dynamic>;
+                    final agent = s['agent'] as String? ?? 'Agent';
+                    final color = _agentColors[agent] ?? const Color(0xFF888E86);
+                    final output = s['output'];
+                    String summary = '';
+                    if (output is Map) {
+                      if (output['found'] != null) summary = '${output['found']} providers found';
+                      else if (output['redactions'] != null) summary = '${(output['redactions'] as List).length} fields redacted';
+                      else if (output['outcome'] != null) summary = output['outcome'];
+                      else if (output['phase_after'] != null) summary = output['phase_after'];
+                      else summary = output.keys.take(2).join(', ');
+                    }
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 5),
+                      child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: color.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(agent,
+                              style: TextStyle(fontSize: 9, fontWeight: FontWeight.w700,
+                                  color: color, fontFamily: 'monospace')),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(child: Text(
+                          summary.isEmpty ? '✓' : summary,
+                          style: TextStyle(fontSize: 10, color: Colors.white.withValues(alpha: 0.75),
+                              fontFamily: 'monospace'),
+                        )),
+                        if (s['duration_ms'] != null)
+                          Text('${s['duration_ms']}ms',
+                              style: TextStyle(fontSize: 9, color: Colors.white.withValues(alpha: 0.3))),
+                      ]),
+                    );
+                  },
+                ),
+        ),
+      ]),
+    );
   }
 }

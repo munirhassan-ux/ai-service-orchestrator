@@ -1,7 +1,7 @@
 import { parseIntent, ParsedIntent } from "./agents/intentParser.js";
 import { matchProviders, MatchResult, RankedProvider } from "./agents/providerMatcher.js";
 import { calculatePrice, PriceQuote } from "./agents/pricingEngine.js";
-import { createBooking, updateBookingStatus, getBooking } from "./agents/bookingSimulator.js";
+import { createBooking, updateBookingStatus, getBooking, setCancellationShield } from "./agents/bookingSimulator.js";
 import { getSession, updateSession, createSession, appendPrivacyLog, CustomerSession } from "./session.js";
 import { logTraceEvent } from "./trace.js";
 import { logAction, logFallback, logNegotiation, logBookingCreated, logPhase, logGuardrail } from "./logger.js";
@@ -9,6 +9,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { redact, checkOutput } from "./middleware/guardrail.js";
 import { runNegotiation, linkBookingToContract } from "./agents/negotiationEngine.js";
 import { geocodeLocation } from "./agents/providerMatcher.js";
+import { loadPreferences, updatePreferences, buildPersonalizedGreeting } from "./agents/preferenceEngine.js";
 import { exec } from "child_process";
 
 export interface AgentTraceStep {
@@ -96,9 +97,17 @@ export async function runOrchestration(
   if (session.phase === "greeting" || session.phase === "intake") {
     if (!cleanInput) {
       updateSession(session.session_id, { phase: "intake" });
+      // Personalize greeting for returning customers
+      const prefs = loadPreferences(customerId);
+      const personalHint = prefs && prefs.total_bookings > 0
+        ? buildPersonalizedGreeting(prefs)
+        : "";
+      const greeting = prefs && prefs.total_bookings > 0
+        ? `Assalam o Alaikum! Haazir mein dobara khush aamdeed! ${personalHint} Aaj kya kaam karwana hai?`
+        : "Assalam o Alaikum! Main Haazir AI hoon. Aaj kya kaam karwana hai aap ko?";
       return {
         success: true, session_id: session.session_id, phase: "intake",
-        message: "Assalam o Alaikum! Main Haazir AI hoon. Aaj kya kaam karwana hai aap ko?",
+        message: greeting,
         chips: ["AC Repair", "Plumber", "Electrician", "Cleaning", "Carpenter", "Other"],
         intent: null, match_result: null, price_quote: null, negotiation_thread_id: null, booking: null, trace,
       };
@@ -310,6 +319,21 @@ export async function runOrchestration(
     );
 
     logBookingCreated(booking);
+    // Persist customer preferences for future session personalization
+    try { updatePreferences(customerId, booking); } catch { /* non-fatal */ }
+
+    // ── Cancellation prediction + silent backup briefing ─────────────────
+    // If selected provider has cancellation_risk > 25%, pre-brief next-best as backup
+    try {
+      const cancellationRisk = topProvider.cancellation_risk ?? 0;
+      if (cancellationRisk > 0.25 && providersWithQuotes.length > 1) {
+        const backup = providersWithQuotes.find(p => p.provider_id !== topProvider.provider_id);
+        if (backup) {
+          setCancellationShield(booking.booking_id, backup.provider_id, backup.name);
+          console.log(`[CancellationShield] ${topProvider.name} risk=${Math.round(cancellationRisk * 100)}% — backup briefed: ${backup.name}`);
+        }
+      }
+    } catch { /* non-fatal */ }
 
     // Auto-open provider app when deal is locked
     const providerAppUrl = "http://localhost:57654";

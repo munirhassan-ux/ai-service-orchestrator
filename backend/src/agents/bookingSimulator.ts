@@ -326,6 +326,22 @@ export function updateBookingStatus(bookingId: string, newStatus: BookingStatus)
 
   writeBookings(data);
 
+  // ── SLA auto-enforcement: late arrival penalty + auto-credit ──────────
+  if (newStatus === "ARRIVED" && booking.scheduled_time) {
+    const scheduledMs  = new Date(booking.scheduled_time).getTime();
+    const arrivedMs    = Date.now();
+    const lateMinutes  = Math.round((arrivedMs - scheduledMs) / 60_000);
+    const SLA_LATE_THRESHOLD = 20;
+    const SLA_CREDIT_AMOUNT  = 100;
+    if (lateMinutes > SLA_LATE_THRESHOLD) {
+      (booking as any).sla_breach      = true;
+      (booking as any).sla_late_min    = lateMinutes;
+      (booking as any).auto_credit_rs  = SLA_CREDIT_AMOUNT;
+      console.log(`[SLA] Late arrival: ${lateMinutes} min — auto-credit Rs. ${SLA_CREDIT_AMOUNT} applied to ${bookingId}`);
+      try { applyEvent(booking.provider_id, "late_arrival", bookingId); } catch { /* non-fatal */ }
+    }
+  }
+
   // Fire-and-forget: generate A2A narrative — don't block the status update
   const _progressStatuses = new Set(["ARRIVING", "ARRIVED", "IN_PROGRESS", "COMPLETED"]);
   if (_progressStatuses.has(newStatus)) {
@@ -387,6 +403,17 @@ export function updateBookingStatus(bookingId: string, newStatus: BookingStatus)
   }
 
   return booking;
+}
+
+// Store backup provider for cancellation shield
+export function setCancellationShield(bookingId: string, backupProviderId: string, backupProviderName: string): void {
+  const data = readBookings();
+  const idx = data.bookings.findIndex(b => b.booking_id === bookingId);
+  if (idx === -1) return;
+  (data.bookings[idx] as any).backup_provider_id   = backupProviderId;
+  (data.bookings[idx] as any).backup_provider_name = backupProviderName;
+  (data.bookings[idx] as any).cancellation_shield  = true;
+  writeBookings(data);
 }
 
 // Recalculates provider scores upon provider-driven cancellation
