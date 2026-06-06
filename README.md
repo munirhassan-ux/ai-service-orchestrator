@@ -113,6 +113,7 @@ decision happens as a message in the chat thread.
 │  │  sessions.json           — active customer sessions      │  │
 │  │  sub_tehsils_pakistan.csv— 728 geocoded sub-tehsil locs  │  │
 │  │  agent_traces/           — per-session Antigravity logs  │  │
+│  │  invoices/               — auto-generated job invoices   │  │
 │  └──────────────────────────────────────────────────────────┘  │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -183,8 +184,10 @@ decision happens as a message in the chat thread.
     └── Live Tracking shows "SEARCHING..." with attempt counter (attempt 1 of 10)
     └── Each reassignment adds a confirmation bubble in the chat thread with new
         provider's name, booking ID, price, and checklist
-    └── "Cancel Booking" button is always visible at the bottom of the chat screen
-        — customer can stop the search at any point
+    └── "Cancel Booking" button is visible at the bottom of the chat screen
+        during PENDING_PROVIDER and reassignment states — customer can stop
+        the search at any point. Button is hidden once a provider has accepted
+        (ACCEPTED → IN_PROGRESS) to prevent accidental mid-job cancellations.
     └── After 10 failed attempts: booking auto-marked CANCELLED_CUSTOMER, moves
         to History tab, chat shows "no provider available" message
     └── If customer taps "Cancel Booking": status → CANCELLED_CUSTOMER, History tab
@@ -648,7 +651,8 @@ Providers are removed from the candidate pool entirely if:
     │ COMPLETED │ ← ActiveSessionService cleared → customer can book again
     └───────────┘
 
-  Customer taps "Cancel Booking" (bottom bar, visible at any point):
+  Customer taps "Cancel Booking" (bottom bar, visible in PENDING_PROVIDER
+  and reassignment states only — hidden once provider is engaged):
     → current chain-tip booking → CANCELLED_CUSTOMER → History
 ```
 
@@ -676,8 +680,8 @@ intervals via the `/api/booking/simulate-step` endpoint:
 ```
 Every 1 second:
   POST /api/booking/simulate-step { booking_id }
-  → backend moves provider coords toward customer coords
-  → distance_meters decreases
+  → backend moves provider coords 75% of remaining distance toward customer
+  → distance_meters decreases (provider reaches customer in ~4 steps)
   → when distance_meters < 50 → status = ARRIVED
 
 Customer LiveTrackingWidget polls every 2 seconds:
@@ -742,6 +746,7 @@ flow to pre-configure a new session with:
 | `POST` | `/api/booking/submit-rating` | Submit customer star rating |
 | `POST` | `/api/booking/cancel-provider` | Provider cancels a job |
 | `POST` | `/api/booking/auto-reassign` | Auto-assign next best provider when current one declines |
+| `POST` | `/api/booking/generate-summary` | Generate and persist a job invoice to `backend/data/invoices/` |
 
 #### Auto-Reassign Endpoint
 
@@ -1104,7 +1109,7 @@ The frontend:
 - Backend is idempotent — if a booking already has `reassigned_to`, it follows the chain
 
 **Cancel Booking:**
-- A persistent **"Cancel Booking"** button is shown at the bottom of the customer chat screen at all times during an active booking
+- A **"Cancel Booking"** button is shown at the bottom of the customer chat screen during `PENDING_PROVIDER` and reassignment states (`CANCELLED_PROVIDER` / `CANCELLED_TIMEOUT`). It is hidden once a provider has accepted (`ACCEPTED` → `IN_PROGRESS`) to prevent accidental mid-job cancellations, and re-shown if that provider later cancels and reassignment begins again.
 - Tapping it posts `CANCELLED_CUSTOMER`, clears the session, and moves the booking to History
 - Uses `addPostFrameCallback` to safely register the cancel callback from `initState` without triggering a setState-during-build error
 
@@ -1118,6 +1123,11 @@ The frontend:
 - If customer cancels while the job offer is showing, provider sees: "Customer ne search cancel kar diya. Yeh job ab available nahi hai." and the Accept/Decline buttons are disabled
 - Cancelled job history cards now show meaningful detail (what was cancelled, why, service/location/price) instead of a blank screen
 
+### Job Invoice Generation
+- On job completion, `POST /api/booking/generate-summary` auto-generates a structured JSON invoice and writes it to `backend/data/invoices/<booking_id>.json`.
+- Invoice includes: service type, provider name, location, duration, completed checklist items, and a full cost breakdown (visit fee, labour, parts estimate, total, payment method).
+- Called automatically from the frontend after the customer submits a rating.
+
 ### Checklist Timing
 - Provider checklist is **not shown** on ACCEPTED or ARRIVING.
 - Provider chat polls booking status every 2 seconds after accepting.
@@ -1125,6 +1135,7 @@ The frontend:
 
 ### Simulation Speed
 - GPS simulation step timer: **1 second** (was 3 seconds).
+- GPS step fraction: **75% of remaining distance per step** — provider reaches customer in ~4 steps (was 8% per step, 12+ steps).
 - Customer status poll timer: **2 seconds** (was 3 seconds).
 - Provider status poll timer: **2 seconds**.
 

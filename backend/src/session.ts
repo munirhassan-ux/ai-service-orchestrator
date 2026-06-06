@@ -47,6 +47,10 @@ export interface CustomerSession {
   expires_at: string; // 30 min TTL
   // Last active booking for this session
   active_booking_id: string | null;
+  // Privacy & PII audit log — appended by guardrail on every redaction
+  privacy_log: Array<{ type: string; token: string; timestamp: string }>;
+  // Safety strikes — incremented when guardrail flags abusive content
+  safety_strikes: number;
 }
 
 function readSessions(): { sessions: CustomerSession[] } {
@@ -100,6 +104,8 @@ export function createSession(customerId: string, role: "customer" | "provider" 
     updated_at: now.toISOString(),
     expires_at: expires.toISOString(),
     active_booking_id: null,
+    privacy_log: [],
+    safety_strikes: 0,
   };
   data.sessions.push(session);
   writeSessions(data);
@@ -117,6 +123,20 @@ export function getSession(sessionId: string): CustomerSession | null {
     return null; // expired
   }
   return session;
+}
+
+export function appendPrivacyLog(sessionId: string, entries: Array<{ type: string; token: string; timestamp: string }>): void {
+  if (!sessionId || entries.length === 0) return;
+  try {
+    const data = readSessions();
+    const index = data.sessions.findIndex((s) => s.session_id === sessionId);
+    if (index === -1) return;
+    const session = data.sessions[index];
+    session.privacy_log = [...(session.privacy_log || []), ...entries];
+    session.updated_at = new Date().toISOString();
+    data.sessions[index] = session;
+    writeSessions(data);
+  } catch { /* fail silently — logging must never break main flow */ }
 }
 
 export function updateSession(sessionId: string, updates: Partial<CustomerSession>): CustomerSession {

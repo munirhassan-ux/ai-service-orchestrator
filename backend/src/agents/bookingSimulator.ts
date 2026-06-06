@@ -10,6 +10,7 @@ import { PriceQuote } from "./pricingEngine.js";
 import { pushNotification } from "../notifications.js";
 import { logScheduling, logStatusChange } from "../logger.js";
 import { logTraceEvent } from "../trace.js";
+import { applyEvent } from "./reliabilityEngine.js";
 
 const bookingsFile = path.join(__dirname, "../../data/mock_bookings.json");
 const scheduleFile = path.join(__dirname, "../../data/mock_schedule.json");
@@ -372,25 +373,10 @@ export function updateBookingStatus(bookingId: string, newStatus: BookingStatus)
 export function handleProviderCancellation(bookingId: string): Booking {
   const booking = updateBookingStatus(bookingId, "CANCELLED_PROVIDER");
 
-  const providerPath = path.join(__dirname, "../../data/mock_providers.json");
-  try {
-    const providers = JSON.parse(fs.readFileSync(providerPath, "utf-8"));
-    const idx = providers.findIndex((p: any) => p.provider_id === booking.provider_id);
-    if (idx !== -1) {
-      const p = providers[idx];
-      const totalCancellations = Math.round((p.cancellation_risk || 0) * (p.total_jobs || 10));
-      const newCancellations = totalCancellations + 1;
-      const newJobs = (p.total_jobs || 10) + 1;
-      const newRisk = newCancellations / newJobs;
-
-      updateProviderInFile(booking.provider_id, {
-        cancellation_risk: Math.round(newRisk * 100) / 100,
-        total_jobs: newJobs,
-      });
-    }
-  } catch (err) {
-    console.error(err);
-  }
+  // Determine whether provider actually showed up or is a no-show
+  const arrivedInHistory = booking.state_history.some(h => h.status === "ARRIVED" || h.status === "ARRIVING");
+  const reliabilityEvent = arrivedInHistory ? "cancel_after_accept" : "no_show";
+  try { applyEvent(booking.provider_id, reliabilityEvent, bookingId); } catch { /* non-fatal */ }
 
   return booking;
 }
@@ -404,7 +390,7 @@ export function submitBookingRating(bookingId: string, stars: number, actualArri
   // Calculate on-time score: actual_arrival <= scheduled_arrival + 10 mins
   const actualArrival = new Date(actualArrivalTimeStr);
   const scheduledArrival = new Date(booking.scheduled_time);
-  const isOnTime = actualArrival.getTime() <= (scheduledArrival.getTime() + 10 * 60 * 1000) ? 1 : 0;
+  const isOnTime = actualArrival.getTime() <= (scheduledArrival.getTime() + 10 * 60 * 1000);
 
   const providerPath = path.join(__dirname, "../../data/mock_providers.json");
   try {
@@ -417,25 +403,21 @@ export function submitBookingRating(bookingId: string, stars: number, actualArri
       const totalReviews = p.total_reviews || 10;
       const newRating = ((oldRating * totalReviews) + stars) / (totalReviews + 1);
 
-      const oldOnTimeScore = p.on_time_score || 0.9;
-      const totalJobs = p.total_jobs || 10;
-      const newOnTimeScore = ((oldOnTimeScore * totalJobs) + isOnTime) / (totalJobs + 1);
-
-      const totalCancellations = Math.round((p.cancellation_risk || 0) * totalJobs);
-      const newCancellationRisk = totalCancellations / (totalJobs + 1);
-
       updateProviderInFile(booking.provider_id, {
         rating: Math.round(newRating * 100) / 100,
         total_reviews: totalReviews + 1,
-        on_time_score: Math.round(newOnTimeScore * 100) / 100,
-        cancellation_risk: Math.round(newCancellationRisk * 100) / 100,
-        total_jobs: totalJobs + 1,
+        total_jobs: (p.total_jobs || 10) + 1,
         active_jobs: Math.max(0, (p.active_jobs || 1) - 1),
       });
     }
   } catch (err) {
     console.error(err);
   }
+
+  // Fire reliability engine event — updates EWMA scores and ledger
+  try {
+    applyEvent(booking.provider_id, isOnTime ? "job_completed_ontime" : "job_completed_late", bookingId);
+  } catch { /* non-fatal */ }
 
   booking.status = "COMPLETED";
   booking.updated_at = new Date().toISOString();
@@ -448,7 +430,7 @@ export function submitBookingRating(bookingId: string, stars: number, actualArri
       booking_id: bookingId,
       provider_id: booking.provider_id,
       stars_submitted: stars,
-      on_time: isOnTime === 1,
+      on_time: isOnTime,
     });
   }
   return booking;

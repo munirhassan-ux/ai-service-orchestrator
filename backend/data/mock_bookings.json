@@ -1,1 +1,82 @@
-{"bookings":[]}
+{
+  "bookings": [
+    {
+      "booking_id": "SVC-20260606-0001",
+      "provider_id": "p49720",
+      "provider_name": "Zubair Mehmood",
+      "customer_id": "customer_001",
+      "service_type": "plumber",
+      "location": "G-13",
+      "scheduled_time": "2026-06-07T05:00:00.000Z",
+      "status": "CANCELLED_PROVIDER",
+      "final_price": 1214,
+      "price_quote": {
+        "base_rate": 499,
+        "distance_fee": 70,
+        "urgency_surcharge": 0,
+        "complexity_premium": 0,
+        "loyalty_discount": 0,
+        "surge_multiplier": 1,
+        "surge_active": false,
+        "visit_fee": 150,
+        "hours_min": 2,
+        "hours_max": 2,
+        "min_total": 1160,
+        "max_total": 1280,
+        "total": 1220,
+        "min_rate_total": 1160,
+        "floor_min": 1100,
+        "floor_max": 1340,
+        "industry_standard_min": 800,
+        "industry_standard_max": 1300,
+        "currency": "PKR",
+        "breakdown_text": "Visit Fee (non-refundable): Rs. 150\nLabour (Rs. 499/hr × 2hrs): Rs. 1000\nTravel (2.2km): Rs. 70\n─────────────────────────────\nTotal: Rs. 1220",
+        "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
+      },
+      "negotiation_thread_id": null,
+      "confirmation_message": "Booking confirm ho gayi! Zubair Mehmood aap ke paas G-13 mein 07/06/2026, 10:00:00 am ko pohunchen ge. Booking ID: SVC-20260606-0001. Total: Rs. 1214.",
+      "reminder_scheduled_at": "2026-06-07T04:00:00.000Z",
+      "checklist": [
+        {
+          "item": "Diagnose leak/blockage",
+          "completed": false
+        },
+        {
+          "item": "Complete repair",
+          "completed": false
+        },
+        {
+          "item": "Test water flow",
+          "completed": false
+        },
+        {
+          "item": "Clean up area",
+          "completed": false
+        }
+      ],
+      "created_at": "2026-06-06T09:14:41.568Z",
+      "updated_at": "2026-06-06T09:20:47.914Z",
+      "state_history": [
+        {
+          "status": "PENDING_PROVIDER",
+          "timestamp": "2026-06-06T09:14:41.568Z"
+        },
+        {
+          "status": "CANCELLED_TIMEOUT",
+          "timestamp": "2026-06-06T09:16:42.663Z"
+        },
+        {
+          "status": "CANCELLED_PROVIDER",
+          "timestamp": "2026-06-06T09:20:47.914Z"
+        }
+      ],
+      "session_id": "SESS-1780737261210-664",
+      "current_lat": 33.672168,
+      "current_lng": 73.066418,
+      "customer_lat": 33.6844,
+      "customer_lng": 73.0479,
+      "distance_meters": 2200,
+      "reassigned_to": "SVC-20260606-0002"
+    }
+  ]
+}

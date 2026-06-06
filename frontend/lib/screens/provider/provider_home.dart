@@ -3,7 +3,6 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'jobs_screen.dart';
 import 'provider_alerts_screen.dart';
 import 'provider_dashboard_screen.dart';
-import '../customer/customer_home.dart';
 import '../../services/booking_events.dart';
 
 class ProviderHome extends StatefulWidget {
@@ -39,39 +38,20 @@ class _ProviderHomeState extends State<ProviderHome> {
         actions: [
           Container(
             margin: const EdgeInsets.only(right: 12),
-            padding: const EdgeInsets.fromLTRB(10, 4, 4, 4),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
             ),
-            child: Row(children: [
-              const Icon(Icons.handyman_rounded, size: 16, color: Colors.white),
-              const SizedBox(width: 4),
-              const Text('Provider',
+            child: const Row(children: [
+              Icon(Icons.handyman_rounded, size: 16, color: Colors.white),
+              SizedBox(width: 4),
+              Text('Provider',
                   style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: Colors.white)),
-              const SizedBox(width: 8),
-              GestureDetector(
-                onTap: () => Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(builder: (_) => const CustomerHome()),
-                ),
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Text('Customer',
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold)),
-                ),
-              ),
             ]),
           ),
         ],

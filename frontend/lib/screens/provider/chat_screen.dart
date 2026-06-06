@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../services/api_service.dart';
-import '../customer/customer_home.dart';
+import '../customer/widgets/negotiation_widget.dart';
 
 class ProviderChatScreen extends StatefulWidget {
   final String? bookingId;
@@ -94,6 +94,17 @@ class _ProviderChatScreenState extends State<ProviderChatScreen> {
           setState(() {
             _bookingData = b;
             _jobTitle = _formatTitle(b['service_type'] as String?);
+            // Show A2A negotiation trace at the top if present
+            final negTrace = b['negotiation_trace'] as Map<String, dynamic>?;
+            if (negTrace != null) {
+              _messages.add({
+                'text': null,
+                'isUser': false,
+                'type': 'negotiation_trace',
+                'trace': negTrace,
+                'contract_id': b['contract_id'] as String?,
+              });
+            }
             final status = b['status'];
             if (status == 'PENDING_PROVIDER') {
               _jobOffered = true;
@@ -494,39 +505,20 @@ class _ProviderChatScreenState extends State<ProviderChatScreen> {
         actions: [
           Container(
             margin: const EdgeInsets.only(right: 12),
-            padding: const EdgeInsets.fromLTRB(10, 4, 4, 4),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
             ),
-            child: Row(children: [
-              const Icon(Icons.handyman_rounded, size: 16, color: Colors.white),
-              const SizedBox(width: 4),
-              const Text('Provider',
+            child: const Row(children: [
+              Icon(Icons.handyman_rounded, size: 16, color: Colors.white),
+              SizedBox(width: 4),
+              Text('Provider',
                   style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: Colors.white)),
-              const SizedBox(width: 8),
-              GestureDetector(
-                onTap: () => Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(builder: (_) => const CustomerHome()),
-                ),
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Text('Customer',
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold)),
-                ),
-              ),
             ]),
           ),
         ],
@@ -553,6 +545,15 @@ class _ProviderChatScreenState extends State<ProviderChatScreen> {
   }
 
   Widget _buildItem(Map<String, dynamic> msg) {
+    if (msg['type'] == 'negotiation_trace') {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: NegotiationWidget(
+          negotiationTrace: msg['trace'] as Map<String, dynamic>,
+          contractId: msg['contract_id'] as String?,
+        ),
+      );
+    }
     if (msg['type'] == 'job_offer')
       return _jobOfferCard(msg['job'] as Map<String, dynamic>);
     if (msg['type'] == 'checklist') return _checklistCard();

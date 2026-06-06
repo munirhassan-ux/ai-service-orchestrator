@@ -8,8 +8,10 @@ import 'package:latlong2/latlong.dart' as ll;
 import '../../services/api_service.dart';
 import '../../services/booking_events.dart';
 import 'widgets/chat_widgets.dart';
-import '../provider/provider_home.dart';
-
+import 'widgets/negotiation_widget.dart';
+import 'widgets/privacy_badge_widget.dart';
+import 'widgets/reliability_badge_widget.dart';
+import 'widgets/recovery_widget.dart';
 class ActiveSessionService {
   static String? _sessionId;
   static String? _bookingId;
@@ -107,6 +109,7 @@ class _ChatScreenState extends State<ChatScreen> {
   String? _bookingTitle;
   final Set<String> _actedMessages = {};
   Future<void> Function()? _cancelBookingFn;
+  int _privacyRedactionCount = 0;
 
   String _formatTitle(String? raw) {
     if (raw == null || raw.isEmpty) return 'New Booking';
@@ -389,9 +392,30 @@ class _ChatScreenState extends State<ChatScreen> {
             _formatTitle(res['booking']?['service_type'] as String?);
       });
 
+      // Track how many fields the guardrail redacted in this request
+      final guardrailStep = (res['trace'] as List?)?.firstWhere(
+        (s) => s['agent'] == 'Guardrail', orElse: () => null);
+      final redactions = (guardrailStep?['output']?['redactions'] as List?)?.length ?? 0;
+      if (redactions > 0) setState(() => _privacyRedactionCount += redactions);
+
       final bookingReason = res['booking_reason'] as String?;
+      final negotiationTrace = res['negotiation_trace'] as Map<String, dynamic>?;
+      final contractId = res['contract_id'] as String?;
+
+      // Provider reliability score from match result
+      final topProvider = (res['match_result']?['top_providers'] as List?)?.firstOrNull;
+      final reliabilityScore = (topProvider?['reliability_score'] as num?)?.toDouble();
 
       void showSuccess() {
+        // Show A2A negotiation trace as animated bubbles
+        if (negotiationTrace != null) {
+          _addMsg(Message(
+            text: '',
+            isUser: false,
+            type: 'negotiation',
+            data: {'trace': negotiationTrace, 'contract_id': contractId},
+          ));
+        }
         if (bookingReason != null && bookingReason.isNotEmpty) {
           _addMsg(Message(text: '🤖 $bookingReason', isUser: false));
         }
@@ -399,7 +423,10 @@ class _ChatScreenState extends State<ChatScreen> {
             text: msg,
             isUser: false,
             type: 'booking_success',
-            data: res['booking']));
+            data: {
+              ...?res['booking'] as Map<String, dynamic>?,
+              if (reliabilityScore != null) '_reliability_score': reliabilityScore,
+            }));
         if (bookingId != null) {
           ChatHistoryService.save(bookingId, _messages, _actedMessages);
           ActiveSessionService.linkBooking(
@@ -479,12 +506,29 @@ class _ChatScreenState extends State<ChatScreen> {
         final steps = (msg.data?['steps'] as List?)?.cast<String>();
         return ThinkingBubble(steps: steps);
 
+      case 'negotiation':
+        final trace = msg.data?['trace'] as Map<String, dynamic>?;
+        if (trace == null) return const SizedBox.shrink();
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          child: NegotiationWidget(
+            negotiationTrace: trace,
+            contractId: msg.data?['contract_id'] as String?,
+          ),
+        );
+
       case 'booking_success':
         final bk = msg.data ?? {};
+        final reliability = (bk['_reliability_score'] as num?)?.toDouble();
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _textBubble(msg.text),
+            if (reliability != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: ReliabilityBadgeWidget(score: reliability),
+              ),
             SuccessBubble(
               providerName: bk['provider_name'] ?? 'Provider',
               scheduledTime: bk['scheduled_time'] != null
@@ -502,20 +546,43 @@ class _ChatScreenState extends State<ChatScreen> {
                         "Your rating has been submitted. Thank you for using Haazir!",
                     isUser: false));
               },
-              onReassigned: (newBooking, attempt) {
-                final name = newBooking['provider_name'] ?? 'Naya Provider';
-                _addMsg(Message(
-                  text: "Provider cancel ho gaya. Attempt $attempt: $name ko assign kiya gaya.",
-                  isUser: false,
-                  type: 'booking_reassigned',
-                  data: newBooking,
-                ));
+              onReassigned: (newBooking, attempt, recovery) {
+                if (recovery != null) {
+                  _addMsg(Message(
+                    text: '',
+                    isUser: false,
+                    type: 'recovery',
+                    data: {'newBooking': newBooking, 'recovery': recovery},
+                  ));
+                } else {
+                  final name = newBooking['provider_name'] ?? 'Naya Provider';
+                  _addMsg(Message(
+                    text: "Attempt $attempt: $name assigned.",
+                    isUser: false,
+                    type: 'booking_reassigned',
+                    data: newBooking,
+                  ));
+                }
               },
               onCancelReady: (fn) {
                 if (mounted) setState(() => _cancelBookingFn = fn);
               },
             ),
           ],
+        );
+
+      case 'recovery':
+        final rec = msg.data?['recovery'] as Map<String, dynamic>?;
+        final nb  = msg.data?['newBooking'] as Map<String, dynamic>?;
+        if (rec == null) return const SizedBox.shrink();
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          child: RecoveryWidget(
+            apologyMessage: rec['apology_message'] as String? ?? '',
+            compensation: (rec['compensation'] as Map?)?.cast<String, dynamic>() ?? {},
+            newBooking: nb,
+            cause: rec['cause'] as String? ?? 'provider_emergency',
+          ),
         );
 
       case 'booking_reassigned':
@@ -622,40 +689,30 @@ class _ChatScreenState extends State<ChatScreen> {
           style: TextStyle(
               fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white)),
       actions: [
+        if (_sessionId != null)
+          Padding(
+            padding: const EdgeInsets.only(right: 6),
+            child: PrivacyBadgeWidget(
+              sessionId: _sessionId,
+              redactionCount: _privacyRedactionCount,
+            ),
+          ),
         Container(
           margin: const EdgeInsets.only(right: 12),
-          padding: const EdgeInsets.fromLTRB(10, 4, 4, 4),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
           ),
-          child: Row(children: [
-            const Icon(Icons.person_rounded, size: 16, color: Colors.white),
-            const SizedBox(width: 4),
-            const Text('Customer',
+          child: const Row(children: [
+            Icon(Icons.person_rounded, size: 16, color: Colors.white),
+            SizedBox(width: 4),
+            Text('Customer',
                 style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: Colors.white)),
-            const SizedBox(width: 8),
-            GestureDetector(
-              onTap: () => Navigator.of(context).pushReplacement(
-                MaterialPageRoute(builder: (_) => const ProviderHome()),
-              ),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Text('Provider',
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold)),
-              ),
-            ),
           ]),
         ),
       ],
@@ -958,7 +1015,7 @@ class _PinTip extends CustomPainter {
 class LiveTrackingWidget extends StatefulWidget {
   final Map<String, dynamic> booking;
   final Function(int stars) onRated;
-  final void Function(Map<String, dynamic> newBooking, int attempt)? onReassigned;
+  final void Function(Map<String, dynamic> newBooking, int attempt, Map<String, dynamic>? recovery)? onReassigned;
   final void Function(Future<void> Function()?)? onCancelReady;
 
   const LiveTrackingWidget({
@@ -1134,12 +1191,13 @@ class _LiveTrackingWidgetState extends State<LiveTrackingWidget> {
       if (res['status'] == 'reassigned' && res['booking'] != null) {
         final newBooking = res['booking'] as Map<String, dynamic>;
         final attempt = res['attempt'] as int? ?? _retryAttempt + 1;
+        final recovery = res['recovery'] as Map<String, dynamic>?;
         setState(() {
           _booking = newBooking;
           _retryAttempt = attempt;
           _autoRetrying = false;
         });
-        widget.onReassigned?.call(newBooking, attempt);
+        widget.onReassigned?.call(newBooking, attempt, recovery);
         _startPolling();
       }
     } catch (_) {

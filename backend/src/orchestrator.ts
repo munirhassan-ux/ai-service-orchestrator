@@ -2,10 +2,13 @@ import { parseIntent, ParsedIntent } from "./agents/intentParser.js";
 import { matchProviders, MatchResult, RankedProvider } from "./agents/providerMatcher.js";
 import { calculatePrice, PriceQuote } from "./agents/pricingEngine.js";
 import { createBooking, updateBookingStatus, getBooking } from "./agents/bookingSimulator.js";
-import { getSession, updateSession, createSession, CustomerSession } from "./session.js";
+import { getSession, updateSession, createSession, appendPrivacyLog, CustomerSession } from "./session.js";
 import { logTraceEvent } from "./trace.js";
-import { logAction, logFallback } from "./logger.js";
+import { logAction, logFallback, logNegotiation, logBookingCreated, logPhase, logGuardrail } from "./logger.js";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { redact, checkOutput } from "./middleware/guardrail.js";
+import { runNegotiation, linkBookingToContract } from "./agents/negotiationEngine.js";
+import { geocodeLocation } from "./agents/providerMatcher.js";
 
 export interface AgentTraceStep {
   step: number;
@@ -33,6 +36,8 @@ export interface OrchestrationResult {
   countdown_seconds?: number;
   booking_reason?: string;
   reassignment_log?: string[];
+  negotiation_trace?: any;
+  contract_id?: string;
 }
 
 export async function runOrchestration(
@@ -53,7 +58,37 @@ export async function runOrchestration(
     session = createSession(customerId);
   }
 
-  const cleanInput = userInput.trim();
+  const rawInput = userInput.trim();
+  logPhase(session.session_id, session.phase, rawInput ? `"${rawInput.slice(0, 40)}"` : "empty input");
+
+  // ── 0. GUARDRAIL — PII redaction + safety check ──────────────────────
+  const guardrailResult = redact(rawInput);
+  if (guardrailResult.redactions.length > 0) {
+    appendPrivacyLog(session.session_id, guardrailResult.redactions);
+  }
+  logGuardrail(guardrailResult.redactions, guardrailResult.safety);
+  trace.push({
+    step: 0, agent: "Guardrail",
+    input: { raw_length: rawInput.length },
+    output: {
+      redactions: guardrailResult.redactions.map(r => ({ type: r.type, token: r.token })),
+      safety: guardrailResult.safety,
+      pii_sent_to_llm: false,
+    },
+    duration_ms: 0,
+  });
+
+  if (guardrailResult.safety.flagged) {
+    const safetyStrikes = (session as any).safety_strikes ?? 0;
+    updateSession(session.session_id, { safety_strikes: safetyStrikes + 1 } as any);
+    return {
+      success: false, session_id: session.session_id, phase: session.phase,
+      message: "Maazrat, aap ka paigham hamari policy ke khilaf hai. Meherbani farma kar dobara koshish karein.",
+      intent: null, match_result: null, price_quote: null, negotiation_thread_id: null, booking: null, trace,
+    };
+  }
+
+  const cleanInput = guardrailResult.text; // redacted text goes to all downstream agents
   console.log(`[Orchestrator] Session: ${session.session_id} | Phase: ${session.phase} | Input: "${cleanInput}"`);
 
   // ── 1. GREETING & INTAKE PHASE ─────────────────────────────────────
@@ -236,19 +271,53 @@ export async function runOrchestration(
       : intent.budget_sensitivity === "flexible" ? "Flexible Budget"
         : "Standard Budget";
 
-    // Auto-book the top-ranked provider — customer never selects manually
-    const topProvider = providersWithQuotes[0];
+    // ── A2A Negotiation — Customer Agent auctions against top 5 Provider Agents ──
+    const userCoords = await geocodeLocation(intent.location);
+    const negotiationResult = await runNegotiation(
+      providersWithQuotes,
+      intent,
+      customerId,
+      userCoords.lat,
+      userCoords.lng
+    );
+
+    logNegotiation(negotiationResult.trace, negotiationResult.contract);
+    step++;
+    trace.push({
+      step, agent: "NegotiationEngine",
+      input: { candidates: providersWithQuotes.length },
+      output: negotiationResult.trace,
+      duration_ms: 0,
+    });
+
+    // Fall back to top-ranked if negotiation finds no deal (e.g. all providers out of budget)
+    const topProvider = negotiationResult.contract
+      ? providersWithQuotes.find(p => p.provider_id === negotiationResult.contract!.provider_id)!
+        ?? providersWithQuotes[0]
+      : providersWithQuotes[0];
+
+    const finalPrice = negotiationResult.contract?.agreed_price ?? topProvider.price_quote!.total;
+
     const { booking } = await createBooking(
       intent,
       topProvider,
       topProvider.price_quote!,
-      topProvider.price_quote!.total,
+      finalPrice,
       null,
       customerId,
       session.session_id
     );
 
-    const booking_reason = `${topProvider.name} selected — ${topProvider.distance_km}km away, ${topProvider.rating}★ rating, ${Math.round(topProvider.on_time_score * 100)}% on-time across ${topProvider.total_jobs} completed jobs. Highest-scoring ${intent.service_type} provider in ${intent.location}.`;
+    logBookingCreated(booking);
+
+    // Link booking back to the signed contract
+    if (negotiationResult.contract) {
+      linkBookingToContract(negotiationResult.contract.contract_id, booking.booking_id);
+    }
+
+    const booking_reason = negotiationResult.contract
+      ? `A2A auction: ${negotiationResult.trace.proposals.length} bids received in ${negotiationResult.trace.rounds} round(s). ${topProvider.name} won at Rs.${finalPrice}. ${negotiationResult.trace.customer_agent_reasoning}`
+      : `${topProvider.name} selected — ${topProvider.distance_km}km away, ${topProvider.rating}★ rating, reliability ${topProvider.reliability_score ?? Math.round(topProvider.on_time_score * 100)}/100.`;
 
     const reassignmentSteps: string[] = excludedIds.length > 0 ? [
       `⚠️ Previous provider cancelled — excluded from pool`,
@@ -271,6 +340,7 @@ export async function runOrchestration(
       `Booking confirmed!`,
     ];
 
+    logPhase(session.session_id, "booking_confirmed", `booking ${booking.booking_id}`);
     logAction(session.session_id, "thinking", "booking_confirmed", {
       provider: topProvider.name,
       booking: booking.booking_id,
@@ -306,6 +376,8 @@ export async function runOrchestration(
       trace,
       booking_reason,
       reassignment_log: reassignmentSteps.length > 0 ? reassignmentSteps : undefined,
+      negotiation_trace: negotiationResult?.trace,
+      contract_id: negotiationResult?.contract?.contract_id,
     };
   }
 

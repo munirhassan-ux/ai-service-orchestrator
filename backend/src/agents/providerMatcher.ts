@@ -3,6 +3,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { fileURLToPath } from "url";
 import { logProviderMatch } from "../logger.js";
+import { computeScore } from "./reliabilityEngine.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -103,6 +104,8 @@ export interface RankedProvider {
   };
   is_waitlisted?: boolean;
   price_quote?: any;
+  reliability_score?: number;
+  completion_rate?: number;
 }
 
 export interface MatchResult {
@@ -228,7 +231,10 @@ export async function matchProviders(intent: ParsedIntent, excludedIds: string[]
         s.toLowerCase() === intent.service_type.toLowerCase() ||
         s.toLowerCase().startsWith(intent.service_type.toLowerCase().split("_")[0])
     );
-    return isOnline && capacityOk && noConflict && matchesService;
+    // Hard-exclude providers with very high cancellation risk or in cooldown
+    const notBlacklisted = (p.cancellation_risk ?? 0) <= 0.30;
+    const notInCooldown = !p.cooldown_until || new Date() > new Date(p.cooldown_until);
+    return isOnline && capacityOk && noConflict && matchesService && notBlacklisted && notInCooldown;
   });
 
   let fallback_used = false;
@@ -301,8 +307,12 @@ export async function matchProviders(intent: ParsedIntent, excludedIds: string[]
       specialization_score = 60;
     }
 
-    // 4. On-Time Score (15%): on_time_score * 100
-    const on_time_score = (p.on_time_score || 0.9) * 100;
+    // 4. On-Time + Reliability (15%): Use live reliability_score if present, else on_time_score
+    // reliability_score is a 0–100 EWMA composite — it captures recency better than static on_time_score
+    const liveReliability = p.reliability_score != null
+      ? p.reliability_score          // already 0–100
+      : (p.on_time_score || 0.9) * 100;
+    const on_time_score = liveReliability;
 
     // 5. Review Sentiment (10%): rating-based sentiment + 20% penalty if recent negative spike (rating < 4.3)
     let review_sentiment_score = (p.rating / 5) * 100;
@@ -355,6 +365,8 @@ export async function matchProviders(intent: ParsedIntent, excludedIds: string[]
       total_jobs: p.total_jobs,
       distance_km: Math.round(distance * 10) / 10,
       score: Math.round(totalScore * 100) / 100,
+      reliability_score: p.reliability_score != null ? p.reliability_score : Math.round(computeScore(p) * 10) / 10,
+      completion_rate: p.completion_rate ?? null,
       score_breakdown: {
         travel_time: Math.round(travel_time_score),
         availability_match: Math.round(availability_match_score),

@@ -5,7 +5,6 @@ import 'chat_screen.dart';
 import 'bookings_screen.dart';
 import 'alerts_screen.dart';
 import 'profile_screen.dart';
-import '../provider/provider_home.dart';
 import '../../services/booking_events.dart';
 import '../../services/api_service.dart';
 
@@ -53,40 +52,21 @@ class _CustomerHomeState extends State<CustomerHome> {
         actions: [
           Container(
             margin: const EdgeInsets.only(right: 12),
-            padding: const EdgeInsets.fromLTRB(10, 4, 4, 4),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
             ),
-            child: Row(
+            child: const Row(
               children: [
-                const Icon(Icons.person_rounded, size: 16, color: Colors.white),
-                const SizedBox(width: 4),
-                const Text('Customer',
+                Icon(Icons.person_rounded, size: 16, color: Colors.white),
+                SizedBox(width: 4),
+                Text('Customer',
                     style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                         color: Colors.white)),
-                const SizedBox(width: 8),
-                GestureDetector(
-                  onTap: () => Navigator.of(context).pushReplacement(
-                    MaterialPageRoute(builder: (_) => const ProviderHome()),
-                  ),
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Text('Provider',
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold)),
-                  ),
-                ),
               ],
             ),
           ),

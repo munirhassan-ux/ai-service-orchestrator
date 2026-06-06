@@ -184,7 +184,86 @@ export function logStatusChange(bookingId: string, from: string, to: string) {
   console.log(footer());
 }
 
-// ── 7. Fallback / Error ───────────────────────────────────────────────────
+// ── 7. A2A Negotiation ────────────────────────────────────────────────────
+export function logNegotiation(trace: any, contract: any | null) {
+  const proposals: any[] = trace.proposals ?? [];
+  const rounds: number = trace.rounds ?? 1;
+  const outcome: string = trace.outcome ?? "no_deal";
+  const outcomeColor = outcome === "deal_locked" ? c.green : c.red;
+
+  console.log("");
+  console.log(header("🤝", "A2A NEGOTIATION"));
+  console.log(row("CFP sent to", `${(trace.cfp_sent_to ?? []).length} provider agents`));
+  console.log(row("bids rcvd", `${proposals.length} accepted proposals`));
+  console.log(row("rounds", String(rounds)));
+  if (proposals.length > 0) {
+    console.log(divider());
+    console.log(c.cyan + "│" + c.reset + "  " + c.dim +
+      pad("provider", 18) + pad("price", 10) + pad("eta", 8) + "confidence" + c.reset);
+    proposals.forEach((p: any) => {
+      const iswinner = contract && p.provider === contract.provider_id;
+      console.log(c.cyan + "│" + c.reset + "  " +
+        (iswinner ? c.bold + c.green : c.reset) +
+        pad(p.provider.slice(0, 17), 18) +
+        c.yellow + pad(`Rs.${p.price}`, 10) + c.reset +
+        pad(`${p.eta_min}min`, 8) +
+        `${Math.round((p.confidence ?? 0) * 100)}%` +
+        (iswinner ? c.green + "  ← WINNER" + c.reset : "") +
+        c.reset
+      );
+    });
+    console.log(divider());
+  }
+  if (trace.customer_agent_reasoning) {
+    console.log(row("reasoning", trace.customer_agent_reasoning.slice(0, 55)));
+  }
+  console.log(row("outcome", outcomeColor + c.bold + outcome.toUpperCase() + c.reset +
+    (contract ? c.dim + `  contract: ${contract.contract_id}` + c.reset : "")));
+  console.log(footer());
+}
+
+// ── 8. Booking Created ────────────────────────────────────────────────────
+export function logBookingCreated(booking: any) {
+  console.log("");
+  console.log(header("📋", "BOOKING CREATED"));
+  console.log(row("booking id", c.bold + booking.booking_id + c.reset));
+  console.log(row("provider",   booking.provider_name ?? booking.provider_id));
+  console.log(row("service",    booking.service_type));
+  console.log(row("location",   booking.location));
+  console.log(row("scheduled",  new Date(booking.scheduled_time).toLocaleString("en-PK")));
+  console.log(row("price",      c.bold + c.green + `Rs. ${booking.final_price}` + c.reset));
+  console.log(row("status",     c.yellow + booking.status + c.reset));
+  console.log(footer());
+}
+
+// ── 9. Phase Transition ───────────────────────────────────────────────────
+export function logPhase(sessionId: string, phase: string, detail?: string) {
+  const phaseColor = phase === "booking_confirmed" ? c.green
+    : phase === "intake" ? c.cyan
+    : phase === "thinking" ? c.yellow
+    : c.white;
+  console.log(
+    c.dim + `\n[Session ${sessionId.slice(-8)}]` + c.reset +
+    " Phase → " + phaseColor + c.bold + phase.toUpperCase() + c.reset +
+    (detail ? c.dim + `  (${detail})` + c.reset : "")
+  );
+}
+
+// ── 10. Guardrail ─────────────────────────────────────────────────────────
+export function logGuardrail(redactions: any[], safety: any) {
+  if (redactions.length === 0 && !safety.flagged) return; // silent pass
+  console.log("");
+  console.log(header("🛡️", "GUARDRAIL"));
+  if (safety.flagged) {
+    console.log(row("safety", c.red + c.bold + "⚠ FLAGGED: " + (safety.reason ?? "") + c.reset));
+  }
+  redactions.forEach((r: any) => {
+    console.log(row("redacted", c.yellow + `[${r.type}] ${r.token}` + c.reset));
+  });
+  console.log(footer());
+}
+
+// ── 11. Fallback / Error ──────────────────────────────────────────────────
 export function logFallback(agent: string, reason: string, action: string) {
   console.log("");
   console.log(header("⚠", `FALLBACK  [${agent}]`));

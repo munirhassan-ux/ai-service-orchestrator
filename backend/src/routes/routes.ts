@@ -9,8 +9,11 @@ import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-import { processDispute } from "../agents/disputeAgent.js";
+import { processDispute, raiseDispute, getDispute, listDisputes, respondToDispute } from "../agents/disputeAgent.js";
+import { getReliabilitySnapshot, applyEvent } from "../agents/reliabilityEngine.js";
+import { getContract, appendEventToContract } from "../agents/negotiationEngine.js";
 import { createSession, getSession, updateSession } from "../session.js";
+import { redact } from "../middleware/guardrail.js";
 import { logTraceEvent } from "../trace.js";
 import { pushNotification, notificationsQueue } from "../notifications.js";
 
@@ -44,6 +47,29 @@ router.patch("/session/:id", (req: Request, res: Response) => {
   } catch (err: any) {
     return res.status(500).json({ error: err.message });
   }
+});
+
+// GET /api/session/:id/privacy-log — returns redaction audit log for this session
+router.get("/session/:id/privacy-log", (req: Request, res: Response) => {
+  try {
+    const session = getSession(req.params.id);
+    if (!session) return res.status(404).json({ error: "Session not found" });
+    return res.json({
+      session_id: session.session_id,
+      privacy_log: (session as any).privacy_log || [],
+      safety_strikes: (session as any).safety_strikes || 0,
+    });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/guardrail/check — demo endpoint: redact arbitrary text and return result
+router.post("/guardrail/check", (req: Request, res: Response) => {
+  const { text } = req.body;
+  if (!text) return res.status(400).json({ error: "text required" });
+  const result = redact(String(text));
+  return res.json(result);
 });
 
 // ── POST /api/orchestrate ──────────────────────────────────
@@ -280,6 +306,35 @@ router.get("/booking/:id", (req: Request, res: Response) => {
     }
   };
 
+  // Attach A2A negotiation trace from contracts file if a contract exists for this booking
+  try {
+    const contractsFile = path.join(__dirname, "../../data/mock_contracts.json");
+    if (fs.existsSync(contractsFile)) {
+      const contracts: any[] = JSON.parse(fs.readFileSync(contractsFile, "utf-8"));
+      const contract = contracts.find((c: any) => c.booking_id === booking.booking_id);
+      if (contract) {
+        (jobDetail as any).contract_id = contract.contract_id;
+        const allBids: any[] = contract.cfp_log ?? [];
+        (jobDetail as any).negotiation_trace = {
+          phase: "negotiation",
+          cfp_sent_to: allBids.map((b: any) => b.provider_id),
+          proposals: allBids
+            .filter((b: any) => b.accepted)
+            .map((b: any) => ({
+              provider: b.provider_id,
+              price: b.price,
+              eta_min: b.eta_min,
+              confidence: b.confidence,
+            })),
+          rounds: contract.negotiation_rounds ?? 1,
+          outcome: "deal_locked",
+          contract_id: contract.contract_id,
+          customer_agent_reasoning: `${contract.provider_id} selected at Rs.${contract.agreed_price} after ${contract.negotiation_rounds ?? 1} round(s)`,
+        };
+      }
+    }
+  } catch (_) {}
+
   return res.json(jobDetail);
 });
 
@@ -304,7 +359,7 @@ router.post("/dispute", async (req: Request, res: Response) => {
         booking_id,
         provider_id,
         issue_type,
-        resolution: result.resolution || JSON.stringify(result),
+        resolution: (result as any).resolution || JSON.stringify(result),
       });
     }
 
@@ -448,18 +503,17 @@ router.post("/booking/cancel-provider", (req: Request, res: Response) => {
 });
 
 // ── POST /api/booking/auto-reassign ──────────────────────────
-// Auto-find next best provider when current one declines, up to 10 attempts.
+// Now calls RecoveryAgent — empathetic apology + compensation + A2A re-auction.
+// Response shape unchanged so frontend needs no update.
 router.post("/booking/auto-reassign", async (req: Request, res: Response) => {
-  const { booking_id } = req.body;
+  const { booking_id, language } = req.body;
   if (!booking_id) return res.status(400).json({ error: "booking_id required" });
 
   try {
     const bookingsFile = path.join(__dirname, "../../data/mock_bookings.json");
     const data = JSON.parse(fs.readFileSync(bookingsFile, "utf-8"));
 
-    // Follow the reassigned_to chain to the latest unassigned booking.
-    // This makes the endpoint idempotent — stale booking_ids from the frontend
-    // are silently redirected to the latest active booking in the chain.
+    // Follow chain to latest active booking (idempotency guard)
     let currentIdx = data.bookings.findIndex((b: any) => b.booking_id === booking_id);
     if (currentIdx === -1) return res.status(404).json({ error: "Booking not found" });
     while (data.bookings[currentIdx].reassigned_to) {
@@ -471,18 +525,14 @@ router.post("/booking/auto-reassign", async (req: Request, res: Response) => {
     }
     const booking = data.bookings[currentIdx];
 
-    // Compute the complete excluded-provider set by walking the chain backwards.
-    // This is resilient to providers_tried not being propagated correctly.
+    // Build full exclusion set from chain
     const allTriedProviders = new Set<string>();
     let chainNode: any = booking;
     while (chainNode) {
-      const pId = chainNode.provider_id;
-      if (pId) allTriedProviders.add(pId);
-      if (chainNode.reassigned_from) {
-        chainNode = data.bookings.find((b: any) => b.booking_id === chainNode.reassigned_from) ?? null;
-      } else {
-        break;
-      }
+      if (chainNode.provider_id) allTriedProviders.add(chainNode.provider_id);
+      chainNode = chainNode.reassigned_from
+        ? data.bookings.find((b: any) => b.booking_id === chainNode.reassigned_from) ?? null
+        : null;
     }
     const excludedProviders = Array.from(allTriedProviders);
 
@@ -491,56 +541,28 @@ router.post("/booking/auto-reassign", async (req: Request, res: Response) => {
       return res.json({ status: "no_provider", attempt: excludedProviders.length });
     }
 
-    const intent: any = {
-      service_type: booking.service_type,
-      location: booking.location,
-      preferred_time: "flexible",
-      budget: booking.final_price,
-      budget_sensitivity: "medium",
-      urgency: "standard",
-      job_complexity_hint: "standard",
-      confidence: 0.95,
-      clarification_needed: false,
-      language: "roman_urdu",
-    };
+    // Delegate to Recovery Agent
+    const { handle } = await import("../agents/recoveryAgent.js");
+    const result = await handle(booking.booking_id, excludedProviders, language ?? "roman_urdu");
 
-    const matchResult = await matchProviders(intent, excludedProviders);
-    if (!matchResult.top_providers || matchResult.top_providers.length === 0) {
-      return res.json({ status: "no_provider", attempt: excludedProviders.length });
+    if (!result.success || !result.new_booking) {
+      return res.json({ status: "no_provider", attempt: result.attempts_used, recovery: result });
     }
 
-    const nextProvider = matchResult.top_providers[0];
-
-    const date = new Date().toISOString().slice(0, 10).replace(/-/g, "");
-    const newBookingId = `SVC-${date}-${String(data.bookings.length + 1).padStart(4, "0")}`;
-
-    const newBooking: any = {
-      ...booking,
-      booking_id: newBookingId,
-      provider_id: nextProvider.provider_id,
-      provider_name: nextProvider.name,
-      status: "PENDING_PROVIDER",
-      providers_tried: excludedProviders,
-      match_score: nextProvider.score,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      state_history: [{ status: "PENDING_PROVIDER", timestamp: new Date().toISOString() }],
-      current_lat: nextProvider.location?.latitude ?? booking.customer_lat,
-      current_lng: nextProvider.location?.longitude ?? booking.customer_lng,
-      distance_meters: Math.round(nextProvider.distance_km * 1000),
-      reassigned_from: booking.booking_id,
-    };
-    delete newBooking.reassigned_to;
-
-    data.bookings[currentIdx].reassigned_to = newBookingId;
-    data.bookings.push(newBooking);
+    // Link new booking in chain
+    data.bookings[currentIdx].reassigned_to = result.new_booking.booking_id;
     fs.writeFileSync(bookingsFile, JSON.stringify(data, null, 2));
 
     return res.json({
       status: "reassigned",
-      booking: newBooking,
-      attempt: excludedProviders.length + 1,
-      provider: { name: nextProvider.name, score: nextProvider.score },
+      booking: result.new_booking,
+      attempt: result.attempts_used,
+      recovery: {
+        apology_message: result.apology_message,
+        compensation: result.compensation,
+        cause: result.cause,
+        contract_id: result.new_contract_id,
+      },
     });
   } catch (err: any) {
     console.error("[auto-reassign] error:", err);
@@ -659,6 +681,101 @@ router.post("/booking/generate-summary", async (req: Request, res: Response) => 
     fs.writeFileSync(path.join(invoicesDir, `${booking_id}.json`), JSON.stringify(summary, null, 2));
 
     return res.json({ summary });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// ── DISPUTE RESOLUTION ─────────────────────────────────────
+// POST /api/dispute/raise — customer submits a dispute
+router.post("/dispute/raise", async (req: Request, res: Response) => {
+  const { booking_id, type, comment } = req.body;
+  if (!booking_id || !type) return res.status(400).json({ error: "booking_id and type required" });
+  try {
+    const dispute = await raiseDispute(booking_id, type, comment ?? "");
+    return res.json(dispute);
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/dispute/:id — evidence bundle + proposed resolution
+router.get("/dispute/:id", (req: Request, res: Response) => {
+  try {
+    const dispute = getDispute(req.params.id);
+    if (!dispute) return res.status(404).json({ error: "Dispute not found" });
+    return res.json(dispute);
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/disputes?booking_id= — list disputes (optionally filtered)
+router.get("/disputes", (req: Request, res: Response) => {
+  try {
+    const bookingId = req.query.booking_id as string | undefined;
+    return res.json(listDisputes(bookingId));
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/dispute/:id/respond — accept or reject proposed resolution
+router.post("/dispute/:id/respond", async (req: Request, res: Response) => {
+  const { party, decision } = req.body;
+  if (!party || !decision) return res.status(400).json({ error: "party and decision required" });
+  try {
+    const dispute = await respondToDispute(req.params.id, party, decision);
+    return res.json(dispute);
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// ── A2A NEGOTIATION ────────────────────────────────────────
+// GET /api/negotiation/:contract_id — fetch a signed contract
+router.get("/negotiation/:contract_id", (req: Request, res: Response) => {
+  try {
+    const contract = getContract(req.params.contract_id);
+    if (!contract) return res.status(404).json({ error: "Contract not found" });
+    return res.json(contract);
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/negotiation/:contract_id/event — append lifecycle event to contract log
+router.post("/negotiation/:contract_id/event", (req: Request, res: Response) => {
+  const { event } = req.body;
+  if (!event) return res.status(400).json({ error: "event required" });
+  try {
+    appendEventToContract(req.params.contract_id, event);
+    return res.json({ ok: true });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// ── RELIABILITY ────────────────────────────────────────────
+// GET /api/provider/:id/reliability — score + last 10 ledger entries
+router.get("/provider/:id/reliability", (req: Request, res: Response) => {
+  try {
+    const snapshot = getReliabilitySnapshot(req.params.id);
+    if (!snapshot) return res.status(404).json({ error: "Provider not found" });
+    return res.json(snapshot);
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/reliability/event — internal: update EWMA on any lifecycle event
+router.post("/reliability/event", (req: Request, res: Response) => {
+  const { provider_id, event, booking_id } = req.body;
+  if (!provider_id || !event) return res.status(400).json({ error: "provider_id and event required" });
+  try {
+    const result = applyEvent(provider_id, event, booking_id);
+    if (!result) return res.status(404).json({ error: "Provider not found" });
+    return res.json(result);
   } catch (err: any) {
     return res.status(500).json({ error: err.message });
   }
