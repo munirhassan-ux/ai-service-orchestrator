@@ -53,8 +53,8 @@ export interface Contract {
 export interface AuctionTrace {
   phase: "negotiation";
   cfp_sent_to: string[];
-  proposals: Array<{ provider: string; price: number; eta_min: number; confidence: number }>;
-  counter_round?: Array<{ provider: string; counter_price: number; response_price: number; accepted: boolean }>;
+  proposals: Array<{ provider: string; provider_name: string; price: number; eta_min: number; confidence: number }>;
+  counter_round?: Array<{ provider: string; provider_name: string; counter_price: number; response_price: number; accepted: boolean }>;
   customer_agent_reasoning: string;
   rounds: number;
   outcome: "deal_locked" | "no_deal";
@@ -147,10 +147,11 @@ export async function runNegotiation(
     phase:     "negotiation",
     cfp_sent_to: top5.map(p => p.provider_id),
     proposals:   round1Bids.filter(b => b.accepted).map(b => ({
-      provider:    b.provider_id,
-      price:       b.price,
-      eta_min:     b.eta_min,
-      confidence:  b.confidence,
+      provider:       b.provider_id,
+      provider_name:  top5.find(p => p.provider_id === b.provider_id)?.name ?? b.provider_id,
+      price:          b.price,
+      eta_min:        b.eta_min,
+      confidence:     b.confidence,
     })),
     customer_agent_reasoning: decision.reasoning,
     rounds,
@@ -193,6 +194,7 @@ export async function runNegotiation(
       const response = respondToCounter(providerData, originalBid, target.counter_price);
       counterRound.push({
         provider:       target.provider_id,
+        provider_name:  providerData.name,
         counter_price:  target.counter_price,
         response_price: response.price,
         accepted:       response.accepted,

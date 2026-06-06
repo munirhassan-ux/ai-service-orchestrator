@@ -11,6 +11,7 @@ import { pushNotification } from "../notifications.js";
 import { logScheduling, logStatusChange } from "../logger.js";
 import { logTraceEvent } from "../trace.js";
 import { applyEvent } from "./reliabilityEngine.js";
+import { generateAndSaveProgressMessage } from "./progressAgent.js";
 
 const bookingsFile = path.join(__dirname, "../../data/mock_bookings.json");
 const scheduleFile = path.join(__dirname, "../../data/mock_schedule.json");
@@ -44,6 +45,13 @@ export interface Booking {
   created_at: string;
   updated_at: string;
   state_history: { status: BookingStatus; timestamp: string }[];
+  agent_messages?: {
+    from: "provider_agent" | "customer_agent";
+    to: "customer_agent" | "provider_agent";
+    status: string;
+    message: string;
+    timestamp: string;
+  }[];
   session_id?: string;
   // GPS movement simulation fields
   current_lat?: number;
@@ -290,15 +298,18 @@ export async function createBooking(
   }
   console.log(`[BookingSimulator] Created: ${bookingId} | Provider: ${provider.name} | Price: Rs. ${finalPrice}`);
 
+  // Agent auto-accepts on behalf of provider — no manual confirmation needed
+  const acceptedBooking = updateBookingStatus(bookingId, "ACCEPTED");
+
   pushNotification(
     "PROVIDER",
     bookingId,
-    "incoming_job",
-    "Naya Kaam! 👷",
-    `Naya ${intent.service_type} job available ${intent.location} mein. Tap to view details!`
+    "job_confirmed",
+    "Naya Job Confirm! ✅",
+    `${intent.service_type} job ${intent.location} mein schedule ho gaya. Rs. ${finalPrice} — koi action nahi chahiye.`
   );
 
-  return { booking, before, after };
+  return { booking: acceptedBooking, before, after };
 }
 
 // Update booking status (state machine)
@@ -314,6 +325,15 @@ export function updateBookingStatus(bookingId: string, newStatus: BookingStatus)
   booking.state_history.push({ status: newStatus, timestamp: new Date().toISOString() });
 
   writeBookings(data);
+
+  // Fire-and-forget: generate A2A narrative — don't block the status update
+  const _progressStatuses = new Set(["ARRIVING", "ARRIVED", "IN_PROGRESS", "COMPLETED"]);
+  if (_progressStatuses.has(newStatus)) {
+    generateAndSaveProgressMessage(bookingId, newStatus, booking).catch((err) =>
+      console.error("[ProgressAgent] top-level error:", err)
+    );
+  }
+
   if (booking.session_id) {
     logTraceEvent(booking.session_id, {
       agent: "StatusMachine",

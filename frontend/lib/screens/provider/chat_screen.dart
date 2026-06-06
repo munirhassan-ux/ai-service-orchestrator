@@ -105,6 +105,18 @@ class _ProviderChatScreenState extends State<ProviderChatScreen> {
                 'contract_id': b['contract_id'] as String?,
               });
             }
+            // Inject A2A agent messages thread if present
+            final agentMsgs = b['agent_messages'] as List<dynamic>?;
+            if (agentMsgs != null && agentMsgs.isNotEmpty) {
+              _messages.removeWhere((m) => m['type'] == 'agent_messages');
+              _messages.add({
+                'text': null,
+                'isUser': false,
+                'type': 'agent_messages',
+                'messages': agentMsgs,
+              });
+            }
+
             final status = b['status'];
             if (status == 'PENDING_PROVIDER') {
               _jobOffered = true;
@@ -205,7 +217,20 @@ class _ProviderChatScreenState extends State<ProviderChatScreen> {
               orElse: () => null);
           if (b != null) {
             final status = b['status'] as String? ?? '';
-            setState(() => _bookingData = b);
+            setState(() {
+              _bookingData = b;
+              // Keep agent_messages card up-to-date during polling
+              final agentMsgs = b['agent_messages'] as List<dynamic>?;
+              if (agentMsgs != null && agentMsgs.isNotEmpty) {
+                final idx = _messages.indexWhere((m) => m['type'] == 'agent_messages');
+                final card = {'text': null, 'isUser': false, 'type': 'agent_messages', 'messages': agentMsgs};
+                if (idx != -1) {
+                  _messages[idx] = card;
+                } else {
+                  _messages.add(card);
+                }
+              }
+            });
             if (status == 'CANCELLED_CUSTOMER') {
               _statusPollTimer?.cancel();
               _statusPollTimer = null;
@@ -556,6 +581,8 @@ class _ProviderChatScreenState extends State<ProviderChatScreen> {
     }
     if (msg['type'] == 'job_offer')
       return _jobOfferCard(msg['job'] as Map<String, dynamic>);
+    if (msg['type'] == 'agent_messages')
+      return _agentMessagesCard(msg['messages'] as List<dynamic>);
     if (msg['type'] == 'checklist') return _checklistCard();
     if (msg['type'] == 'job_history') return _jobHistoryCard();
 
@@ -622,6 +649,71 @@ class _ProviderChatScreenState extends State<ProviderChatScreen> {
                   .toList()),
         ),
     ]);
+  }
+
+  Widget _agentMessagesCard(List<dynamic> messages) {
+    if (messages.isEmpty) return const SizedBox.shrink();
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 10),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF163300).withValues(alpha: 0.04),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFF163300).withValues(alpha: 0.15)),
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          const Icon(Icons.receipt_long_rounded, size: 15, color: Color(0xFF3A9010)),
+          const SizedBox(width: 6),
+          const Text("Job Activity",
+              style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF3A9010),
+                  letterSpacing: 0.3)),
+        ]),
+        const SizedBox(height: 10),
+        ...messages.map((m) {
+          final msg = m as Map<String, dynamic>;
+          final isProvider = msg['from'] == 'provider_agent';
+          final label = isProvider ? 'Sent to customer' : 'Customer confirmed ✅';
+          final labelColor = isProvider ? const Color(0xFF3A9010) : const Color(0xFF163300);
+          final ts = msg['timestamp'] as String? ?? '';
+          final time = ts.length >= 16 ? ts.substring(11, 16) : '';
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Row(children: [
+                Text(label,
+                    style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        color: labelColor)),
+                const Spacer(),
+                Text(time,
+                    style: const TextStyle(
+                        fontSize: 10, color: Color(0xFFB0B5AE))),
+              ]),
+              const SizedBox(height: 4),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: const Color(0xFFE8EDE6)),
+                ),
+                child: Text(msg['message'] as String? ?? '',
+                    style: const TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFF3E3F3B),
+                        height: 1.5)),
+              ),
+            ]),
+          );
+        }),
+      ]),
+    );
   }
 
   Widget _jobOfferCard(Map<String, dynamic> job) {

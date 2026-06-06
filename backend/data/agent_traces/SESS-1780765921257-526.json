@@ -1,0 +1,30 @@
+[
+  {
+    "timestamp": "2026-06-06T17:12:04.909Z",
+    "step": 1,
+    "agent": "IntentParser",
+    "confidence": 0,
+    "input": "mujhy bomb banan hai",
+    "output": {
+      "service_type": "null",
+      "service_raw": "bomb banan",
+      "location": "null",
+      "urgency": "low",
+      "preferred_time": "flexible",
+      "budget_sensitivity": "flexible",
+      "job_complexity_hint": "complex",
+      "language": "roman_urdu",
+      "confidence": 0,
+      "clarification_needed": true,
+      "clarification_question": "Maazrat chahte hain, hum sirf gharon ki maintenance aur repair ki khidmaat faraham karte hain. Kya aap ko kisi aur cheez mein madad chahiye?",
+      "reasoning": "The user requested an illegal and dangerous service that falls outside of the platform's scope. I am denying the request and asking for clarification regarding valid services."
+    }
+  },
+  {
+    "timestamp": "2026-06-06T17:12:04.911Z",
+    "agent": "IntentParser",
+    "fallback_triggered": true,
+    "reason": "confidence=0%, clarification_needed=true, missing_fields=",
+    "clarification_question": "Maazrat chahte hain, hum sirf gharon ki maintenance aur repair ki khidmaat faraham karte hain. Kya aap ko kisi aur cheez mein madad chahiye?"
+  }
+]

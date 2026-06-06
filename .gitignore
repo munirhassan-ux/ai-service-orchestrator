@@ -3,3 +3,8 @@ node_modules
 *.log
 .expo
 backend/dist
+
+# Flutter build artifacts and tooling cache
+frontend/build/
+frontend/.dart_tool/
+frontend/.flutter-plugins-dependencies

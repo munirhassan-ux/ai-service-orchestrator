@@ -1,1 +1,1014 @@
-{"bookings":[]}
+{
+  "bookings": [
+    {
+      "booking_id": "SVC-20260606-0001",
+      "provider_id": "p49721",
+      "provider_name": "Rehan Rana",
+      "customer_id": "customer_001",
+      "service_type": "plumber",
+      "location": "G11 house no 34 street 2",
+      "scheduled_time": "2026-06-07T05:00:00.000Z",
+      "status": "COMPLETED",
+      "final_price": 1335,
+      "price_quote": {
+        "base_rate": 554,
+        "distance_fee": 80,
+        "urgency_surcharge": 0,
+        "complexity_premium": 0,
+        "loyalty_discount": 0,
+        "surge_multiplier": 1,
+        "surge_active": false,
+        "visit_fee": 150,
+        "hours_min": 2,
+        "hours_max": 2,
+        "min_total": 1270,
+        "max_total": 1410,
+        "total": 1340,
+        "min_rate_total": 1270,
+        "floor_min": 1210,
+        "floor_max": 1470,
+        "industry_standard_min": 890,
+        "industry_standard_max": 1440,
+        "currency": "PKR",
+        "breakdown_text": "Visit Fee (non-refundable): Rs. 150\nLabour (Rs. 554/hr × 2hrs): Rs. 1110\nTravel (3.1km): Rs. 80\n─────────────────────────────\nTotal: Rs. 1340",
+        "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
+      },
+      "negotiation_thread_id": null,
+      "confirmation_message": "Booking confirm ho gayi! Rehan Rana aap ke paas G11 house no 34 street 2 mein 07/06/2026, 10:00:00 am ko pohunchen ge. Booking ID: SVC-20260606-0001. Total: Rs. 1335.",
+      "reminder_scheduled_at": "2026-06-07T04:00:00.000Z",
+      "checklist": [
+        {
+          "item": "Diagnose leak/blockage",
+          "completed": true
+        },
+        {
+          "item": "Complete repair",
+          "completed": true
+        },
+        {
+          "item": "Test water flow",
+          "completed": true
+        },
+        {
+          "item": "Clean up area",
+          "completed": true
+        }
+      ],
+      "created_at": "2026-06-06T15:23:09.570Z",
+      "updated_at": "2026-06-06T15:23:34.791Z",
+      "state_history": [
+        {
+          "status": "PENDING_PROVIDER",
+          "timestamp": "2026-06-06T15:23:09.570Z"
+        },
+        {
+          "status": "ACCEPTED",
+          "timestamp": "2026-06-06T15:23:09.615Z"
+        },
+        {
+          "status": "ARRIVING",
+          "timestamp": "2026-06-06T15:23:14.760Z"
+        },
+        {
+          "status": "ARRIVED",
+          "timestamp": "2026-06-06T15:23:16.755Z"
+        },
+        {
+          "status": "IN_PROGRESS",
+          "timestamp": "2026-06-06T15:23:16.755Z"
+        },
+        {
+          "status": "COMPLETED",
+          "timestamp": "2026-06-06T15:23:28.266Z"
+        },
+        {
+          "status": "COMPLETED",
+          "timestamp": "2026-06-06T15:23:34.791Z"
+        }
+      ],
+      "session_id": "SESS-1780759365178-896",
+      "current_lat": 33.6934034375,
+      "current_lng": 73.05531385937499,
+      "customer_lat": 33.6938,
+      "customer_lng": 73.0551,
+      "distance_meters": 48
+    },
+    {
+      "booking_id": "SVC-20260606-0002",
+      "provider_id": "p49721",
+      "provider_name": "Rehan Rana",
+      "customer_id": "customer_001",
+      "service_type": "plumber",
+      "location": "G11 street 3, house no 34",
+      "scheduled_time": "2026-06-07T07:00:00.000Z",
+      "status": "COMPLETED",
+      "final_price": 1335,
+      "price_quote": {
+        "base_rate": 554,
+        "distance_fee": 80,
+        "urgency_surcharge": 0,
+        "complexity_premium": 0,
+        "loyalty_discount": 0,
+        "surge_multiplier": 1,
+        "surge_active": false,
+        "visit_fee": 150,
+        "hours_min": 2,
+        "hours_max": 2,
+        "min_total": 1270,
+        "max_total": 1410,
+        "total": 1340,
+        "min_rate_total": 1270,
+        "floor_min": 1210,
+        "floor_max": 1470,
+        "industry_standard_min": 890,
+        "industry_standard_max": 1440,
+        "currency": "PKR",
+        "breakdown_text": "Visit Fee (non-refundable): Rs. 150\nLabour (Rs. 554/hr × 2hrs): Rs. 1110\nTravel (3.1km): Rs. 80\n─────────────────────────────\nTotal: Rs. 1340",
+        "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
+      },
+      "negotiation_thread_id": null,
+      "confirmation_message": "Booking confirm ho gayi! Rehan Rana aap ke paas G11 street 3, house no 34 mein 07/06/2026, 12:00:00 pm ko pohunchen ge. Booking ID: SVC-20260606-0002. Total: Rs. 1335.",
+      "reminder_scheduled_at": "2026-06-07T06:00:00.000Z",
+      "checklist": [
+        {
+          "item": "Diagnose leak/blockage",
+          "completed": true
+        },
+        {
+          "item": "Complete repair",
+          "completed": true
+        },
+        {
+          "item": "Test water flow",
+          "completed": true
+        },
+        {
+          "item": "Clean up area",
+          "completed": true
+        }
+      ],
+      "created_at": "2026-06-06T16:27:25.210Z",
+      "updated_at": "2026-06-06T16:27:43.742Z",
+      "state_history": [
+        {
+          "status": "PENDING_PROVIDER",
+          "timestamp": "2026-06-06T16:27:25.210Z"
+        },
+        {
+          "status": "ACCEPTED",
+          "timestamp": "2026-06-06T16:27:25.243Z"
+        },
+        {
+          "status": "ARRIVING",
+          "timestamp": "2026-06-06T16:27:30.347Z"
+        },
+        {
+          "status": "ARRIVED",
+          "timestamp": "2026-06-06T16:27:32.446Z"
+        },
+        {
+          "status": "IN_PROGRESS",
+          "timestamp": "2026-06-06T16:27:32.446Z"
+        },
+        {
+          "status": "COMPLETED",
+          "timestamp": "2026-06-06T16:27:40.091Z"
+        },
+        {
+          "status": "COMPLETED",
+          "timestamp": "2026-06-06T16:27:43.742Z"
+        }
+      ],
+      "session_id": "SESS-1780763175968-643",
+      "current_lat": 33.6934034375,
+      "current_lng": 73.05531385937499,
+      "customer_lat": 33.6938,
+      "customer_lng": 73.0551,
+      "distance_meters": 48
+    },
+    {
+      "booking_id": "SVC-20260606-0003",
+      "provider_id": "p49709",
+      "provider_name": "Noman Shah",
+      "customer_id": "customer_001",
+      "service_type": "electrician",
+      "location": "G11",
+      "scheduled_time": "2026-06-07T05:00:00.000Z",
+      "status": "COMPLETED",
+      "final_price": 1106,
+      "price_quote": {
+        "base_rate": 430,
+        "distance_fee": 100,
+        "urgency_surcharge": 0,
+        "complexity_premium": 0,
+        "loyalty_discount": 0,
+        "surge_multiplier": 1,
+        "surge_active": false,
+        "visit_fee": 150,
+        "hours_min": 2,
+        "hours_max": 2,
+        "min_total": 1050,
+        "max_total": 1170,
+        "total": 1110,
+        "min_rate_total": 1050,
+        "floor_min": 1000,
+        "floor_max": 1220,
+        "industry_standard_min": 690,
+        "industry_standard_max": 1120,
+        "currency": "PKR",
+        "breakdown_text": "Visit Fee (non-refundable): Rs. 150\nLabour (Rs. 430/hr × 2hrs): Rs. 860\nTravel (2.6km): Rs. 100\n─────────────────────────────\nTotal: Rs. 1110",
+        "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
+      },
+      "negotiation_thread_id": null,
+      "confirmation_message": "Booking confirm ho gayi! Noman Shah aap ke paas G11 mein 07/06/2026, 10:00:00 am ko pohunchen ge. Booking ID: SVC-20260606-0003. Total: Rs. 1106.",
+      "reminder_scheduled_at": "2026-06-07T04:00:00.000Z",
+      "checklist": [
+        {
+          "item": "Identify fault",
+          "completed": true
+        },
+        {
+          "item": "Complete electrical work",
+          "completed": true
+        },
+        {
+          "item": "Test all connections",
+          "completed": true
+        },
+        {
+          "item": "Clean up area",
+          "completed": true
+        }
+      ],
+      "created_at": "2026-06-06T16:33:34.441Z",
+      "updated_at": "2026-06-06T16:33:48.687Z",
+      "state_history": [
+        {
+          "status": "PENDING_PROVIDER",
+          "timestamp": "2026-06-06T16:33:34.441Z"
+        },
+        {
+          "status": "ACCEPTED",
+          "timestamp": "2026-06-06T16:33:34.463Z"
+        },
+        {
+          "status": "ARRIVING",
+          "timestamp": "2026-06-06T16:33:39.522Z"
+        },
+        {
+          "status": "ARRIVED",
+          "timestamp": "2026-06-06T16:33:41.512Z"
+        },
+        {
+          "status": "IN_PROGRESS",
+          "timestamp": "2026-06-06T16:33:41.514Z"
+        },
+        {
+          "status": "COMPLETED",
+          "timestamp": "2026-06-06T16:33:45.530Z"
+        },
+        {
+          "status": "COMPLETED",
+          "timestamp": "2026-06-06T16:33:48.687Z"
+        }
+      ],
+      "session_id": "SESS-1780763588852-592",
+      "current_lat": 33.69348410937501,
+      "current_lng": 73.05532146875,
+      "customer_lat": 33.6938,
+      "customer_lng": 73.0551,
+      "distance_meters": 41
+    },
+    {
+      "booking_id": "SVC-20260606-0004",
+      "provider_id": "p49721",
+      "provider_name": "Rehan Rana",
+      "customer_id": "customer_001",
+      "service_type": "plumber",
+      "location": "G-11",
+      "scheduled_time": "2026-06-07T09:00:00.000Z",
+      "status": "COMPLETED",
+      "final_price": 1335,
+      "price_quote": {
+        "base_rate": 554,
+        "distance_fee": 80,
+        "urgency_surcharge": 0,
+        "complexity_premium": 0,
+        "loyalty_discount": 0,
+        "surge_multiplier": 1,
+        "surge_active": false,
+        "visit_fee": 150,
+        "hours_min": 2,
+        "hours_max": 2,
+        "min_total": 1270,
+        "max_total": 1410,
+        "total": 1340,
+        "min_rate_total": 1270,
+        "floor_min": 1210,
+        "floor_max": 1470,
+        "industry_standard_min": 890,
+        "industry_standard_max": 1440,
+        "currency": "PKR",
+        "breakdown_text": "Visit Fee (non-refundable): Rs. 150\nLabour (Rs. 554/hr × 2hrs): Rs. 1110\nTravel (3.1km): Rs. 80\n─────────────────────────────\nTotal: Rs. 1340",
+        "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
+      },
+      "negotiation_thread_id": null,
+      "confirmation_message": "Booking confirm ho gayi! Rehan Rana aap ke paas G-11 mein 07/06/2026, 2:00:00 pm ko pohunchen ge. Booking ID: SVC-20260606-0004. Total: Rs. 1335.",
+      "reminder_scheduled_at": "2026-06-07T08:00:00.000Z",
+      "checklist": [
+        {
+          "item": "Diagnose leak/blockage",
+          "completed": true
+        },
+        {
+          "item": "Complete repair",
+          "completed": true
+        },
+        {
+          "item": "Test water flow",
+          "completed": true
+        },
+        {
+          "item": "Clean up area",
+          "completed": true
+        }
+      ],
+      "created_at": "2026-06-06T16:35:22.259Z",
+      "updated_at": "2026-06-06T16:35:40.014Z",
+      "state_history": [
+        {
+          "status": "PENDING_PROVIDER",
+          "timestamp": "2026-06-06T16:35:22.259Z"
+        },
+        {
+          "status": "ACCEPTED",
+          "timestamp": "2026-06-06T16:35:22.275Z"
+        },
+        {
+          "status": "ARRIVING",
+          "timestamp": "2026-06-06T16:35:27.352Z"
+        },
+        {
+          "status": "ARRIVED",
+          "timestamp": "2026-06-06T16:35:29.352Z"
+        },
+        {
+          "status": "IN_PROGRESS",
+          "timestamp": "2026-06-06T16:35:29.353Z"
+        },
+        {
+          "status": "COMPLETED",
+          "timestamp": "2026-06-06T16:35:36.906Z"
+        },
+        {
+          "status": "COMPLETED",
+          "timestamp": "2026-06-06T16:35:40.014Z"
+        }
+      ],
+      "session_id": "SESS-1780763699822-623",
+      "current_lat": 33.6934034375,
+      "current_lng": 73.05531385937499,
+      "customer_lat": 33.6938,
+      "customer_lng": 73.0551,
+      "distance_meters": 48
+    },
+    {
+      "booking_id": "SVC-20260606-0005",
+      "provider_id": "p49721",
+      "provider_name": "Rehan Rana",
+      "customer_id": "customer_001",
+      "service_type": "plumber",
+      "location": "G11",
+      "scheduled_time": "2026-06-07T11:00:00.000Z",
+      "status": "COMPLETED",
+      "final_price": 1335,
+      "price_quote": {
+        "base_rate": 554,
+        "distance_fee": 80,
+        "urgency_surcharge": 0,
+        "complexity_premium": 0,
+        "loyalty_discount": 0,
+        "surge_multiplier": 1,
+        "surge_active": false,
+        "visit_fee": 150,
+        "hours_min": 2,
+        "hours_max": 2,
+        "min_total": 1270,
+        "max_total": 1410,
+        "total": 1340,
+        "min_rate_total": 1270,
+        "floor_min": 1210,
+        "floor_max": 1470,
+        "industry_standard_min": 890,
+        "industry_standard_max": 1440,
+        "currency": "PKR",
+        "breakdown_text": "Visit Fee (non-refundable): Rs. 150\nLabour (Rs. 554/hr × 2hrs): Rs. 1110\nTravel (3.1km): Rs. 80\n─────────────────────────────\nTotal: Rs. 1340",
+        "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
+      },
+      "negotiation_thread_id": null,
+      "confirmation_message": "Booking confirm ho gayi! Rehan Rana aap ke paas G11 mein 07/06/2026, 4:00:00 pm ko pohunchen ge. Booking ID: SVC-20260606-0005. Total: Rs. 1335.",
+      "reminder_scheduled_at": "2026-06-07T10:00:00.000Z",
+      "checklist": [
+        {
+          "item": "Diagnose leak/blockage",
+          "completed": true
+        },
+        {
+          "item": "Complete repair",
+          "completed": true
+        },
+        {
+          "item": "Test water flow",
+          "completed": true
+        },
+        {
+          "item": "Clean up area",
+          "completed": true
+        }
+      ],
+      "created_at": "2026-06-06T16:37:30.474Z",
+      "updated_at": "2026-06-06T16:37:50.703Z",
+      "state_history": [
+        {
+          "status": "PENDING_PROVIDER",
+          "timestamp": "2026-06-06T16:37:30.474Z"
+        },
+        {
+          "status": "ACCEPTED",
+          "timestamp": "2026-06-06T16:37:30.491Z"
+        },
+        {
+          "status": "ARRIVING",
+          "timestamp": "2026-06-06T16:37:35.555Z"
+        },
+        {
+          "status": "ARRIVED",
+          "timestamp": "2026-06-06T16:37:37.550Z"
+        },
+        {
+          "status": "IN_PROGRESS",
+          "timestamp": "2026-06-06T16:37:37.551Z"
+        },
+        {
+          "status": "COMPLETED",
+          "timestamp": "2026-06-06T16:37:41.752Z"
+        },
+        {
+          "status": "COMPLETED",
+          "timestamp": "2026-06-06T16:37:50.703Z"
+        }
+      ],
+      "session_id": "SESS-1780763834011-905",
+      "current_lat": 33.6934034375,
+      "current_lng": 73.05531385937499,
+      "customer_lat": 33.6938,
+      "customer_lng": 73.0551,
+      "distance_meters": 48,
+      "agent_messages": [
+        {
+          "from": "provider_agent",
+          "to": "customer_agent",
+          "status": "ARRIVING",
+          "message": "Rehan Rana's agent: Provider raste mein hai — approximately 3.1 km door. plumber ke liye G11 pohonchne mein thodi der lagay gi. Tayar rahein!",
+          "timestamp": "2026-06-06T16:37:35.556Z"
+        },
+        {
+          "from": "provider_agent",
+          "to": "customer_agent",
+          "status": "ARRIVED",
+          "message": "Rehan Rana's agent: Provider G11 par pohonch gaya hai aur kaam shuru karne ke liye tayar hai. Please provider ko andar aanay dein.",
+          "timestamp": "2026-06-06T16:37:37.550Z"
+        },
+        {
+          "from": "provider_agent",
+          "to": "customer_agent",
+          "status": "IN_PROGRESS",
+          "message": "Rehan Rana's agent: plumber ka kaam shuru ho gaya hai. Provider kaam mukammal hone par update karay ga. Shukriya aapke saath!",
+          "timestamp": "2026-06-06T16:37:37.551Z"
+        },
+        {
+          "from": "provider_agent",
+          "to": "customer_agent",
+          "status": "COMPLETED",
+          "message": "Rehan Rana's agent: plumber ka kaam mukammal ho gaya hai — tamam checklist items done hain. Mehnat ka haq Rs. 1335 hai. Please payment confirm karein taakay funds release ho sakain.",
+          "timestamp": "2026-06-06T16:37:41.758Z"
+        },
+        {
+          "from": "customer_agent",
+          "to": "provider_agent",
+          "status": "PAYMENT_CONFIRMED",
+          "message": "Customer agent: Rs. 1335 ki payment Rehan Rana ke liye confirm ho gayi hai. Funds release kiye ja rahay hain. plumber ki behtareen service ke liye shukriya!",
+          "timestamp": "2026-06-06T16:37:42.258Z"
+        }
+      ]
+    },
+    {
+      "booking_id": "SVC-20260606-0006",
+      "provider_id": "p49721",
+      "provider_name": "Rehan Rana",
+      "customer_id": "customer_001",
+      "service_type": "plumber",
+      "location": "G-11, Islamabad",
+      "scheduled_time": "2026-06-07T13:00:00.000Z",
+      "status": "COMPLETED",
+      "final_price": 1335,
+      "price_quote": {
+        "base_rate": 554,
+        "distance_fee": 80,
+        "urgency_surcharge": 0,
+        "complexity_premium": 0,
+        "loyalty_discount": 0,
+        "surge_multiplier": 1,
+        "surge_active": false,
+        "visit_fee": 150,
+        "hours_min": 2,
+        "hours_max": 2,
+        "min_total": 1270,
+        "max_total": 1410,
+        "total": 1340,
+        "min_rate_total": 1270,
+        "floor_min": 1210,
+        "floor_max": 1470,
+        "industry_standard_min": 890,
+        "industry_standard_max": 1440,
+        "currency": "PKR",
+        "breakdown_text": "Visit Fee (non-refundable): Rs. 150\nLabour (Rs. 554/hr × 2hrs): Rs. 1110\nTravel (3.1km): Rs. 80\n─────────────────────────────\nTotal: Rs. 1340",
+        "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
+      },
+      "negotiation_thread_id": null,
+      "confirmation_message": "Booking confirm ho gayi! Rehan Rana aap ke paas G-11, Islamabad mein 07/06/2026, 6:00:00 pm ko pohunchen ge. Booking ID: SVC-20260606-0006. Total: Rs. 1335.",
+      "reminder_scheduled_at": "2026-06-07T12:00:00.000Z",
+      "checklist": [
+        {
+          "item": "Diagnose leak/blockage",
+          "completed": true
+        },
+        {
+          "item": "Complete repair",
+          "completed": true
+        },
+        {
+          "item": "Test water flow",
+          "completed": true
+        },
+        {
+          "item": "Clean up area",
+          "completed": true
+        }
+      ],
+      "created_at": "2026-06-06T16:47:18.440Z",
+      "updated_at": "2026-06-06T16:47:45.849Z",
+      "state_history": [
+        {
+          "status": "PENDING_PROVIDER",
+          "timestamp": "2026-06-06T16:47:18.440Z"
+        },
+        {
+          "status": "ACCEPTED",
+          "timestamp": "2026-06-06T16:47:18.456Z"
+        },
+        {
+          "status": "ARRIVING",
+          "timestamp": "2026-06-06T16:47:23.528Z"
+        },
+        {
+          "status": "ARRIVED",
+          "timestamp": "2026-06-06T16:47:25.549Z"
+        },
+        {
+          "status": "IN_PROGRESS",
+          "timestamp": "2026-06-06T16:47:25.550Z"
+        },
+        {
+          "status": "COMPLETED",
+          "timestamp": "2026-06-06T16:47:45.849Z"
+        }
+      ],
+      "session_id": "SESS-1780764416007-595",
+      "current_lat": 33.6934034375,
+      "current_lng": 73.05531385937499,
+      "customer_lat": 33.6938,
+      "customer_lng": 73.0551,
+      "distance_meters": 48,
+      "agent_messages": [
+        {
+          "from": "provider_agent",
+          "to": "customer_agent",
+          "status": "ARRIVING",
+          "message": "Raste mein hun! G-11, Islamabad tak pohonchne mein thodi der lagay gi — abhi approximately 3.1 km door hun. Tayar rahein 🛵",
+          "timestamp": "2026-06-06T16:47:23.529Z"
+        },
+        {
+          "from": "provider_agent",
+          "to": "customer_agent",
+          "status": "ARRIVED",
+          "message": "G-11, Islamabad par pohonch gaya hun — plumber ka kaam shuru karne ke liye tayar hun. Please andar aanay dein 📍",
+          "timestamp": "2026-06-06T16:47:25.549Z"
+        },
+        {
+          "from": "provider_agent",
+          "to": "customer_agent",
+          "status": "IN_PROGRESS",
+          "message": "plumber ka kaam shuru kar diya hai 🔧 Mukammal hone par update karunga.",
+          "timestamp": "2026-06-06T16:47:25.550Z"
+        },
+        {
+          "from": "provider_agent",
+          "to": "customer_agent",
+          "status": "COMPLETED",
+          "message": "Kaam mukammal ho gaya ✅ Tamam checklist items done hain. Payment Rs. 1335 confirm karein taakay funds release ho sakain.",
+          "timestamp": "2026-06-06T16:47:45.850Z"
+        },
+        {
+          "from": "customer_agent",
+          "to": "provider_agent",
+          "status": "PAYMENT_CONFIRMED",
+          "message": "Rs. 1335",
+          "timestamp": "2026-06-06T16:47:46.350Z"
+        }
+      ]
+    },
+    {
+      "booking_id": "SVC-20260606-0007",
+      "provider_id": "p49721",
+      "provider_name": "Rehan Rana",
+      "customer_id": "customer_001",
+      "service_type": "plumber",
+      "location": "G11",
+      "scheduled_time": "2026-06-07T15:00:00.000Z",
+      "status": "COMPLETED",
+      "final_price": 1335,
+      "price_quote": {
+        "base_rate": 554,
+        "distance_fee": 80,
+        "urgency_surcharge": 0,
+        "complexity_premium": 0,
+        "loyalty_discount": 0,
+        "surge_multiplier": 1,
+        "surge_active": false,
+        "visit_fee": 150,
+        "hours_min": 2,
+        "hours_max": 2,
+        "min_total": 1270,
+        "max_total": 1410,
+        "total": 1340,
+        "min_rate_total": 1270,
+        "floor_min": 1210,
+        "floor_max": 1470,
+        "industry_standard_min": 890,
+        "industry_standard_max": 1440,
+        "currency": "PKR",
+        "breakdown_text": "Visit Fee (non-refundable): Rs. 150\nLabour (Rs. 554/hr × 2hrs): Rs. 1110\nTravel (3.1km): Rs. 80\n─────────────────────────────\nTotal: Rs. 1340",
+        "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
+      },
+      "negotiation_thread_id": null,
+      "confirmation_message": "Booking confirm ho gayi! Rehan Rana aap ke paas G11 mein 07/06/2026, 8:00:00 pm ko pohunchen ge. Booking ID: SVC-20260606-0007. Total: Rs. 1335.",
+      "reminder_scheduled_at": "2026-06-07T14:00:00.000Z",
+      "checklist": [
+        {
+          "item": "Diagnose leak/blockage",
+          "completed": true
+        },
+        {
+          "item": "Complete repair",
+          "completed": true
+        },
+        {
+          "item": "Test water flow",
+          "completed": true
+        },
+        {
+          "item": "Clean up area",
+          "completed": true
+        }
+      ],
+      "created_at": "2026-06-06T16:52:32.014Z",
+      "updated_at": "2026-06-06T16:53:30.448Z",
+      "state_history": [
+        {
+          "status": "PENDING_PROVIDER",
+          "timestamp": "2026-06-06T16:52:32.014Z"
+        },
+        {
+          "status": "ACCEPTED",
+          "timestamp": "2026-06-06T16:52:32.016Z"
+        },
+        {
+          "status": "ARRIVING",
+          "timestamp": "2026-06-06T16:52:37.107Z"
+        },
+        {
+          "status": "ARRIVED",
+          "timestamp": "2026-06-06T16:52:39.106Z"
+        },
+        {
+          "status": "IN_PROGRESS",
+          "timestamp": "2026-06-06T16:52:39.107Z"
+        },
+        {
+          "status": "COMPLETED",
+          "timestamp": "2026-06-06T16:53:22.942Z"
+        },
+        {
+          "status": "COMPLETED",
+          "timestamp": "2026-06-06T16:53:30.448Z"
+        }
+      ],
+      "session_id": "SESS-1780764733767-369",
+      "current_lat": 33.6934034375,
+      "current_lng": 73.05531385937499,
+      "customer_lat": 33.6938,
+      "customer_lng": 73.0551,
+      "distance_meters": 48,
+      "agent_messages": [
+        {
+          "from": "provider_agent",
+          "to": "customer_agent",
+          "status": "ARRIVING",
+          "message": "Raste mein hun! G11 tak pohonchne mein thodi der lagay gi — abhi approximately 3.1 km door hun. Tayar rahein 🛵",
+          "timestamp": "2026-06-06T16:52:37.108Z"
+        },
+        {
+          "from": "provider_agent",
+          "to": "customer_agent",
+          "status": "ARRIVED",
+          "message": "G11 par pohonch gaya hun — plumber ka kaam shuru karne ke liye tayar hun. Please andar aanay dein 📍",
+          "timestamp": "2026-06-06T16:52:39.106Z"
+        },
+        {
+          "from": "provider_agent",
+          "to": "customer_agent",
+          "status": "IN_PROGRESS",
+          "message": "plumber ka kaam shuru kar diya hai 🔧 Mukammal hone par update karunga.",
+          "timestamp": "2026-06-06T16:52:39.107Z"
+        },
+        {
+          "from": "provider_agent",
+          "to": "customer_agent",
+          "status": "COMPLETED",
+          "message": "Kaam mukammal ho gaya ✅ Tamam checklist items done hain. Payment Rs. 1335 confirm karein taakay funds release ho sakain.",
+          "timestamp": "2026-06-06T16:53:22.944Z"
+        },
+        {
+          "from": "customer_agent",
+          "to": "provider_agent",
+          "status": "PAYMENT_CONFIRMED",
+          "message": "Rs. 1335",
+          "timestamp": "2026-06-06T16:53:23.444Z"
+        }
+      ]
+    },
+    {
+      "booking_id": "SVC-20260606-0008",
+      "provider_id": "p49721",
+      "provider_name": "Rehan Rana",
+      "customer_id": "customer_001",
+      "service_type": "plumber",
+      "location": "G11",
+      "scheduled_time": "2026-06-07T17:00:00.000Z",
+      "status": "COMPLETED",
+      "final_price": 1335,
+      "price_quote": {
+        "base_rate": 554,
+        "distance_fee": 80,
+        "urgency_surcharge": 0,
+        "complexity_premium": 0,
+        "loyalty_discount": 0,
+        "surge_multiplier": 1,
+        "surge_active": false,
+        "visit_fee": 150,
+        "hours_min": 2,
+        "hours_max": 2,
+        "min_total": 1270,
+        "max_total": 1410,
+        "total": 1340,
+        "min_rate_total": 1270,
+        "floor_min": 1210,
+        "floor_max": 1470,
+        "industry_standard_min": 890,
+        "industry_standard_max": 1440,
+        "currency": "PKR",
+        "breakdown_text": "Visit Fee (non-refundable): Rs. 150\nLabour (Rs. 554/hr × 2hrs): Rs. 1110\nTravel (3.1km): Rs. 80\n─────────────────────────────\nTotal: Rs. 1340",
+        "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
+      },
+      "negotiation_thread_id": null,
+      "confirmation_message": "Booking confirm ho gayi! Rehan Rana aap ke paas G11 mein 07/06/2026, 10:00:00 pm ko pohunchen ge. Booking ID: SVC-20260606-0008. Total: Rs. 1335.",
+      "reminder_scheduled_at": "2026-06-07T16:00:00.000Z",
+      "checklist": [
+        {
+          "item": "Diagnose leak/blockage",
+          "completed": true
+        },
+        {
+          "item": "Complete repair",
+          "completed": true
+        },
+        {
+          "item": "Test water flow",
+          "completed": true
+        },
+        {
+          "item": "Clean up area",
+          "completed": true
+        }
+      ],
+      "created_at": "2026-06-06T16:57:20.588Z",
+      "updated_at": "2026-06-06T16:57:41.418Z",
+      "state_history": [
+        {
+          "status": "PENDING_PROVIDER",
+          "timestamp": "2026-06-06T16:57:20.588Z"
+        },
+        {
+          "status": "ACCEPTED",
+          "timestamp": "2026-06-06T16:57:20.605Z"
+        },
+        {
+          "status": "ARRIVING",
+          "timestamp": "2026-06-06T16:57:25.686Z"
+        },
+        {
+          "status": "ARRIVED",
+          "timestamp": "2026-06-06T16:57:27.686Z"
+        },
+        {
+          "status": "IN_PROGRESS",
+          "timestamp": "2026-06-06T16:57:27.687Z"
+        },
+        {
+          "status": "COMPLETED",
+          "timestamp": "2026-06-06T16:57:41.418Z"
+        }
+      ],
+      "session_id": "SESS-1780765022905-946",
+      "current_lat": 33.6934034375,
+      "current_lng": 73.05531385937499,
+      "customer_lat": 33.6938,
+      "customer_lng": 73.0551,
+      "distance_meters": 48,
+      "agent_messages": [
+        {
+          "from": "provider_agent",
+          "to": "customer_agent",
+          "status": "ARRIVING",
+          "message": "Raste mein hun! G11 tak pohonchne mein thodi der lagay gi — abhi approximately 3.1 km door hun. Tayar rahein 🛵",
+          "timestamp": "2026-06-06T16:57:25.686Z"
+        },
+        {
+          "from": "provider_agent",
+          "to": "customer_agent",
+          "status": "ARRIVED",
+          "message": "G11 par pohonch gaya hun — plumber ka kaam shuru karne ke liye tayar hun. Please andar aanay dein 📍",
+          "timestamp": "2026-06-06T16:57:27.686Z"
+        },
+        {
+          "from": "provider_agent",
+          "to": "customer_agent",
+          "status": "IN_PROGRESS",
+          "message": "plumber ka kaam shuru kar diya hai 🔧 Mukammal hone par update karunga.",
+          "timestamp": "2026-06-06T16:57:27.687Z"
+        },
+        {
+          "from": "provider_agent",
+          "to": "customer_agent",
+          "status": "COMPLETED",
+          "message": "Kaam mukammal ho gaya ✅ Tamam checklist items done hain. Payment Rs. 1335 confirm karein taakay funds release ho sakain.",
+          "timestamp": "2026-06-06T16:57:41.419Z"
+        },
+        {
+          "from": "customer_agent",
+          "to": "provider_agent",
+          "status": "PAYMENT_CONFIRMED",
+          "message": "Rs. 1335",
+          "timestamp": "2026-06-06T16:57:41.919Z"
+        }
+      ]
+    },
+    {
+      "booking_id": "SVC-20260606-0009",
+      "provider_id": "p49721",
+      "provider_name": "Rehan Rana",
+      "customer_id": "customer_001",
+      "service_type": "plumber",
+      "location": "G-11, Islamabad",
+      "scheduled_time": "2026-06-07T19:00:00.000Z",
+      "status": "COMPLETED",
+      "final_price": 1335,
+      "price_quote": {
+        "base_rate": 554,
+        "distance_fee": 80,
+        "urgency_surcharge": 0,
+        "complexity_premium": 0,
+        "loyalty_discount": 0,
+        "surge_multiplier": 1,
+        "surge_active": false,
+        "visit_fee": 150,
+        "hours_min": 2,
+        "hours_max": 2,
+        "min_total": 1270,
+        "max_total": 1410,
+        "total": 1340,
+        "min_rate_total": 1270,
+        "floor_min": 1210,
+        "floor_max": 1470,
+        "industry_standard_min": 890,
+        "industry_standard_max": 1440,
+        "currency": "PKR",
+        "breakdown_text": "Visit Fee (non-refundable): Rs. 150\nLabour (Rs. 554/hr × 2hrs): Rs. 1110\nTravel (3.1km): Rs. 80\n─────────────────────────────\nTotal: Rs. 1340",
+        "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
+      },
+      "negotiation_thread_id": null,
+      "confirmation_message": "Booking confirm ho gayi! Rehan Rana aap ke paas G-11, Islamabad mein 08/06/2026, 12:00:00 am ko pohunchen ge. Booking ID: SVC-20260606-0009. Total: Rs. 1335.",
+      "reminder_scheduled_at": "2026-06-07T18:00:00.000Z",
+      "checklist": [
+        {
+          "item": "Diagnose leak/blockage",
+          "completed": true
+        },
+        {
+          "item": "Complete repair",
+          "completed": true
+        },
+        {
+          "item": "Test water flow",
+          "completed": true
+        },
+        {
+          "item": "Clean up area",
+          "completed": true
+        }
+      ],
+      "created_at": "2026-06-06T17:08:30.854Z",
+      "updated_at": "2026-06-06T17:08:47.222Z",
+      "state_history": [
+        {
+          "status": "PENDING_PROVIDER",
+          "timestamp": "2026-06-06T17:08:30.854Z"
+        },
+        {
+          "status": "ACCEPTED",
+          "timestamp": "2026-06-06T17:08:30.869Z"
+        },
+        {
+          "status": "ARRIVING",
+          "timestamp": "2026-06-06T17:08:35.932Z"
+        },
+        {
+          "status": "ARRIVED",
+          "timestamp": "2026-06-06T17:08:37.931Z"
+        },
+        {
+          "status": "IN_PROGRESS",
+          "timestamp": "2026-06-06T17:08:37.933Z"
+        },
+        {
+          "status": "COMPLETED",
+          "timestamp": "2026-06-06T17:08:47.222Z"
+        }
+      ],
+      "session_id": "SESS-1780765694443-834",
+      "current_lat": 33.6934034375,
+      "current_lng": 73.05531385937499,
+      "customer_lat": 33.6938,
+      "customer_lng": 73.0551,
+      "distance_meters": 48,
+      "agent_messages": [
+        {
+          "from": "provider_agent",
+          "to": "customer_agent",
+          "status": "ARRIVING",
+          "message": "Raste mein hun! G-11, Islamabad tak pohonchne mein thodi der lagay gi — abhi approximately 0.8 km door hun. Tayar rahein 🛵",
+          "timestamp": "2026-06-06T17:08:35.933Z"
+        },
+        {
+          "from": "provider_agent",
+          "to": "customer_agent",
+          "status": "ARRIVED",
+          "message": "G-11, Islamabad par pohonch gaya hun — plumber ka kaam shuru karne ke liye tayar hun. Please andar aanay dein 📍",
+          "timestamp": "2026-06-06T17:08:37.932Z"
+        },
+        {
+          "from": "provider_agent",
+          "to": "customer_agent",
+          "status": "IN_PROGRESS",
+          "message": "plumber ka kaam shuru kar diya hai 🔧 Mukammal hone par update karunga.",
+          "timestamp": "2026-06-06T17:08:37.933Z"
+        },
+        {
+          "from": "provider_agent",
+          "to": "customer_agent",
+          "status": "COMPLETED",
+          "message": "Kaam mukammal ho gaya ✅ Tamam checklist items done hain. Payment Rs. 1335 confirm karein taakay funds release ho sakain.",
+          "timestamp": "2026-06-06T17:08:47.224Z"
+        },
+        {
+          "from": "customer_agent",
+          "to": "provider_agent",
+          "status": "PAYMENT_CONFIRMED",
+          "message": "Rs. 1335",
+          "timestamp": "2026-06-06T17:08:47.724Z"
+        }
+      ]
+    }
+  ]
+}

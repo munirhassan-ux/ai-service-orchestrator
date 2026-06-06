@@ -315,21 +315,30 @@ router.get("/booking/:id", (req: Request, res: Response) => {
       if (contract) {
         (jobDetail as any).contract_id = contract.contract_id;
         const allBids: any[] = contract.cfp_log ?? [];
+
+        // Load provider names for lookup
+        const providersFile = path.join(__dirname, "../../data/mock_providers.json");
+        const providersList: any[] = fs.existsSync(providersFile)
+          ? JSON.parse(fs.readFileSync(providersFile, "utf-8")).providers ?? []
+          : [];
+        const nameOf = (id: string) =>
+          providersList.find((p: any) => p.provider_id === id)?.name ?? id;
+
         (jobDetail as any).negotiation_trace = {
           phase: "negotiation",
           cfp_sent_to: allBids.map((b: any) => b.provider_id),
           proposals: allBids
             .filter((b: any) => b.accepted)
             .map((b: any) => ({
-              provider: b.provider_id,
-              price: b.price,
-              eta_min: b.eta_min,
-              confidence: b.confidence,
+              provider:      b.provider_id,
+              provider_name: nameOf(b.provider_id),
+              price:         b.price,
+              eta_min:       b.eta_min,
+              confidence:    b.confidence,
             })),
-          rounds: contract.negotiation_rounds ?? 1,
-          outcome: "deal_locked",
+          rounds:   contract.negotiation_rounds ?? 1,
+          outcome:  "deal_locked",
           contract_id: contract.contract_id,
-          customer_agent_reasoning: `${contract.provider_id} selected at Rs.${contract.agreed_price} after ${contract.negotiation_rounds ?? 1} round(s)`,
         };
       }
     }
@@ -412,11 +421,6 @@ router.post("/booking/simulate-step", (req: Request, res: Response) => {
       return res.json({ status: "skipped", booking });
     }
 
-    // Transition status to ARRIVING once movement begins
-    if (booking.status === "ACCEPTED") {
-      updateBookingStatus(booking_id, "ARRIVING");
-    }
-
     // GPS Step Fraction = 0.75 (75% per step — reaches customer in ~4 steps)
     const step_fraction = 0.75;
     const customerLat = booking.customer_lat || 33.6938;
@@ -453,18 +457,19 @@ router.post("/booking/simulate-step", (req: Request, res: Response) => {
       bookingsData.bookings[bIdx].current_lng = nextLng;
       bookingsData.bookings[bIdx].distance_meters = distMeters;
 
-      if (distMeters <= 50) {
-        bookingsData.bookings[bIdx].status = "ARRIVED";
-        // Also transition to IN_PROGRESS right after for simulation
-        bookingsData.bookings[bIdx].state_history.push({ status: "ARRIVED", timestamp: new Date().toISOString() });
-        pushNotification("CUSTOMER", booking_id, "arrived", "Provider Pohonch Gaya! 📍", `${bookingsData.bookings[bIdx].provider_name} aap ke location par pohonch gaya hai.`);
-        
-        bookingsData.bookings[bIdx].status = "IN_PROGRESS";
-        bookingsData.bookings[bIdx].state_history.push({ status: "IN_PROGRESS", timestamp: new Date().toISOString() });
-        pushNotification("PROVIDER", booking_id, "mark_done", "Kaam Poora Ho Gaya? 🛠️", `Agar kaam mukammal ho gaya hai to please complete mark karein.`);
-      }
-
+      // Always write GPS + distance_meters to file before any status transitions
+      // so progressAgent reads the correct distance when it fires.
       fs.writeFileSync(bookingsFile, JSON.stringify(bookingsData, null, 2));
+
+      if (distMeters <= 50) {
+        updateBookingStatus(booking_id, "ARRIVED");
+        updateBookingStatus(booking_id, "IN_PROGRESS");
+        pushNotification("CUSTOMER", booking_id, "arrived", "Provider Pohonch Gaya! 📍", `${bookingsData.bookings[bIdx].provider_name} aap ke location par pohonch gaya hai.`);
+        pushNotification("PROVIDER", booking_id, "mark_done", "Kaam Poora Ho Gaya? 🛠️", `Agar kaam mukammal ho gaya hai to please complete mark karein.`);
+      } else if (booking.status === "ACCEPTED") {
+        // First step — transition to ARRIVING now that distance_meters is on disk
+        updateBookingStatus(booking_id, "ARRIVING");
+      }
     }
 
     const updatedBooking = bookingsData.bookings[bIdx];
@@ -594,8 +599,6 @@ router.post("/notifications/clear", (req: Request, res: Response) => {
 });
 
 // ── GET /api/bookings ───────────────────────────────────
-const PENDING_EXPIRY_MS = 2 * 60 * 1000; // 2 minutes
-
 router.get("/bookings", (req: Request, res: Response) => {
   const { customer_id, provider_id } = req.query;
   try {
@@ -604,23 +607,6 @@ router.get("/bookings", (req: Request, res: Response) => {
     if (fs.existsSync(bookingsFile)) {
       data = JSON.parse(fs.readFileSync(bookingsFile, "utf-8"));
     }
-
-    // Auto-expire PENDING_PROVIDER bookings older than 2 minutes
-    let dirty = false;
-    const now = Date.now();
-    for (const b of data.bookings) {
-      if (b.status === "PENDING_PROVIDER") {
-        const age = now - new Date(b.created_at || 0).getTime();
-        if (age > PENDING_EXPIRY_MS) {
-          b.status = "CANCELLED_TIMEOUT";
-          b.updated_at = new Date().toISOString();
-          b.state_history = b.state_history || [];
-          b.state_history.push({ status: "CANCELLED_TIMEOUT", timestamp: b.updated_at });
-          dirty = true;
-        }
-      }
-    }
-    if (dirty) fs.writeFileSync(bookingsFile, JSON.stringify(data, null, 2));
 
     let list = data.bookings;
     if (customer_id) list = list.filter((b: any) => b.customer_id === customer_id);

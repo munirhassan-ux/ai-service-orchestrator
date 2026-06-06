@@ -43,5 +43,68 @@
     "booking_id": "SVC-20260606-0001",
     "new_score": 90,
     "ts": "2026-06-06T09:16:43.244Z"
+  },
+  {
+    "provider_id": "p49721",
+    "event": "job_completed_ontime",
+    "delta": 3,
+    "reason": "job completed ontime",
+    "booking_id": "SVC-20260606-0006",
+    "new_score": 94,
+    "ts": "2026-06-06T15:13:57.188Z"
+  },
+  {
+    "provider_id": "p49721",
+    "event": "job_completed_ontime",
+    "delta": 3,
+    "reason": "job completed ontime",
+    "booking_id": "SVC-20260606-0001",
+    "new_score": 94.8,
+    "ts": "2026-06-06T15:23:34.791Z"
+  },
+  {
+    "provider_id": "p49721",
+    "event": "job_completed_ontime",
+    "delta": 3,
+    "reason": "job completed ontime",
+    "booking_id": "SVC-20260606-0002",
+    "new_score": 95.4,
+    "ts": "2026-06-06T16:27:43.741Z"
+  },
+  {
+    "provider_id": "p49709",
+    "event": "job_completed_ontime",
+    "delta": 3,
+    "reason": "job completed ontime",
+    "booking_id": "SVC-20260606-0003",
+    "new_score": 94,
+    "ts": "2026-06-06T16:33:48.687Z"
+  },
+  {
+    "provider_id": "p49721",
+    "event": "job_completed_ontime",
+    "delta": 3,
+    "reason": "job completed ontime",
+    "booking_id": "SVC-20260606-0004",
+    "new_score": 95.8,
+    "ts": "2026-06-06T16:35:40.014Z"
+  },
+  {
+    "provider_id": "p49721",
+    "event": "job_completed_ontime",
+    "delta": 3,
+    "reason": "job completed ontime",
+    "booking_id": "SVC-20260606-0005",
+    "new_score": 96.1,
+    "ts": "2026-06-06T16:37:50.702Z"
+  },
+  {
+    "provider_id": "p49721",
+    "event": "job_completed_ontime",
+    "delta": 3,
+    "reason": "job completed ontime",
+    "booking_id": "SVC-20260606-0007",
+    "new_score": 96.3,
+    "ts": "2026-06-06T16:53:30.448Z"
   }
 ]

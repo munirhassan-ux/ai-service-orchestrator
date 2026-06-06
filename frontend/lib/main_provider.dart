@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'screens/provider/provider_home.dart';
 import 'services/notification_service.dart';
+import 'services/booking_events.dart';
 
 void main() {
   runApp(const HaazirProviderApp());
@@ -69,8 +70,11 @@ class _NotificationOverlayState extends State<NotificationOverlay> {
   @override
   void initState() {
     super.initState();
+    NotificationService().setRole('PROVIDER');
     NotificationService().startPolling();
     NotificationService().onNotification.listen((notif) {
+      // Refresh jobs list whenever any notification arrives
+      BookingEvents.refresh();
       if (mounted) {
         setState(() => _currentNotification = notif);
         Future.delayed(const Duration(seconds: 5), () {

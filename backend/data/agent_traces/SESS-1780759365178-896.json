@@ -1,0 +1,289 @@
+[
+  {
+    "timestamp": "2026-06-06T15:22:55.567Z",
+    "step": 1,
+    "agent": "IntentParser",
+    "confidence": 1,
+    "input": "mujhe plumber chahiye",
+    "output": {
+      "service_type": "plumber",
+      "service_raw": "plumber",
+      "location": null,
+      "urgency": "medium",
+      "preferred_time": "flexible",
+      "budget_sensitivity": "medium",
+      "job_complexity_hint": "basic",
+      "language": "roman_urdu",
+      "confidence": 1,
+      "clarification_needed": true,
+      "clarification_question": "Ji zaroor, main aapki madad kar sakta hoon. Plumber ke liye aapka area ya location kya hai?",
+      "reasoning": "The user requested a plumber but did not provide a specific location, which is required for booking."
+    }
+  },
+  {
+    "timestamp": "2026-06-06T15:22:55.568Z",
+    "agent": "IntentParser",
+    "fallback_triggered": true,
+    "reason": "confidence=100%, clarification_needed=true, missing_fields=location",
+    "clarification_question": "Ji zaroor, main aapki madad kar sakta hoon. Plumber ke liye aapka area ya location kya hai?"
+  },
+  {
+    "timestamp": "2026-06-06T15:23:07.217Z",
+    "step": 1,
+    "agent": "IntentParser",
+    "confidence": 1,
+    "input": "G11 house no 34 street 2",
+    "output": {
+      "service_type": "plumber",
+      "service_raw": "plumber",
+      "location": "G11 house no 34 street 2",
+      "urgency": "medium",
+      "preferred_time": "flexible",
+      "budget_sensitivity": "medium",
+      "job_complexity_hint": "basic",
+      "language": "roman_urdu",
+      "confidence": 1,
+      "clarification_needed": false,
+      "clarification_question": null,
+      "reasoning": "The user provided the service type in the previous turn and the specific location in this turn. All necessary information is now available."
+    }
+  },
+  {
+    "timestamp": "2026-06-06T15:23:07.635Z",
+    "step": 2,
+    "agent": "ProviderMatcher",
+    "output": {
+      "top_providers": [
+        {
+          "provider_id": "p49436",
+          "name": "Yasir Gillani",
+          "shop_name": "Yasir Gillani Plumber Workshop",
+          "location": {
+            "latitude": 33.725871,
+            "longitude": 73.090999
+          },
+          "city": "Islamabad (Urban)",
+          "city_area": "Ict",
+          "availability_status": "online",
+          "charges": {
+            "base_rate": 419,
+            "travel_rate": 33
+          },
+          "job_role": "Plumber",
+          "service_expertise": [
+            "plumber",
+            "pipe_fitting",
+            "drain_cleaning"
+          ],
+          "rating": 4.6,
+          "on_time_score": 0.92,
+          "cancellation_risk": 0.04,
+          "capacity": 4,
+          "active_jobs": 0,
+          "total_reviews": 114,
+          "total_jobs": 233,
+          "distance_km": 4.9,
+          "score": 94.69,
+          "reliability_score": 90.9,
+          "completion_rate": null,
+          "score_breakdown": {
+            "travel_time": 84,
+            "availability_match": 100,
+            "specialization": 100,
+            "on_time": 92,
+            "review_sentiment": 92,
+            "rate": 95,
+            "cancellation_risk": 96,
+            "capacity": 100
+          },
+          "is_waitlisted": false
+        },
+        {
+          "provider_id": "p49721",
+          "name": "Rehan Rana",
+          "shop_name": "Rehan Rana Plumber Point",
+          "location": {
+            "latitude": 33.66842,
+            "longitude": 73.068787
+          },
+          "city": "Islamabad (Urban)",
+          "city_area": "Ict",
+          "availability_status": "online",
+          "charges": {
+            "base_rate": 554,
+            "travel_rate": 25
+          },
+          "job_role": "Plumber",
+          "service_expertise": [
+            "plumber",
+            "drain_cleaning"
+          ],
+          "rating": 4.69,
+          "on_time_score": 0.9607999999999999,
+          "cancellation_risk": 0.023052049999999994,
+          "capacity": 4,
+          "active_jobs": 0,
+          "total_reviews": 503,
+          "total_jobs": 576,
+          "distance_km": 3.1,
+          "score": 92.85,
+          "reliability_score": 94,
+          "completion_rate": 0.9509999999999998,
+          "score_breakdown": {
+            "travel_time": 90,
+            "availability_match": 100,
+            "specialization": 100,
+            "on_time": 94,
+            "review_sentiment": 94,
+            "rate": 62,
+            "cancellation_risk": 98,
+            "capacity": 100
+          },
+          "is_waitlisted": false
+        },
+        {
+          "provider_id": "p49719",
+          "name": "Aamir Mehmood",
+          "shop_name": "Aamir Mehmood Plumber Point",
+          "location": {
+            "latitude": 33.670134,
+            "longitude": 73.071488
+          },
+          "city": "Islamabad (Urban)",
+          "city_area": "Ict",
+          "availability_status": "online",
+          "charges": {
+            "base_rate": 531,
+            "travel_rate": 48
+          },
+          "job_role": "Plumber",
+          "service_expertise": [
+            "plumber",
+            "motor_repair",
+            "pipe_fitting"
+          ],
+          "rating": 4.4,
+          "on_time_score": 0.84,
+          "cancellation_risk": 0.09,
+          "capacity": 4,
+          "active_jobs": 0,
+          "total_reviews": 462,
+          "total_jobs": 584,
+          "distance_km": 3,
+          "score": 90.71,
+          "reliability_score": 87,
+          "completion_rate": null,
+          "score_breakdown": {
+            "travel_time": 90,
+            "availability_match": 100,
+            "specialization": 100,
+            "on_time": 84,
+            "review_sentiment": 88,
+            "rate": 67,
+            "cancellation_risk": 91,
+            "capacity": 100
+          },
+          "is_waitlisted": false
+        }
+      ],
+      "reasoning": "Yasir Gillani selected: score 94.69%, 4.9km away, 92% on-time reliability.",
+      "fallback_used": false,
+      "matching_trace": "Matched 4099 eligible providers using 8 weighted factors and tiebreaker rules. Top Match: Yasir Gillani"
+    }
+  },
+  {
+    "timestamp": "2026-06-06T15:23:07.636Z",
+    "agent": "PricingEngine",
+    "phase_after": "pricing_complete",
+    "budget_sensitivity": "medium",
+    "providers_priced": [
+      {
+        "provider_id": "p49436",
+        "name": "Yasir Gillani",
+        "score": 94.69,
+        "is_budget_pick": true,
+        "quote": {
+          "visit_fee": 150,
+          "base_rate": 419,
+          "distance_fee": 160,
+          "urgency_surcharge": 0,
+          "total": 1150,
+          "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
+        }
+      },
+      {
+        "provider_id": "p49721",
+        "name": "Rehan Rana",
+        "score": 92.85,
+        "is_budget_pick": false,
+        "quote": {
+          "visit_fee": 150,
+          "base_rate": 554,
+          "distance_fee": 80,
+          "urgency_surcharge": 0,
+          "total": 1340,
+          "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
+        }
+      },
+      {
+        "provider_id": "p49719",
+        "name": "Aamir Mehmood",
+        "score": 90.71,
+        "is_budget_pick": false,
+        "quote": {
+          "visit_fee": 150,
+          "base_rate": 531,
+          "distance_fee": 140,
+          "urgency_surcharge": 0,
+          "total": 1350,
+          "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
+        }
+      }
+    ]
+  },
+  {
+    "timestamp": "2026-06-06T15:23:09.614Z",
+    "agent": "BookingSimulator",
+    "phase_after": "PENDING_PROVIDER",
+    "booking_id": "SVC-20260606-0001",
+    "provider_id": "p49721",
+    "provider_name": "Rehan Rana",
+    "preferred_time_requested": "flexible",
+    "scheduled_time_assigned": "2026-06-07T05:00:00.000Z",
+    "scheduling_collision_detected": false,
+    "final_price": 1335
+  },
+  {
+    "timestamp": "2026-06-06T15:23:09.615Z",
+    "agent": "StatusMachine",
+    "phase_after": "ACCEPTED",
+    "booking_id": "SVC-20260606-0001",
+    "status_from": "PENDING_PROVIDER",
+    "status_to": "ACCEPTED"
+  },
+  {
+    "timestamp": "2026-06-06T15:23:14.761Z",
+    "agent": "StatusMachine",
+    "phase_after": "ARRIVING",
+    "booking_id": "SVC-20260606-0001",
+    "status_from": "ACCEPTED",
+    "status_to": "ARRIVING"
+  },
+  {
+    "timestamp": "2026-06-06T15:23:28.266Z",
+    "agent": "StatusMachine",
+    "phase_after": "COMPLETED",
+    "booking_id": "SVC-20260606-0001",
+    "status_from": "IN_PROGRESS",
+    "status_to": "COMPLETED"
+  },
+  {
+    "timestamp": "2026-06-06T15:23:34.791Z",
+    "agent": "RatingEngine",
+    "phase_after": "COMPLETED",
+    "booking_id": "SVC-20260606-0001",
+    "provider_id": "p49721",
+    "stars_submitted": 1,
+    "on_time": true
+  }
+]

@@ -1,0 +1,306 @@
+[
+  {
+    "timestamp": "2026-06-06T16:33:12.356Z",
+    "step": 1,
+    "agent": "IntentParser",
+    "confidence": 1,
+    "input": "mujhe electrician chahiye",
+    "output": {
+      "service_type": "electrician",
+      "service_raw": "electrician",
+      "location": null,
+      "urgency": "medium",
+      "preferred_time": "flexible",
+      "budget_sensitivity": "medium",
+      "job_complexity_hint": "basic",
+      "language": "roman_urdu",
+      "confidence": 1,
+      "clarification_needed": true,
+      "clarification_question": "Ji, bilkul! Ham aapki madad kar sakte hain. Kya aap mujhe apni location (area) bata sakte hain taake hum technician ko aapke paas bhej saken?",
+      "reasoning": "The user requested an electrician, but the location was missing, requiring clarification for scheduling."
+    }
+  },
+  {
+    "timestamp": "2026-06-06T16:33:12.357Z",
+    "agent": "IntentParser",
+    "fallback_triggered": true,
+    "reason": "confidence=100%, clarification_needed=true, missing_fields=location",
+    "clarification_question": "Ji, bilkul! Ham aapki madad kar sakte hain. Kya aap mujhe apni location (area) bata sakte hain taake hum technician ko aapke paas bhej saken?"
+  },
+  {
+    "timestamp": "2026-06-06T16:33:32.068Z",
+    "step": 1,
+    "agent": "IntentParser",
+    "confidence": 1,
+    "input": "G11",
+    "output": {
+      "service_type": "electrician",
+      "service_raw": "electrician",
+      "location": "G11",
+      "urgency": "medium",
+      "preferred_time": "flexible",
+      "budget_sensitivity": "medium",
+      "job_complexity_hint": "basic",
+      "language": "roman_urdu",
+      "confidence": 1,
+      "clarification_needed": false,
+      "clarification_question": null,
+      "reasoning": "The user provided the service type in the previous turn and the location (G11) in the current turn. All necessary information is now available."
+    }
+  },
+  {
+    "timestamp": "2026-06-06T16:33:32.504Z",
+    "step": 2,
+    "agent": "ProviderMatcher",
+    "output": {
+      "top_providers": [
+        {
+          "provider_id": "p49709",
+          "name": "Noman Shah",
+          "shop_name": "Noman Shah Electrician Pro",
+          "location": {
+            "latitude": 33.673583,
+            "longitude": 73.069274
+          },
+          "city": "Islamabad (Urban)",
+          "city_area": "Ict",
+          "availability_status": "online",
+          "charges": {
+            "base_rate": 430,
+            "travel_rate": 37
+          },
+          "job_role": "Electrician",
+          "service_expertise": [
+            "electrician",
+            "wiring",
+            "fan_repair"
+          ],
+          "rating": 4.9,
+          "on_time_score": 0.94,
+          "cancellation_risk": 0.05,
+          "capacity": 2,
+          "active_jobs": 0,
+          "total_reviews": 133,
+          "total_jobs": 312,
+          "distance_km": 2.6,
+          "score": 96.5,
+          "reliability_score": 92.6,
+          "completion_rate": null,
+          "score_breakdown": {
+            "travel_time": 91,
+            "availability_match": 100,
+            "specialization": 100,
+            "on_time": 94,
+            "review_sentiment": 98,
+            "rate": 94,
+            "cancellation_risk": 95,
+            "capacity": 100
+          },
+          "is_waitlisted": false
+        },
+        {
+          "provider_id": "p49708",
+          "name": "Saad Karim",
+          "shop_name": "Saad Karim Electrician Workshop",
+          "location": {
+            "latitude": 33.666183,
+            "longitude": 73.067659
+          },
+          "city": "Islamabad (Urban)",
+          "city_area": "Ict",
+          "availability_status": "online",
+          "charges": {
+            "base_rate": 467,
+            "travel_rate": 40
+          },
+          "job_role": "Electrician",
+          "service_expertise": [
+            "electrician",
+            "wiring",
+            "fan_repair"
+          ],
+          "rating": 4.5,
+          "on_time_score": 0.89,
+          "cancellation_risk": 0.11,
+          "capacity": 2,
+          "active_jobs": 0,
+          "total_reviews": 125,
+          "total_jobs": 166,
+          "distance_km": 3.3,
+          "score": 93.27,
+          "reliability_score": 88.6,
+          "completion_rate": null,
+          "score_breakdown": {
+            "travel_time": 89,
+            "availability_match": 100,
+            "specialization": 100,
+            "on_time": 89,
+            "review_sentiment": 90,
+            "rate": 87,
+            "cancellation_risk": 89,
+            "capacity": 100
+          },
+          "is_waitlisted": false
+        },
+        {
+          "provider_id": "p49711",
+          "name": "Zubair Nawaz",
+          "shop_name": "Zubair Nawaz Electrician Center",
+          "location": {
+            "latitude": 33.673294,
+            "longitude": 73.07151
+          },
+          "city": "Islamabad (Urban)",
+          "city_area": "Ict",
+          "availability_status": "online",
+          "charges": {
+            "base_rate": 468,
+            "travel_rate": 32
+          },
+          "job_role": "Electrician",
+          "service_expertise": [
+            "electrician",
+            "wiring",
+            "fan_repair"
+          ],
+          "rating": 4.3,
+          "on_time_score": 0.8,
+          "cancellation_risk": 0.1,
+          "capacity": 2,
+          "active_jobs": 0,
+          "total_reviews": 482,
+          "total_jobs": 527,
+          "distance_km": 2.7,
+          "score": 91.87,
+          "reliability_score": 85.2,
+          "completion_rate": null,
+          "score_breakdown": {
+            "travel_time": 91,
+            "availability_match": 100,
+            "specialization": 100,
+            "on_time": 80,
+            "review_sentiment": 86,
+            "rate": 86,
+            "cancellation_risk": 90,
+            "capacity": 100
+          },
+          "is_waitlisted": false
+        }
+      ],
+      "reasoning": "Noman Shah selected: score 96.5%, 2.6km away, 94% on-time reliability.",
+      "fallback_used": false,
+      "matching_trace": "Matched 4024 eligible providers using 8 weighted factors and tiebreaker rules. Top Match: Noman Shah"
+    }
+  },
+  {
+    "timestamp": "2026-06-06T16:33:32.505Z",
+    "agent": "PricingEngine",
+    "phase_after": "pricing_complete",
+    "budget_sensitivity": "medium",
+    "providers_priced": [
+      {
+        "provider_id": "p49709",
+        "name": "Noman Shah",
+        "score": 96.5,
+        "is_budget_pick": true,
+        "quote": {
+          "visit_fee": 150,
+          "base_rate": 430,
+          "distance_fee": 100,
+          "urgency_surcharge": 0,
+          "total": 1110,
+          "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
+        }
+      },
+      {
+        "provider_id": "p49708",
+        "name": "Saad Karim",
+        "score": 93.27,
+        "is_budget_pick": false,
+        "quote": {
+          "visit_fee": 150,
+          "base_rate": 467,
+          "distance_fee": 130,
+          "urgency_surcharge": 0,
+          "total": 1210,
+          "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
+        }
+      },
+      {
+        "provider_id": "p49711",
+        "name": "Zubair Nawaz",
+        "score": 91.87,
+        "is_budget_pick": false,
+        "quote": {
+          "visit_fee": 150,
+          "base_rate": 468,
+          "distance_fee": 90,
+          "urgency_surcharge": 0,
+          "total": 1180,
+          "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
+        }
+      }
+    ]
+  },
+  {
+    "timestamp": "2026-06-06T16:33:34.462Z",
+    "agent": "BookingSimulator",
+    "phase_after": "PENDING_PROVIDER",
+    "booking_id": "SVC-20260606-0003",
+    "provider_id": "p49709",
+    "provider_name": "Noman Shah",
+    "preferred_time_requested": "flexible",
+    "scheduled_time_assigned": "2026-06-07T05:00:00.000Z",
+    "scheduling_collision_detected": false,
+    "final_price": 1106
+  },
+  {
+    "timestamp": "2026-06-06T16:33:34.464Z",
+    "agent": "StatusMachine",
+    "phase_after": "ACCEPTED",
+    "booking_id": "SVC-20260606-0003",
+    "status_from": "PENDING_PROVIDER",
+    "status_to": "ACCEPTED"
+  },
+  {
+    "timestamp": "2026-06-06T16:33:39.522Z",
+    "agent": "StatusMachine",
+    "phase_after": "ARRIVING",
+    "booking_id": "SVC-20260606-0003",
+    "status_from": "ACCEPTED",
+    "status_to": "ARRIVING"
+  },
+  {
+    "timestamp": "2026-06-06T16:33:41.513Z",
+    "agent": "StatusMachine",
+    "phase_after": "ARRIVED",
+    "booking_id": "SVC-20260606-0003",
+    "status_from": "ARRIVING",
+    "status_to": "ARRIVED"
+  },
+  {
+    "timestamp": "2026-06-06T16:33:41.515Z",
+    "agent": "StatusMachine",
+    "phase_after": "IN_PROGRESS",
+    "booking_id": "SVC-20260606-0003",
+    "status_from": "ARRIVED",
+    "status_to": "IN_PROGRESS"
+  },
+  {
+    "timestamp": "2026-06-06T16:33:45.531Z",
+    "agent": "StatusMachine",
+    "phase_after": "COMPLETED",
+    "booking_id": "SVC-20260606-0003",
+    "status_from": "IN_PROGRESS",
+    "status_to": "COMPLETED"
+  },
+  {
+    "timestamp": "2026-06-06T16:33:48.688Z",
+    "agent": "RatingEngine",
+    "phase_after": "COMPLETED",
+    "booking_id": "SVC-20260606-0003",
+    "provider_id": "p49709",
+    "stars_submitted": 4,
+    "on_time": true
+  }
+]

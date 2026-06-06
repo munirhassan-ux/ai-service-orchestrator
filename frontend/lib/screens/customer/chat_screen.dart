@@ -416,9 +416,6 @@ class _ChatScreenState extends State<ChatScreen> {
             data: {'trace': negotiationTrace, 'contract_id': contractId},
           ));
         }
-        if (bookingReason != null && bookingReason.isNotEmpty) {
-          _addMsg(Message(text: '🤖 $bookingReason', isUser: false));
-        }
         _addMsg(Message(
             text: msg,
             isUser: false,
@@ -568,6 +565,8 @@ class _ChatScreenState extends State<ChatScreen> {
                 if (mounted) setState(() => _cancelBookingFn = fn);
               },
             ),
+            if (bk['booking_id'] != null)
+              AgentMessagesWidget(bookingId: bk['booking_id'] as String),
           ],
         );
 
@@ -1830,5 +1829,160 @@ class _LiveTrackingWidgetState extends State<LiveTrackingWidget> {
         ],
       ),
     );
+  }
+}
+
+// ── Live Updates Widget (customer-facing) ────────────────────────────────────
+// Polls every 5 s. Renders provider messages as chat bubbles, payment as receipt.
+class AgentMessagesWidget extends StatefulWidget {
+  final String bookingId;
+  const AgentMessagesWidget({super.key, required this.bookingId});
+  @override
+  State<AgentMessagesWidget> createState() => _AgentMessagesWidgetState();
+}
+
+class _AgentMessagesWidgetState extends State<AgentMessagesWidget> {
+  List<dynamic> _messages = [];
+  String _providerName = 'Provider';
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetch();
+    _timer = Timer.periodic(const Duration(seconds: 5), (_) => _fetch());
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _fetch() async {
+    try {
+      final res = await ApiService.get('booking/${widget.bookingId}');
+      if (!mounted) return;
+      final booking = res as Map<String, dynamic>?;
+      final msgs = booking?['agent_messages'] as List<dynamic>?;
+      final name = booking?['provider_name'] as String? ?? 'Provider';
+      if (msgs != null && (msgs.length != _messages.length || name != _providerName)) {
+        setState(() { _messages = msgs; _providerName = name; });
+      }
+    } catch (_) {}
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final updates = _messages.where((m) => (m as Map)['status'] != 'PAYMENT_CONFIRMED').toList();
+    final payment = _messages.cast<Map<String, dynamic>>().where((m) => m['status'] == 'PAYMENT_CONFIRMED').lastOrNull;
+    if (_messages.isEmpty) return const SizedBox.shrink();
+
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      // Section header
+      Padding(
+        padding: const EdgeInsets.only(top: 16, bottom: 8),
+        child: Row(children: [
+          Container(
+            width: 7, height: 7,
+            decoration: const BoxDecoration(
+              color: Color(0xFF3A9010), shape: BoxShape.circle),
+          ),
+          const SizedBox(width: 7),
+          Text('Updates from $_providerName',
+              style: const TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF565955),
+                  letterSpacing: 0.2)),
+        ]),
+      ),
+
+      // Provider chat bubbles
+      ...updates.map((m) {
+        final msg = m as Map<String, dynamic>;
+        final ts = msg['timestamp'] as String? ?? '';
+        final time = ts.length >= 16 ? ts.substring(11, 16) : '';
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
+            // Avatar
+            Container(
+              width: 32, height: 32,
+              decoration: BoxDecoration(
+                color: const Color(0xFF3A9010).withValues(alpha: 0.12),
+                shape: BoxShape.circle,
+                border: Border.all(color: const Color(0xFF3A9010).withValues(alpha: 0.25)),
+              ),
+              child: const Icon(Icons.handyman_rounded, size: 15, color: Color(0xFF3A9010)),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(_providerName,
+                    style: const TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF767773))),
+                const SizedBox(height: 3),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(4),
+                      topRight: Radius.circular(16),
+                      bottomLeft: Radius.circular(16),
+                      bottomRight: Radius.circular(16),
+                    ),
+                    border: Border.all(color: const Color(0xFFE8EDE6)),
+                    boxShadow: [BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.04),
+                      blurRadius: 4, offset: const Offset(0, 1))],
+                  ),
+                  child: Text(msg['message'] as String? ?? '',
+                      style: const TextStyle(
+                          fontSize: 13, color: Color(0xFF21231D), height: 1.45)),
+                ),
+              ]),
+            ),
+            const SizedBox(width: 6),
+            Text(time, style: const TextStyle(fontSize: 10, color: Color(0xFFB0B5AE))),
+          ]),
+        );
+      }),
+
+      // Payment receipt card
+      if (payment != null)
+        Container(
+          margin: const EdgeInsets.only(top: 6),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          decoration: BoxDecoration(
+            color: const Color(0xFF3A9010).withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFF3A9010).withValues(alpha: 0.3)),
+          ),
+          child: Row(children: [
+            Container(
+              width: 38, height: 38,
+              decoration: BoxDecoration(
+                  color: const Color(0xFF3A9010),
+                  borderRadius: BorderRadius.circular(10)),
+              child: const Icon(Icons.check_rounded, color: Colors.white, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              const Text('Payment Confirmed',
+                  style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF163300))),
+              const SizedBox(height: 2),
+              Text('${payment['message']} released to $_providerName',
+                  style: const TextStyle(fontSize: 12, color: Color(0xFF565955))),
+            ])),
+          ]),
+        ),
+    ]);
   }
 }
