@@ -1078,119 +1078,207 @@ class _ReliabilityDashboardState extends State<ReliabilityDashboard> {
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) return const SizedBox(height: 60, child: Center(child: CircularProgressIndicator(strokeWidth: 2)));
+    if (_loading) return const SizedBox(height: 80, child: Center(child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF3A9010))));
     if (_data == null) return const SizedBox.shrink();
 
     final score  = (_data!['score'] as num?)?.toDouble() ?? 0;
     final ledger = (_data!['ledger'] as List?) ?? [];
     final color  = score >= 80 ? const Color(0xFF079455) : score >= 60 ? const Color(0xFFf59e0b) : const Color(0xFFda2721);
+    final label  = score >= 90 ? 'Excellent — Top Tier' : score >= 80 ? 'Good Standing' : score >= 60 ? 'Needs Improvement' : 'At Risk';
 
-    // Improvement tips based on score
     final tips = <String>[];
-    if (score < 90) tips.add('Arrive within 10 min of ETA → +3 pts per job');
+    if (score < 90) tips.add('Arrive within 10 min of ETA to earn +3 pts per job');
     if (score < 80) tips.add('Avoid cancellations — each one costs −15 pts');
-    if (score < 70) tips.add('Complete every checklist item → builds completion rate');
-    if (score >= 90) tips.add('Great score! Maintain it to stay in top results');
+    if (score < 70) tips.add('Complete every checklist item to build your completion rate');
+    if (score >= 90) tips.add('Great score! Maintain it to stay in top search results');
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 10),
-      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(color: const Color(0xFFE8EDE6)),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 2))],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 3))],
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        // Header + score gauge
-        Row(children: [
-          // Circular score gauge
-          SizedBox(width: 72, height: 72,
-            child: Stack(alignment: Alignment.center, children: [
-              CircularProgressIndicator(
-                value: score / 100,
-                strokeWidth: 7,
-                backgroundColor: color.withValues(alpha: 0.12),
-                valueColor: AlwaysStoppedAnimation(color),
+
+        // ── Score hero section ───────────────────────────────────────────
+        Container(
+          padding: const EdgeInsets.fromLTRB(20, 20, 16, 20),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [color.withValues(alpha: 0.08), color.withValues(alpha: 0.03)],
+              begin: Alignment.topLeft, end: Alignment.bottomRight,
+            ),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+            // Arc gauge
+            SizedBox(width: 96, height: 96,
+              child: CustomPaint(
+                painter: _ArcGaugePainter(score: score, color: color),
+                child: Center(
+                  child: Column(mainAxisSize: MainAxisSize.min, children: [
+                    Text(
+                      score.toStringAsFixed(1),
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w900,
+                        color: color,
+                        height: 1.0,
+                      ),
+                    ),
+                    Text('/100',
+                      style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: color.withValues(alpha: 0.65)),
+                    ),
+                  ]),
+                ),
               ),
-              Column(mainAxisSize: MainAxisSize.min, children: [
-                Text(score.toStringAsFixed(1),
-                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: color)),
-                Text('/100', style: TextStyle(fontSize: 9, color: color.withValues(alpha: 0.7))),
+            ),
+            const SizedBox(width: 16),
+            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              const Text('Reliability Score',
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: Color(0xFF21231D))),
+              const SizedBox(height: 6),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(label,
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: color)),
+              ),
+              const SizedBox(height: 8),
+              const Text('Affects your ranking in search results',
+                  style: TextStyle(fontSize: 11, color: Color(0xFF888E86))),
+            ])),
+            IconButton(
+              icon: const Icon(Icons.refresh_rounded, size: 18, color: Color(0xFFB0B5AE)),
+              onPressed: () { setState(() => _loading = true); _load(); },
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+            ),
+          ]),
+        ),
+
+        // ── Improvement tip ──────────────────────────────────────────────
+        if (tips.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: const Color(0xFF6938ef).withValues(alpha: 0.06),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFF6938ef).withValues(alpha: 0.18)),
+              ),
+              child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                const Icon(Icons.lightbulb_rounded, size: 15, color: Color(0xFF6938ef)),
+                const SizedBox(width: 8),
+                Expanded(child: Text(tips.first,
+                    style: const TextStyle(fontSize: 12, color: Color(0xFF3E3F3B), height: 1.4))),
               ]),
-            ]),
-          ),
-          const SizedBox(width: 14),
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            const Text('Reliability Score',
-                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Color(0xFF21231D))),
-            const SizedBox(height: 4),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-              decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(6)),
-              child: Text(
-                score >= 90 ? 'Excellent — Top Tier' : score >= 80 ? 'Good Standing' : score >= 60 ? 'Needs Improvement' : 'At Risk',
-                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: color),
-              ),
             ),
-            const SizedBox(height: 6),
-            Text('Affects your ranking in search results',
-                style: const TextStyle(fontSize: 10, color: Color(0xFF888E86))),
-          ])),
-          IconButton(icon: const Icon(Icons.refresh_rounded, size: 18, color: Color(0xFF888E86)), onPressed: _load),
-        ]),
-
-        // Improvement tip
-        if (tips.isNotEmpty) ...[
-          const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: const Color(0xFF6938ef).withValues(alpha: 0.06),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: const Color(0xFF6938ef).withValues(alpha: 0.15)),
-            ),
-            child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              const Icon(Icons.lightbulb_outline_rounded, size: 14, color: Color(0xFF6938ef)),
-              const SizedBox(width: 7),
-              Expanded(child: Text(tips.first,
-                  style: const TextStyle(fontSize: 11, color: Color(0xFF3E3F3B)))),
-            ]),
           ),
-        ],
 
-        // Last 5 ledger events
+        // ── Ledger events ────────────────────────────────────────────────
         if (ledger.isNotEmpty) ...[
-          const SizedBox(height: 12),
-          const Text('Recent activity',
-              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF565955))),
-          const SizedBox(height: 6),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            child: Row(children: [
+              Container(width: 6, height: 6,
+                  decoration: const BoxDecoration(color: Color(0xFF3A9010), shape: BoxShape.circle)),
+              const SizedBox(width: 7),
+              const Text('Recent activity',
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFF3E3F3B), letterSpacing: 0.2)),
+            ]),
+          ),
           ...ledger.take(5).map((e) {
             final ev = e as Map<String, dynamic>;
             final delta = ev['delta'] as int? ?? 0;
             final isPos = delta >= 0;
             final ts = ev['ts'] as String? ?? '';
-            final time = ts.length >= 16 ? ts.substring(0, 10) : '';
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 5),
+            final time = ts.length >= 10 ? ts.substring(0, 10) : '';
+            final eventLabel = (ev['reason'] as String? ?? ev['event'] as String? ?? '').replaceAll('_', ' ');
+            return Container(
+              margin: const EdgeInsets.fromLTRB(12, 0, 12, 6),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+              decoration: BoxDecoration(
+                color: isPos ? const Color(0xFF079455).withValues(alpha: 0.04) : const Color(0xFFda2721).withValues(alpha: 0.04),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: isPos ? const Color(0xFF079455).withValues(alpha: 0.12) : const Color(0xFFda2721).withValues(alpha: 0.12),
+                ),
+              ),
               child: Row(children: [
-                Icon(isPos ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded,
-                    size: 12, color: isPos ? const Color(0xFF079455) : const Color(0xFFda2721)),
-                const SizedBox(width: 5),
-                Expanded(child: Text(
-                  (ev['reason'] as String? ?? ev['event'] as String? ?? '').replaceAll('_', ' '),
-                  style: const TextStyle(fontSize: 11, color: Color(0xFF3E3F3B)),
-                )),
-                Text('${isPos ? '+' : ''}$delta pts',
-                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600,
-                        color: isPos ? const Color(0xFF079455) : const Color(0xFFda2721))),
-                const SizedBox(width: 8),
-                Text(time, style: const TextStyle(fontSize: 9, color: Color(0xFFB0B5AE))),
+                Container(
+                  width: 26, height: 26,
+                  decoration: BoxDecoration(
+                    color: isPos ? const Color(0xFF079455).withValues(alpha: 0.12) : const Color(0xFFda2721).withValues(alpha: 0.12),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    isPos ? Icons.trending_up_rounded : Icons.trending_down_rounded,
+                    size: 14,
+                    color: isPos ? const Color(0xFF079455) : const Color(0xFFda2721),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(child: Text(eventLabel,
+                    style: const TextStyle(fontSize: 12, color: Color(0xFF3E3F3B)))),
+                Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
+                  Text('${isPos ? '+' : ''}$delta pts',
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700,
+                          color: isPos ? const Color(0xFF079455) : const Color(0xFFda2721))),
+                  Text(time, style: const TextStyle(fontSize: 9, color: Color(0xFFB0B5AE))),
+                ]),
               ]),
             );
           }),
+          const SizedBox(height: 8),
         ],
       ]),
     );
   }
+}
+
+// Draws a rounded arc gauge — avoids the clipping issue with CircularProgressIndicator.
+class _ArcGaugePainter extends CustomPainter {
+  final double score;
+  final Color color;
+  const _ArcGaugePainter({required this.score, required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    const strokeW = 9.0;
+    final rect = Rect.fromCircle(
+      center: Offset(size.width / 2, size.height / 2),
+      radius: size.width / 2 - strokeW / 2,
+    );
+    const startAngle = 2.356; // 135° in radians
+    const sweepFull = 4.712; // 270°
+
+    // Track
+    canvas.drawArc(
+      rect, startAngle, sweepFull, false,
+      Paint()
+        ..color = color.withValues(alpha: 0.12)
+        ..strokeWidth = strokeW
+        ..strokeCap = StrokeCap.round
+        ..style = PaintingStyle.stroke,
+    );
+    // Fill
+    canvas.drawArc(
+      rect, startAngle, sweepFull * (score / 100), false,
+      Paint()
+        ..color = color
+        ..strokeWidth = strokeW
+        ..strokeCap = StrokeCap.round
+        ..style = PaintingStyle.stroke,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_ArcGaugePainter old) => old.score != score || old.color != color;
 }
