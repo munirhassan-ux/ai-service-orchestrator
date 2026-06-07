@@ -123,10 +123,19 @@ export async function runOrchestration(
       const prev = session.parsed_intent;
       if (prev) {
         if (!intent.service_type || intent.service_type === "unknown") intent.service_type = prev.service_type;
+        if (!intent.problem_description) intent.problem_description = prev.problem_description;
         if (!intent.location || intent.location === "unknown") intent.location = prev.location;
-        if (!intent.preferred_time || intent.preferred_time === "flexible") intent.preferred_time = prev.preferred_time;
-        // If merged fields now satisfy requirements, clear the clarification flag
-        if (intent.service_type && intent.service_type !== "unknown" && intent.location && intent.location !== "unknown") {
+        if (!intent.time_explicitly_provided) {
+          intent.time_explicitly_provided = prev.time_explicitly_provided ?? false;
+          if (prev.time_explicitly_provided) intent.preferred_time = prev.preferred_time;
+        }
+        // If all four required fields are now satisfied, clear clarification flag
+        const allPresent =
+          intent.service_type && intent.service_type !== "unknown" &&
+          intent.problem_description &&
+          intent.location && intent.location !== "unknown" &&
+          intent.time_explicitly_provided;
+        if (allPresent) {
           intent.clarification_needed = false;
           if (intent.confidence < 0.75) intent.confidence = 0.8;
         }
@@ -141,6 +150,12 @@ export async function runOrchestration(
       });
       logTraceEvent(session.session_id, { step, agent: "IntentParser", confidence: intent.confidence, input: cleanInput, output: intent });
     } catch (err: any) {
+      trace.push({
+        step, agent: "IntentParser",
+        input: { user_input: cleanInput },
+        output: { error: (err as any)?.message ?? "parse_failed", confidence: 0 },
+        duration_ms: Date.now() - tStart,
+      });
       return {
         success: false, session_id: session.session_id, phase: "intake",
         message: "Maazrat, samajh nahi aaya. Dobara likhein?",
@@ -148,19 +163,25 @@ export async function runOrchestration(
       };
     }
 
-    // Check confidence & completeness (Step 1 requirement)
-    // If confidence < 0.75, ask exactly one clarifying question matching user's language
-    if (intent.clarification_needed || intent.confidence < 0.75 || !intent.service_type || !intent.location) {
+    // Gate: all four required fields must be collected before proceeding to matching
+    const missingFields = [
+      !intent.service_type || intent.service_type === "unknown" ? "service_type" : "",
+      !intent.problem_description ? "problem_description" : "",
+      !intent.location || intent.location === "unknown" ? "location" : "",
+      !intent.time_explicitly_provided ? "time" : "",
+    ].filter(Boolean);
+
+    if (intent.clarification_needed || intent.confidence < 0.75 || missingFields.length > 0) {
       updateSession(session.session_id, { parsed_intent: intent, phase: "intake" });
       const q = intent.clarification_question ||
         (intent.language === "roman_urdu"
-          ? "Aap ki exact location kya hai aur kab kaam karwana hai?"
-          : "Could you please specify your exact location and preferred time?");
-      logFallback("IntentParser", `Low confidence (${Math.round(intent.confidence * 100)}%) or missing fields`, q);
+          ? "Thori aur details chahiye — kya masla hai, kahan hain aur kab chahiye?"
+          : "Could you share what the issue is, your location, and when you need the service?");
+      logFallback("IntentParser", `Missing fields: ${missingFields.join(", ")} | confidence=${Math.round(intent.confidence * 100)}%`, q);
       logTraceEvent(session.session_id, {
         agent: "IntentParser",
         fallback_triggered: true,
-        reason: `confidence=${Math.round(intent.confidence * 100)}%, clarification_needed=${intent.clarification_needed}, missing_fields=${!intent.service_type ? "service_type " : ""}${!intent.location ? "location" : ""}`.trim(),
+        reason: `missing_fields=[${missingFields.join(",")}], confidence=${Math.round(intent.confidence * 100)}%, clarification_needed=${intent.clarification_needed}`,
         clarification_question: q,
       });
       const chips = !intent.service_type ? ["AC Repair", "Plumber", "Electrician", "Cleaning", "Carpenter"] : undefined;
