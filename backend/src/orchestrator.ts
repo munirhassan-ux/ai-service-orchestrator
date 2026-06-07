@@ -10,7 +10,7 @@ import { runNegotiation, linkBookingToContract } from "./agents/negotiationEngin
 import { geocodeLocation } from "./agents/providerMatcher.js";
 import { loadPreferences, updatePreferences, buildPersonalizedGreeting } from "./agents/preferenceEngine.js";
 import { recordStrike, isCustomerBlocked, getBanExpiryMessage } from "./agents/abuseTracker.js";
-import { exec } from "child_process";
+import { launchProviderApp } from "./utils/providerAppLauncher.js";
 
 export interface AgentTraceStep {
   step: number;
@@ -411,12 +411,10 @@ export async function runOrchestration(
       }
     } catch { /* non-fatal */ }
 
-    // Auto-open provider app when deal is locked
-    const providerAppUrl = "http://localhost:57654";
-    console.log(`\x1b[32m\x1b[1m🚀 Auto-launching provider app for ${topProvider.name} → ${providerAppUrl}\x1b[0m\n`);
-    exec(`open "${providerAppUrl}"`, (err) => {
-      if (err) console.warn("[Orchestrator] Could not auto-open provider app:", err.message);
-    });
+    // Auto-launch a dedicated provider app instance for this booking
+    launchProviderApp(topProvider.name, booking.booking_id).catch(err =>
+      console.warn("[Orchestrator] launchProviderApp error:", err?.message)
+    );
 
     // Link booking back to the signed contract
     if (negotiationResult.contract) {
