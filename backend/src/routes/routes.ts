@@ -223,8 +223,31 @@ router.post("/booking/confirm", async (req: Request, res: Response) => {
 });
 
 // ── POST /api/booking/status ──────────────────────────────
+// caller_id must match the booking's customer_id or provider_id.
+// Each role may only set statuses appropriate to their side.
+const CUSTOMER_ALLOWED = new Set(["CANCELLED_CUSTOMER"]);
+const PROVIDER_ALLOWED = new Set(["ACCEPTED", "CANCELLED_PROVIDER", "ARRIVING", "ARRIVED", "IN_PROGRESS", "COMPLETED"]);
+
 router.post("/booking/status", (req: Request, res: Response) => {
-  const { booking_id, status } = req.body;
+  const { booking_id, status, caller_id } = req.body;
+  if (!booking_id || !status) return res.status(400).json({ error: "booking_id and status required" });
+  if (!caller_id)             return res.status(403).json({ error: "caller_id required" });
+
+  const existing = getBooking(booking_id);
+  if (!existing) return res.status(404).json({ error: "Booking not found" });
+
+  const isCustomer = existing.customer_id === caller_id;
+  const isProvider = existing.provider_id === caller_id;
+
+  if (!isCustomer && !isProvider)
+    return res.status(403).json({ error: "Not authorised for this booking" });
+
+  if (isCustomer && !CUSTOMER_ALLOWED.has(status))
+    return res.status(403).json({ error: `Customer cannot set status '${status}'` });
+
+  if (isProvider && !PROVIDER_ALLOWED.has(status))
+    return res.status(403).json({ error: `Provider cannot set status '${status}'` });
+
   try {
     const booking = updateBookingStatus(booking_id, status);
     return res.json({ status: "updated", booking });

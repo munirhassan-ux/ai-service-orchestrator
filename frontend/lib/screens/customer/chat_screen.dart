@@ -1178,7 +1178,7 @@ class _LiveTrackingWidgetState extends State<LiveTrackingWidget> {
         if (bId2 != null) {
           try {
             await ApiService.post('/booking/status',
-                {'booking_id': bId2, 'status': 'CANCELLED_CUSTOMER'});
+                {'booking_id': bId2, 'status': 'CANCELLED_CUSTOMER', 'caller_id': 'customer_001'});
           } catch (_) {}
         }
         BookingEvents.refresh();
@@ -1208,7 +1208,7 @@ class _LiveTrackingWidgetState extends State<LiveTrackingWidget> {
     final bId = _booking['booking_id'];
     if (bId != null) {
       try {
-        await ApiService.post('/booking/status', {'booking_id': bId, 'status': 'CANCELLED_CUSTOMER'});
+        await ApiService.post('/booking/status', {'booking_id': bId, 'status': 'CANCELLED_CUSTOMER', 'caller_id': 'customer_001'});
       } catch (_) {}
     }
     ActiveSessionService.clear();

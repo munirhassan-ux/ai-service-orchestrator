@@ -336,7 +336,7 @@ class _ProviderChatScreenState extends State<ProviderChatScreen> {
     if (widget.bookingId == null) return;
     try {
       await ApiService.post('/booking/status',
-          {'booking_id': widget.bookingId, 'status': 'ACCEPTED'});
+          {'booking_id': widget.bookingId, 'status': 'ACCEPTED', 'caller_id': _bookingData?['provider_id']});
       final location = _bookingData?['location'] ?? 'customer location';
       final price = _bookingData?['final_price']?.toString() ?? '';
       setState(() {
@@ -366,7 +366,7 @@ class _ProviderChatScreenState extends State<ProviderChatScreen> {
     if (widget.bookingId == null) return;
     try {
       await ApiService.post('/booking/status',
-          {'booking_id': widget.bookingId, 'status': 'CANCELLED_PROVIDER'});
+          {'booking_id': widget.bookingId, 'status': 'CANCELLED_PROVIDER', 'caller_id': _bookingData?['provider_id']});
       if (!mounted) return;
       setState(() {
         _jobOffered = false;
@@ -485,7 +485,7 @@ class _ProviderChatScreenState extends State<ProviderChatScreen> {
     if (!allDone) return;
     try {
       final res = await ApiService.post('/booking/status',
-          {'booking_id': widget.bookingId, 'status': 'COMPLETED'});
+          {'booking_id': widget.bookingId, 'status': 'COMPLETED', 'caller_id': _bookingData?['provider_id']});
       if (!mounted) return;
       setState(() {
         if (res['booking'] != null) {
