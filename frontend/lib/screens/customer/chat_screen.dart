@@ -639,7 +639,6 @@ class _ChatScreenState extends State<ChatScreen> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _textBubble(msg.text),
             if (reliability != null)
               Padding(
                 padding: const EdgeInsets.only(bottom: 6),
@@ -684,8 +683,6 @@ class _ChatScreenState extends State<ChatScreen> {
                 if (mounted) setState(() => _cancelBookingFn = fn);
               },
             ),
-            if (bk['booking_id'] != null)
-              AgentMessagesWidget(bookingId: bk['booking_id'] as String),
           ],
         );
 
@@ -693,14 +690,58 @@ class _ChatScreenState extends State<ChatScreen> {
         final rec = msg.data?['recovery'] as Map<String, dynamic>?;
         final nb  = msg.data?['newBooking'] as Map<String, dynamic>?;
         if (rec == null) return const SizedBox.shrink();
-        return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 6),
-          child: RecoveryWidget(
-            apologyMessage: rec['apology_message'] as String? ?? '',
-            compensation: (rec['compensation'] as Map?)?.cast<String, dynamic>() ?? {},
-            newBooking: nb,
-            cause: rec['cause'] as String? ?? 'provider_emergency',
-          ),
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 6),
+              child: RecoveryWidget(
+                apologyMessage: rec['apology_message'] as String? ?? '',
+                compensation: (rec['compensation'] as Map?)?.cast<String, dynamic>() ?? {},
+                newBooking: nb,
+                cause: rec['cause'] as String? ?? 'provider_emergency',
+              ),
+            ),
+            if (nb != null) ...[
+              SuccessBubble(
+                providerName: nb['provider_name'] ?? 'Naya Provider',
+                scheduledTime: nb['scheduled_time'] != null
+                    ? nb['scheduled_time'].toString().substring(0, 16)
+                    : 'Tomorrow',
+                price: (nb['final_price'] as num?)?.toInt() ?? 0,
+                bookingId: nb['booking_id'] ?? '',
+                checklist: nb['checklist'] ?? [],
+              ),
+              LiveTrackingWidget(
+                booking: nb,
+                onRated: (stars) {
+                  _addMsg(Message(
+                      text: "Your rating has been submitted. Thank you for using Haazir!",
+                      isUser: false));
+                },
+                onReassigned: (newBooking2, attempt2, recovery2) {
+                  if (recovery2 != null) {
+                    _addMsg(Message(
+                      text: '',
+                      isUser: false,
+                      type: 'recovery',
+                      data: {'newBooking': newBooking2, 'recovery': recovery2},
+                    ));
+                  } else {
+                    _addMsg(Message(
+                      text: "Attempt $attempt2: ${newBooking2['provider_name'] ?? 'Naya Provider'} assigned.",
+                      isUser: false,
+                      type: 'booking_reassigned',
+                      data: newBooking2,
+                    ));
+                  }
+                },
+                onCancelReady: (fn) {
+                  if (mounted) setState(() => _cancelBookingFn = fn);
+                },
+              ),
+            ],
+          ],
         );
 
       case 'booking_reassigned':
@@ -1373,8 +1414,11 @@ class _LiveTrackingWidgetState extends State<LiveTrackingWidget> {
           _retryAttempt = attempt;
           _autoRetrying = false;
         });
+        // Fire the callback — chat screen will add a NEW LiveTrackingWidget for newBooking.
+        // That new widget owns polling from here. This widget must NOT also poll the same
+        // booking, or both will call _autoReassign on the next cancellation (exponential loop).
         widget.onReassigned?.call(newBooking, attempt, recovery);
-        _startPolling();
+        // Do NOT call _startPolling() here — new widget takes over.
       }
     } catch (_) {
       if (mounted) setState(() { _autoRetrying = false; _noProviderFound = true; });

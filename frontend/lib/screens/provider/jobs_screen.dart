@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../services/api_service.dart';
 import '../../services/booking_events.dart';
+import '../../main_provider.dart' show kProviderDisplayName;
 import 'chat_screen.dart';
 
 class JobsScreen extends StatefulWidget {
@@ -24,7 +25,7 @@ class _JobsScreenState extends State<JobsScreen>
     'ACCEPTED',
     'ARRIVING',
     'ARRIVED',
-    'IN_PROGRESS'
+    'IN_PROGRESS',
   };
 
   int _statusPriority(String s) {
@@ -64,10 +65,21 @@ class _JobsScreenState extends State<JobsScreen>
     return list;
   }
 
+  List<dynamic> get _scheduledJobs {
+    final list = _jobs
+        .where((j) => _isChainTip(j) && j['status'] == 'SCHEDULED')
+        .toList();
+    // Most recently created first so the latest booking is at the top
+    list.sort((a, b) => ((b['created_at'] as String?) ?? '')
+        .compareTo((a['created_at'] as String?) ?? ''));
+    return list;
+  }
+
   List<dynamic> get _doneJobs {
     final list = _jobs
         .where((j) =>
             _isChainTip(j) &&
+            j['status'] != 'SCHEDULED' &&
             !_activeStatuses.contains(j['status'] as String? ?? ''))
         .toList();
     list.sort((a, b) => ((b['created_at'] as String?) ?? '')
@@ -75,10 +87,25 @@ class _JobsScreenState extends State<JobsScreen>
     return list;
   }
 
+  String _formatScheduledTime(String? raw) {
+    if (raw == null || raw.isEmpty) return 'Date TBD';
+    try {
+      final dt = DateTime.parse(raw).toLocal();
+      const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      final h = dt.hour > 12 ? dt.hour - 12 : (dt.hour == 0 ? 12 : dt.hour);
+      final ampm = dt.hour >= 12 ? 'PM' : 'AM';
+      final min = dt.minute.toString().padLeft(2, '0');
+      return '${days[dt.weekday - 1]}, ${dt.day} ${months[dt.month - 1]} · $h:$min $ampm';
+    } catch (_) {
+      return raw;
+    }
+  }
+
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
     _fetchJobs();
     _refreshSub = BookingEvents.onRefresh.listen((_) => _fetchJobs());
   }
@@ -110,6 +137,7 @@ class _JobsScreenState extends State<JobsScreen>
   @override
   Widget build(BuildContext context) {
     final activeJobs = _activeJobs;
+    final scheduledJobs = _scheduledJobs;
     final doneJobs = _doneJobs;
 
     return Scaffold(
@@ -124,6 +152,27 @@ class _JobsScreenState extends State<JobsScreen>
                 fontWeight: FontWeight.w600,
                 color: Colors.white)),
         actions: [
+          if (kProviderDisplayName.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
+                ),
+                child: Row(mainAxisSize: MainAxisSize.min, children: [
+                  const Icon(Icons.handyman_rounded, size: 13, color: Colors.white),
+                  const SizedBox(width: 5),
+                  Text(kProviderDisplayName,
+                      style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white)),
+                ]),
+              ),
+            ),
           IconButton(
               icon: const Icon(Icons.refresh_rounded, color: Colors.white),
               onPressed: _fetchJobs),
@@ -143,8 +192,7 @@ class _JobsScreenState extends State<JobsScreen>
                 if (activeJobs.isNotEmpty) ...[
                   const SizedBox(width: 6),
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
                         color: const Color(0xFF3A9010).withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(10)),
@@ -156,12 +204,27 @@ class _JobsScreenState extends State<JobsScreen>
             ),
             Tab(
               child: Row(mainAxisSize: MainAxisSize.min, children: [
+                const Text("Upcoming"),
+                if (scheduledJobs.isNotEmpty) ...[
+                  const SizedBox(width: 6),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                        color: const Color(0xFF1565C0).withValues(alpha: 0.25),
+                        borderRadius: BorderRadius.circular(10)),
+                    child: Text("${scheduledJobs.length}",
+                        style: const TextStyle(fontSize: 11)),
+                  ),
+                ],
+              ]),
+            ),
+            Tab(
+              child: Row(mainAxisSize: MainAxisSize.min, children: [
                 const Text("History"),
                 if (doneJobs.isNotEmpty) ...[
                   const SizedBox(width: 6),
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.08),
                         borderRadius: BorderRadius.circular(10)),
@@ -183,9 +246,99 @@ class _JobsScreenState extends State<JobsScreen>
               children: [
                 _buildJobList(activeJobs,
                     emptyLabel: "No active jobs", heroFirst: true),
+                _buildUpcomingList(scheduledJobs),
                 _buildJobList(doneJobs, emptyLabel: "No completed jobs yet"),
               ],
             ),
+    );
+  }
+
+  Widget _buildUpcomingList(List<dynamic> jobs) {
+    if (jobs.isEmpty) {
+      return Center(
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          const Icon(Icons.calendar_today_rounded,
+              color: Color(0xFFE8EDE6), size: 48),
+          const SizedBox(height: 12),
+          const Text("No upcoming bookings",
+              style: TextStyle(color: Color(0xFF767773), fontSize: 14)),
+        ]),
+      );
+    }
+    return ListView.builder(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+      itemCount: jobs.length,
+      itemBuilder: (_, i) => _buildUpcomingJobCard(jobs[i] as Map<String, dynamic>),
+    );
+  }
+
+  Widget _buildUpcomingJobCard(Map<String, dynamic> j) {
+    const blue = Color(0xFF1565C0);
+    const blueBg = Color(0xFFE8F0FE);
+
+    return GestureDetector(
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (_) => ProviderChatScreen(bookingId: j['booking_id'] as String)),
+      ).then((_) => _fetchJobs()),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 14),
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: blue.withValues(alpha: 0.35), width: 1.5),
+        ),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Row(children: [
+            Container(
+              padding: const EdgeInsets.all(9),
+              decoration: const BoxDecoration(color: blueBg, shape: BoxShape.circle),
+              child: const Icon(Icons.calendar_today_rounded, color: blue, size: 18),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(
+                  "${j['service_type']} — ${j['location']}",
+                  style: const TextStyle(
+                      color: Color(0xFF21231D),
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  _formatScheduledTime(j['scheduled_time'] as String?),
+                  style: const TextStyle(color: blue, fontSize: 12, fontWeight: FontWeight.w600),
+                ),
+              ]),
+            ),
+            if (j['final_price'] != null)
+              Text("Rs. ${j['final_price']}",
+                  style: const TextStyle(
+                      color: Color(0xFF3A9010),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13)),
+          ]),
+          const SizedBox(height: 6),
+          Row(children: [
+            const Icon(Icons.person_rounded, size: 13, color: Color(0xFFB0B5AE)),
+            const SizedBox(width: 5),
+            Expanded(
+              child: Text(
+                j['customer_id'] as String? ?? '',
+                style: const TextStyle(color: Color(0xFF767773), fontSize: 12),
+              ),
+            ),
+            const Text("Tap to open →",
+                style: TextStyle(
+                    color: blue, fontSize: 11, fontWeight: FontWeight.w600)),
+          ]),
+        ]),
+      ),
     );
   }
 

@@ -84,14 +84,15 @@ function _startServer(port: number): Promise<http.Server> {
 
 const C = { reset: "\x1b[0m", bold: "\x1b[1m", green: "\x1b[32m", cyan: "\x1b[36m", yellow: "\x1b[33m" };
 
-export async function launchProviderApp(providerName: string, bookingId: string): Promise<void> {
+export async function launchProviderApp(providerName: string, bookingId: string, providerId?: string): Promise<void> {
+  const idParam = providerId ? `&providerId=${encodeURIComponent(providerId)}` : "";
+
   // Guard: build must exist
   if (!fs.existsSync(path.join(BUILD_DIR, "index.html"))) {
     console.warn(`${C.yellow}${C.bold}[ProviderApp] Pre-built app not found at ${BUILD_DIR}`);
     console.warn(`  Run once before demoing:`);
     console.warn(`  cd frontend && flutter build web -t lib/main_provider.dart -o build/web_provider${C.reset}`);
-    // Graceful fallback: open whatever is already on 57654
-    exec(`open "http://localhost:57654"`, () => {});
+    exec(`open "http://localhost:57654?provider=${encodeURIComponent(providerName)}${idParam}"`, () => {});
     return;
   }
 
@@ -106,7 +107,8 @@ export async function launchProviderApp(providerName: string, bookingId: string)
 
     console.log(`${C.green}${C.bold}✅ Provider app ready → http://localhost:${port}  (${providerName})${C.reset}\n`);
 
-    exec(`open "http://localhost:${port}"`, err => {
+    const encodedName = encodeURIComponent(providerName);
+    exec(`open "http://localhost:${port}?provider=${encodedName}${idParam}"`, err => {
       if (err) console.warn("[ProviderApp] Could not open browser:", err.message);
     });
   } catch (err: any) {

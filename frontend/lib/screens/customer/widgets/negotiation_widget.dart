@@ -17,11 +17,15 @@ class NegotiationWidget extends StatefulWidget {
   State<NegotiationWidget> createState() => _NegotiationWidgetState();
 }
 
-class _NegotiationWidgetState extends State<NegotiationWidget> {
+class _NegotiationWidgetState extends State<NegotiationWidget>
+    with AutomaticKeepAliveClientMixin {
   final List<_Step> _visibleSteps = [];
   int _stepIndex = 0;
   List<_Step> _allSteps = [];
   bool _showRecap = false;
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
@@ -135,6 +139,7 @@ class _NegotiationWidgetState extends State<NegotiationWidget> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final trace = widget.negotiationTrace;
     final evals = (trace['bid_evaluations'] as List?)?.cast<Map<String, dynamic>>() ?? [];
     final winner = evals.where((e) => e['status'] == 'selected').firstOrNull;

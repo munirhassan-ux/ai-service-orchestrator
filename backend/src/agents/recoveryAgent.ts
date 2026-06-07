@@ -79,6 +79,9 @@ Do NOT mention provider name. Do NOT use markdown.`;
   }
 }
 
+const C = { reset: "\x1b[0m", bold: "\x1b[1m", red: "\x1b[31m", yellow: "\x1b[33m", cyan: "\x1b[36m", green: "\x1b[32m", dim: "\x1b[2m" };
+const tag = `${C.yellow}${C.bold}[Recovery]${C.reset}`;
+
 export async function handle(
   cancelledBookingId: string,
   providersTriedSoFar: string[],
@@ -96,27 +99,42 @@ export async function handle(
   const cause = classifyCause(cancelledProvider ?? {}, chainLength);
   const compensation = buildCompensation(cause, booking.final_price);
 
-  // Apply reliability penalty to the canceller
-  try { applyEvent(booking.provider_id, "cancel_after_accept", cancelledBookingId); } catch { /* non-fatal */ }
+  console.log(`\n${tag} ━━━ Provider Cancellation Received ━━━`);
+  console.log(`${tag} Booking : ${C.bold}${cancelledBookingId}${C.reset}  Customer: ${booking.customer_id}`);
+  console.log(`${tag} Service : ${booking.service_type} @ ${booking.location}  |  Price: Rs.${booking.final_price}`);
+  console.log(`${tag} Canceller: ${C.red}${cancelledProvider?.name ?? booking.provider_id}${C.reset}  (attempt ${chainLength + 1})`);
+  console.log(`${tag} Cause   : ${C.bold}${cause}${C.reset}`);
+  console.log(`${tag} Compensation: ${compensation.type} — ${compensation.description}`);
 
+  // Apply reliability penalty to the canceller
+  try {
+    applyEvent(booking.provider_id, "cancel_after_accept", cancelledBookingId);
+    console.log(`${tag} ${C.dim}Reliability penalty applied to ${cancelledProvider?.name ?? booking.provider_id}${C.reset}`);
+  } catch { /* non-fatal */ }
+
+  console.log(`${tag} Generating apology (${language})...`);
   const apologyMessage = await generateApology(cause, language, compensation);
+  console.log(`${tag} Apology : "${C.dim}${apologyMessage.slice(0, 80)}${apologyMessage.length > 80 ? "…" : ""}${C.reset}"`);
 
   // Re-run matching excluding all tried providers
   const intent = booking.parsed_intent ?? {
     service_type: booking.service_type,
     location:     booking.location,
     urgency:      "medium",
-    preferred_time: "flexible",
+    preferred_time: booking.scheduled_time ?? "flexible",
   };
 
   const allExcluded = [...new Set([...providersTriedSoFar, booking.provider_id])];
+  console.log(`${tag} Re-matching for ${intent.service_type} @ ${intent.location}  (excluding ${allExcluded.length} provider${allExcluded.length !== 1 ? "s" : ""})...`);
 
   try {
     const matchResult = await matchProviders(intent, allExcluded);
     if (matchResult.top_providers.length === 0) {
+      console.log(`${tag} ${C.red}No candidates found — recovery failed.${C.reset}\n`);
       return { success: false, apology_message: apologyMessage, compensation, attempts_used: chainLength + 1, cause };
     }
 
+    console.log(`${tag} ${matchResult.top_providers.length} candidate(s) found → running A2A negotiation...`);
     const coords = await geocodeLocation(intent.location);
     const negotiationResult = await runNegotiation(
       matchResult.top_providers,
@@ -131,10 +149,15 @@ export async function handle(
         ?? matchResult.top_providers[0]
       : matchResult.top_providers[0];
 
-    const honourPrice = cause === "repeated_canceller"; // platform absorbs diff
+    const honourPrice = cause === "repeated_canceller";
     const agreedPrice = honourPrice
       ? Math.min(booking.final_price, negotiationResult.contract?.agreed_price ?? booking.final_price)
       : (negotiationResult.contract?.agreed_price ?? (newProvider.price_quote?.total ?? booking.final_price));
+
+    console.log(`${tag} Negotiation complete — winner: ${C.green}${C.bold}${newProvider.name}${C.reset} @ Rs.${agreedPrice}${honourPrice ? " (price honoured)" : ""}`);
+    if (negotiationResult.contract) {
+      console.log(`${tag} Contract : ${negotiationResult.contract.contract_id}  |  ${negotiationResult.trace?.rounds ?? "?"} round(s)`);
+    }
 
     const { booking: newBooking } = await createBooking(
       intent,
@@ -146,6 +169,8 @@ export async function handle(
       booking.session_id
     );
 
+    console.log(`${tag} ${C.green}${C.bold}✅ Recovery complete — new booking: ${newBooking.booking_id}${C.reset}\n`);
+
     return {
       success:         true,
       apology_message: apologyMessage,
@@ -156,6 +181,7 @@ export async function handle(
       cause,
     };
   } catch (err: any) {
+    console.log(`${tag} ${C.red}Recovery failed — ${err.message}${C.reset}\n`);
     return { success: false, apology_message: apologyMessage, compensation, attempts_used: chainLength + 1, cause };
   }
 }

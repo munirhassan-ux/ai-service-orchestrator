@@ -4,6 +4,10 @@ import 'screens/provider/provider_home.dart';
 import 'services/notification_service.dart';
 import 'services/booking_events.dart';
 
+/// Provider name and ID passed via URL query params when the app is launched.
+String kProviderDisplayName = Uri.base.queryParameters['provider'] ?? '';
+String kProviderId          = Uri.base.queryParameters['providerId'] ?? '';
+
 void main() {
   runApp(const HaazirProviderApp());
 }

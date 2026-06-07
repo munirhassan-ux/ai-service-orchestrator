@@ -1,7 +1,7 @@
 import { Router, Request, Response } from "express";
 import { runOrchestration, confirmBookingAfterNegotiation, rerouteToNextProvider, triggerWarmRestart } from "../orchestrator.js";
 import { providerRespond, customerRespond, acceptMidpoint, declineMidpoint, getThread } from "../agents/negotiationAgent.js";
-import { updateBookingStatus, completeChecklistItem, getBooking, submitBookingRating, handleProviderCancellation } from "../agents/bookingSimulator.js";
+import { updateBookingStatus, toggleChecklistItem, completeChecklistItem, getBooking, submitBookingRating, handleProviderCancellation } from "../agents/bookingSimulator.js";
 import { matchProviders } from "../agents/providerMatcher.js";
 import * as fs from "fs";
 import * as path from "path";
@@ -11,6 +11,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 import { processDispute, raiseDispute, getDispute, listDisputes, respondToDispute } from "../agents/disputeAgent.js";
 import { getReliabilitySnapshot, applyEvent } from "../agents/reliabilityEngine.js";
+import { launchProviderApp } from "../utils/providerAppLauncher.js";
 import { getContract, appendEventToContract } from "../agents/negotiationEngine.js";
 import { createSession, getSession, updateSession } from "../session.js";
 import { redact, checkOutput } from "../middleware/guardrail.js";
@@ -273,7 +274,7 @@ router.post("/booking/status", (req: Request, res: Response) => {
 router.post("/booking/checklist", (req: Request, res: Response) => {
   const { booking_id, item_index } = req.body;
   try {
-    const booking = completeChecklistItem(booking_id, item_index);
+    const booking = toggleChecklistItem(booking_id, item_index);
     return res.json({ status: "updated", booking });
   } catch (err: any) {
     return res.status(500).json({ error: err.message });
@@ -597,9 +598,25 @@ router.post("/booking/auto-reassign", async (req: Request, res: Response) => {
       return res.json({ status: "no_provider", attempt: result.attempts_used, recovery: result });
     }
 
-    // Link new booking in chain
-    data.bookings[currentIdx].reassigned_to = result.new_booking.booking_id;
-    fs.writeFileSync(bookingsFile, JSON.stringify(data, null, 2));
+    // Re-read file after handle() because createBooking() wrote the new booking to disk.
+    // Writing the stale snapshot would overwrite and delete the newly created booking.
+    const freshData = JSON.parse(fs.readFileSync(bookingsFile, "utf-8"));
+    const freshIdx = freshData.bookings.findIndex((b: any) => b.booking_id === booking.booking_id);
+    if (freshIdx !== -1) {
+      freshData.bookings[freshIdx].reassigned_to = result.new_booking.booking_id;
+      // Also stamp reassigned_from on the new booking so the chain is doubly linked
+      const newIdx = freshData.bookings.findIndex((b: any) => b.booking_id === result.new_booking.booking_id);
+      if (newIdx !== -1) freshData.bookings[newIdx].reassigned_from = booking.booking_id;
+    }
+    fs.writeFileSync(bookingsFile, JSON.stringify(freshData, null, 2));
+
+    // Delay provider app launch so customer agent has time to surface the reassignment info first
+    const newProviderName = result.new_booking.provider_name ?? result.new_booking.provider_id ?? "Provider";
+    setTimeout(() => {
+      launchProviderApp(newProviderName, result.new_booking.booking_id, result.new_booking.provider_id).catch(err =>
+        console.warn("[auto-reassign] launchProviderApp error:", err?.message)
+      );
+    }, 3500);
 
     return res.json({
       status: "reassigned",
@@ -786,6 +803,49 @@ router.post("/negotiation/:contract_id/event", (req: Request, res: Response) => 
 });
 
 // ── RELIABILITY ────────────────────────────────────────────
+// GET /api/provider/:id/reliability-full — all live perf stats by exact provider ID
+router.get("/provider/:id/reliability-full", (req: Request, res: Response) => {
+  try {
+    const providersFile = path.join(__dirname, "../../data/mock_providers.json");
+    const providers = JSON.parse(fs.readFileSync(providersFile, "utf-8"));
+    const p = providers.find((x: any) => x.provider_id === req.params.id);
+    if (!p) return res.status(404).json({ error: "Provider not found" });
+    const snapshot = getReliabilitySnapshot(p.provider_id);
+    return res.json({
+      score:             snapshot?.score ?? p.reliability_score ?? null,
+      ledger:            snapshot?.ledger ?? [],
+      on_time_score:     p.on_time_score,
+      cancellation_risk: p.cancellation_risk,
+      rating:            p.rating,
+      total_jobs:        p.total_jobs,
+    });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/provider/by-name/:name/stats — live perf stats looked up by display name
+router.get("/provider/by-name/:name/stats", (req: Request, res: Response) => {
+  try {
+    const name = decodeURIComponent(req.params.name).toLowerCase();
+    const providersFile = path.join(__dirname, "../../data/mock_providers.json");
+    const providers = JSON.parse(fs.readFileSync(providersFile, "utf-8"));
+    const p = providers.find((x: any) => (x.name ?? "").toLowerCase() === name);
+    if (!p) return res.status(404).json({ error: "Provider not found" });
+    const snapshot = getReliabilitySnapshot(p.provider_id);
+    return res.json({
+      score:             snapshot?.score ?? p.reliability_score ?? null,
+      ledger:            snapshot?.ledger ?? [],
+      on_time_score:     p.on_time_score,
+      cancellation_risk: p.cancellation_risk,
+      rating:            p.rating,
+      total_jobs:        p.total_jobs,
+    });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
 // GET /api/provider/:id/reliability — score + last 10 ledger entries
 router.get("/provider/:id/reliability", (req: Request, res: Response) => {
   try {

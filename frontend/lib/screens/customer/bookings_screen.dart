@@ -66,10 +66,20 @@ class _BookingsScreenState extends State<BookingsScreen>
     return list;
   }
 
+  List<dynamic> get _scheduledBookings {
+    final list = _bookings
+        .where((b) => _isChainTip(b) && b['status'] == 'SCHEDULED')
+        .toList();
+    list.sort((a, b) => ((a['scheduled_time'] as String?) ?? '')
+        .compareTo((b['scheduled_time'] as String?) ?? ''));
+    return list;
+  }
+
   List<dynamic> get _historyBookings {
     final list = _bookings
         .where((b) =>
             _isChainTip(b) &&
+            b['status'] != 'SCHEDULED' &&
             !_activeStatuses.contains(b['status'] as String? ?? ''))
         .toList();
     list.sort((a, b) => ((b['created_at'] as String?) ?? '')
@@ -77,10 +87,25 @@ class _BookingsScreenState extends State<BookingsScreen>
     return list;
   }
 
+  String _formatScheduledTime(String? raw) {
+    if (raw == null || raw.isEmpty) return 'TBD';
+    try {
+      final dt = DateTime.parse(raw).toLocal();
+      const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      final h = dt.hour > 12 ? dt.hour - 12 : (dt.hour == 0 ? 12 : dt.hour);
+      final ampm = dt.hour >= 12 ? 'PM' : 'AM';
+      final min = dt.minute.toString().padLeft(2, '0');
+      return '${days[dt.weekday - 1]}, ${dt.day} ${months[dt.month - 1]} · $h:$min $ampm';
+    } catch (_) {
+      return raw;
+    }
+  }
+
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
     _fetchBookings();
     _refreshSub = BookingEvents.onRefresh.listen((_) => _fetchBookings());
   }
@@ -111,6 +136,7 @@ class _BookingsScreenState extends State<BookingsScreen>
   @override
   Widget build(BuildContext context) {
     final active = _activeBookings;
+    final scheduled = _scheduledBookings;
     final history = _historyBookings;
 
     return Scaffold(
@@ -164,12 +190,28 @@ class _BookingsScreenState extends State<BookingsScreen>
             ),
             Tab(
               child: Row(mainAxisSize: MainAxisSize.min, children: [
+                const Text("Upcoming"),
+                if (scheduled.isNotEmpty) ...[
+                  const SizedBox(width: 6),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1565C0).withValues(alpha: 0.25),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text("${scheduled.length}",
+                        style: const TextStyle(fontSize: 11)),
+                  ),
+                ],
+              ]),
+            ),
+            Tab(
+              child: Row(mainAxisSize: MainAxisSize.min, children: [
                 const Text("History"),
                 if (history.isNotEmpty) ...[
                   const SizedBox(width: 6),
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(10),
@@ -191,6 +233,7 @@ class _BookingsScreenState extends State<BookingsScreen>
               controller: _tabController,
               children: [
                 _buildActiveTab(active),
+                _buildUpcomingTab(scheduled),
                 _buildHistoryTab(history),
               ],
             ),
@@ -327,6 +370,150 @@ class _BookingsScreenState extends State<BookingsScreen>
                     fontSize: 12,
                     fontWeight: FontWeight.bold)),
           ),
+        ]),
+      ),
+    );
+  }
+
+  Widget _buildUpcomingTab(List<dynamic> bookings) {
+    if (bookings.isEmpty) {
+      return const Center(
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          Icon(Icons.calendar_today_rounded,
+              color: Color(0xFFE8EDE6), size: 48),
+          SizedBox(height: 12),
+          Text("No upcoming bookings",
+              style: TextStyle(color: Color(0xFF767773), fontSize: 14)),
+          SizedBox(height: 6),
+          Text("Scheduled bookings will appear here",
+              style: TextStyle(color: Color(0xFFB0B5AE), fontSize: 12)),
+        ]),
+      );
+    }
+    return ListView.builder(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+      itemCount: bookings.length,
+      itemBuilder: (_, i) =>
+          _buildScheduledCard(bookings[i] as Map<String, dynamic>),
+    );
+  }
+
+  Widget _buildScheduledCard(Map<String, dynamic> b) {
+    const blue = Color(0xFF1565C0);
+    const blueBg = Color(0xFFE8F0FE);
+
+    return GestureDetector(
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (_) => ChatScreen(bookingId: b['booking_id'])),
+      ).then((_) => _fetchBookings()),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 14),
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: blue.withValues(alpha: 0.35), width: 1.5),
+        ),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Row(children: [
+            Container(
+              padding: const EdgeInsets.all(9),
+              decoration:
+                  const BoxDecoration(color: blueBg, shape: BoxShape.circle),
+              child: const Icon(Icons.calendar_today_rounded,
+                  color: blue, size: 18),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child:
+                  Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(
+                  b['service_type'] as String? ?? 'Service',
+                  style: const TextStyle(
+                      color: Color(0xFF21231D),
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  _formatScheduledTime(b['scheduled_time'] as String?),
+                  style: const TextStyle(
+                      color: blue,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600),
+                ),
+              ]),
+            ),
+            Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: blueBg,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: blue.withValues(alpha: 0.3)),
+                ),
+                child: const Text("SCHEDULED",
+                    style: TextStyle(
+                        color: blue,
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold)),
+              ),
+              if (b['final_price'] != null &&
+                  (b['final_price'] as num) > 0) ...[
+                const SizedBox(height: 4),
+                Text("Rs. ${b['final_price']}",
+                    style: const TextStyle(
+                        color: Color(0xFF3A9010),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13)),
+              ],
+            ]),
+          ]),
+          const SizedBox(height: 10),
+          Row(children: [
+            const Icon(Icons.location_on_rounded,
+                size: 13, color: Color(0xFFB0B5AE)),
+            const SizedBox(width: 5),
+            Expanded(
+              child: Text(
+                b['location'] as String? ?? '',
+                style: const TextStyle(
+                    color: Color(0xFF767773), fontSize: 12),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            Text("Tap to view →",
+                style: TextStyle(
+                    color: blue.withValues(alpha: 0.7),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600)),
+          ]),
+          if ((b['time_note'] as String?) != null) ...[
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFF8E1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: const Color(0xFFFFCC02).withValues(alpha: 0.6)),
+              ),
+              child: Row(children: [
+                const Icon(Icons.schedule_rounded, size: 12, color: Color(0xFFE65100)),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    b['time_note'] as String,
+                    style: const TextStyle(
+                        color: Color(0xFFE65100), fontSize: 11),
+                  ),
+                ),
+              ]),
+            ),
+          ],
         ]),
       ),
     );

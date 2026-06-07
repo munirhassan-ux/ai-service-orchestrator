@@ -58,14 +58,38 @@ app.listen(PORT, () => {
     console.log("✅ Provider app build found — auto-launch ready.\n");
   }
 
-  // On every restart: clear all active bans and reset strikes so demo testing is never blocked
+  // On every restart: wipe all job listings for a clean demo slate
   try {
-    const abuseFile = path.join(__dirname, "../data/customer_abuse.json");
-    if (fs.existsSync(abuseFile)) {
-      fs.writeFileSync(abuseFile, JSON.stringify({}, null, 2));
-      console.log("🔓 Abuse bans cleared on startup (demo mode)\n");
+    const dataDir = path.join(__dirname, "../data");
+
+    fs.writeFileSync(path.join(dataDir, "mock_bookings.json"),    JSON.stringify({ bookings: [] }, null, 2));
+    fs.writeFileSync(path.join(dataDir, "sessions.json"),         JSON.stringify({ sessions: [] }, null, 2));
+    fs.writeFileSync(path.join(dataDir, "mock_schedule.json"),    JSON.stringify({}, null, 2));
+    fs.writeFileSync(path.join(dataDir, "mock_contracts.json"),   JSON.stringify([], null, 2));
+    fs.writeFileSync(path.join(dataDir, "mock_negotiations.json"),JSON.stringify([], null, 2));
+    fs.writeFileSync(path.join(dataDir, "mock_disputes.json"),    JSON.stringify([], null, 2));
+
+    // Clear per-booking invoice files
+    const invoicesDir = path.join(dataDir, "invoices");
+    if (fs.existsSync(invoicesDir)) {
+      for (const f of fs.readdirSync(invoicesDir)) {
+        if (f.endsWith(".json")) fs.unlinkSync(path.join(invoicesDir, f));
+      }
     }
-  } catch { /* non-critical */ }
+
+    // Clear agent trace files
+    const tracesDir = path.join(dataDir, "agent_traces");
+    if (fs.existsSync(tracesDir)) {
+      for (const f of fs.readdirSync(tracesDir)) {
+        if (f.endsWith(".json")) fs.unlinkSync(path.join(tracesDir, f));
+      }
+    }
+
+    // Clear abuse bans
+    fs.writeFileSync(path.join(dataDir, "customer_abuse.json"), JSON.stringify({}, null, 2));
+
+    console.log("🧹 Job listings cleared on startup (clean demo slate)\n");
+  } catch (e) { console.warn("⚠️  Startup reset partial:", (e as Error).message); }
 });
 
 export default app;

@@ -4,10 +4,41 @@ import * as path from "path";
 import { fileURLToPath } from "url";
 import { logProviderMatch } from "../logger.js";
 import { computeScore } from "./reliabilityEngine.js";
+import { parseNaturalLanguageTime } from "../utils/timeParser.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 import { ParsedIntent } from "./intentParser.js";
+
+// Maps intent service_type values to actual service_expertise keys in mock data
+const SERVICE_ALIASES: Record<string, string[]> = {
+  painter:          ["house_painting", "wall_painting", "interior_painting", "exterior_painting"],
+  painting:         ["house_painting", "wall_painting", "interior_painting", "exterior_painting"],
+  tiling:           ["tiling", "tile_installation", "carpenter"],
+  fridge_repair:    ["fridge_repair", "refrigerator_repair", "ac_repair"],
+  solar_repair:     ["solar_repair", "solar_maintenance"],
+  solar_installation: ["solar_installation", "solar_maintenance"],
+  deep_cleaning:    ["deep_cleaning", "home_cleaning"],
+  sofa_cleaning:    ["sofa_cleaning", "carpet_cleaning", "home_cleaning"],
+  office_cleaning:  ["office_cleaning", "home_cleaning"],
+  cctv:             ["cctv_installation", "cctv_repair", "security_systems"],
+  inverter:         ["inverter_repair", "generator_repair"],
+  geyser_repair:    ["geyser_repair", "gas_repair"],
+};
+
+function resolveServiceTypes(serviceType: string): string[] {
+  const lower = serviceType.toLowerCase();
+  return SERVICE_ALIASES[lower] ?? [lower];
+}
+
+function matchesServiceType(expertise: string[], serviceType: string): boolean {
+  const targets = resolveServiceTypes(serviceType);
+  const prefix = serviceType.toLowerCase().split("_")[0];
+  return expertise.some(s => {
+    const sl = s.toLowerCase();
+    return targets.includes(sl) || sl === serviceType.toLowerCase() || sl.startsWith(prefix);
+  });
+}
 
 function getProvidersData() {
   const filePath = path.join(__dirname, "../../data/mock_providers.json");
@@ -33,40 +64,53 @@ function getLiveActiveBookingCounts(): Record<string, number> {
 }
 
 // Detect time-window conflicts: provider already has an active booking within ±2h of requested slot
-function resolvePreferredTimeMs(preferredTime: string): number {
-  const now = Date.now();
-  const ONE_DAY = 86400000;
-  switch ((preferredTime || "flexible").toLowerCase().replace(" ", "_")) {
-    case "asap": return now + 2 * 3600000;
-    case "today_morning": return new Date().setHours(10, 0, 0, 0);
-    case "today_afternoon": return new Date().setHours(14, 0, 0, 0);
-    case "today_evening": return new Date().setHours(18, 0, 0, 0);
-    case "tomorrow_morning": return new Date(now + ONE_DAY).setHours(10, 0, 0, 0);
-    case "tomorrow_afternoon": return new Date(now + ONE_DAY).setHours(14, 0, 0, 0);
-    default: return new Date(now + ONE_DAY).setHours(10, 0, 0, 0);
-  }
-}
+const MAX_WAIT_MS = 4 * 3600000; // providers >4h later than requested are waitlisted
+const SLOT_WINDOW_MS = 2 * 3600000; // 2-hour slot window around each booking
 
-function buildProviderSchedule(preferredTime: string): { schedule: Record<string, number[]>; requestedMs: number } {
+// Build a combined booked-slots map from both bookings and schedule files
+function buildBookedSlotsMap(): Record<string, number[]> {
   const bookingsFile = path.join(__dirname, "../../data/mock_bookings.json");
-  const active = new Set(["ACCEPTED", "ARRIVING", "ARRIVED", "IN_PROGRESS"]);
-  const requestedMs = resolvePreferredTimeMs(preferredTime);
-  const schedule: Record<string, number[]> = {};
+  const scheduleFile = path.join(__dirname, "../../data/mock_schedule.json");
+  const occupied = new Set(["PENDING_PROVIDER", "ACCEPTED", "ARRIVING", "ARRIVED", "IN_PROGRESS", "SCHEDULED"]);
+  const slots: Record<string, number[]> = {};
+
   try {
     const data = JSON.parse(fs.readFileSync(bookingsFile, "utf-8"));
     for (const b of data.bookings) {
-      if (active.has(b.status) && b.scheduled_time) {
-        if (!schedule[b.provider_id]) schedule[b.provider_id] = [];
-        schedule[b.provider_id].push(new Date(b.scheduled_time).getTime());
+      if (occupied.has(b.status) && b.scheduled_time) {
+        if (!slots[b.provider_id]) slots[b.provider_id] = [];
+        slots[b.provider_id].push(new Date(b.scheduled_time).getTime());
       }
     }
   } catch { /* no-op */ }
-  return { schedule, requestedMs };
+
+  try {
+    const sched = JSON.parse(fs.readFileSync(scheduleFile, "utf-8"));
+    for (const [providerId, entries] of Object.entries(sched as Record<string, any[]>)) {
+      for (const e of entries) {
+        if (e.datetime && e.status !== "soft_locked") {
+          if (!slots[providerId]) slots[providerId] = [];
+          const ms = new Date(e.datetime).getTime();
+          if (!slots[providerId].includes(ms)) slots[providerId].push(ms);
+        }
+      }
+    }
+  } catch { /* no-op */ }
+
+  return slots;
 }
 
-function hasTimeConflict(providerId: string, requestedMs: number, schedule: Record<string, number[]>): boolean {
-  const TWO_HOURS = 2 * 3600000;
-  return (schedule[providerId] || []).some(t => Math.abs(t - requestedMs) < TWO_HOURS);
+// Given a provider's booked slots and a requested time, return their earliest free slot at or after requestedMs
+function getNextAvailableSlotMs(providerId: string, requestedMs: number, slots: Record<string, number[]>): number {
+  let candidate = requestedMs;
+  const provSlots = slots[providerId] || [];
+
+  for (let i = 0; i < 10; i++) {
+    const conflict = provSlots.find(t => Math.abs(t - candidate) < SLOT_WINDOW_MS);
+    if (!conflict) return candidate;
+    candidate = conflict + SLOT_WINDOW_MS;
+  }
+  return candidate;
 }
 
 export interface RankedProvider {
@@ -106,6 +150,8 @@ export interface RankedProvider {
   price_quote?: any;
   reliability_score?: number;
   completion_rate?: number;
+  next_available_slot_ms?: number;
+  slot_delay_min?: number;
 }
 
 export interface MatchResult {
@@ -208,16 +254,12 @@ export async function matchProviders(intent: ParsedIntent, excludedIds: string[]
   const providersData = getProvidersData();
   const userCoords = await geocodeLocation(intent.location);
 
-  // Real-time capacity and time-window conflict data
+  // Real-time capacity and per-provider next-available-slot data
   const liveActiveCounts = getLiveActiveBookingCounts();
-  const { schedule, requestedMs } = buildProviderSchedule(intent.preferred_time);
+  const requestedMs = parseNaturalLanguageTime(intent.preferred_time).getTime();
+  const bookedSlots  = buildBookedSlotsMap();
 
   // STEP 2 - Provider Matching Filters
-  // Filter providers who:
-  // - Are online
-  // - Have active jobs under capacity (using live counts from bookings file)
-  // - No time-window conflict (not already booked within ±2h of requested slot)
-  // - Match the service type
   let eligible = providersData.filter((p: any) => {
     const pId = p.provider_id || p.id;
     if (excludedIds.includes(pId)) return false;
@@ -225,16 +267,21 @@ export async function matchProviders(intent: ParsedIntent, excludedIds: string[]
     const isOnline = p.availability_status === "online";
     const liveJobs = liveActiveCounts[pId] ?? p.active_jobs;
     const capacityOk = liveJobs < p.capacity;
-    const noConflict = !hasTimeConflict(pId, requestedMs, schedule);
-    const matchesService = p.service_expertise.some(
-      (s: string) =>
-        s.toLowerCase() === intent.service_type.toLowerCase() ||
-        s.toLowerCase().startsWith(intent.service_type.toLowerCase().split("_")[0])
-    );
-    // Hard-exclude providers with very high cancellation risk or in cooldown
+    const matchesService = matchesServiceType(p.service_expertise, intent.service_type);
     const notBlacklisted = (p.cancellation_risk ?? 0) <= 0.30;
     const notInCooldown = !p.cooldown_until || new Date() > new Date(p.cooldown_until);
-    return isOnline && capacityOk && noConflict && matchesService && notBlacklisted && notInCooldown;
+
+    // Compute next available slot — providers available within MAX_WAIT_MS pass
+    const nextSlot  = getNextAvailableSlotMs(pId, requestedMs, bookedSlots);
+    const delay     = nextSlot - requestedMs;
+    const withinWait = delay <= MAX_WAIT_MS;
+
+    return isOnline && capacityOk && matchesService && notBlacklisted && notInCooldown && withinWait;
+  }).map((p: any) => {
+    const pId = p.provider_id || p.id;
+    const nextSlot    = getNextAvailableSlotMs(pId, requestedMs, bookedSlots);
+    const slotDelayMin = Math.round((nextSlot - requestedMs) / 60000);
+    return { ...p, next_available_slot_ms: nextSlot, slot_delay_min: slotDelayMin };
   });
 
   let fallback_used = false;
@@ -250,12 +297,7 @@ export async function matchProviders(intent: ParsedIntent, excludedIds: string[]
       const pId = p.provider_id || p.id;
       if (excludedIds.includes(pId)) return false;
       const isAlreadyIncluded = eligible.some((e: any) => (e.provider_id || e.id) === pId);
-      const matchesService = p.service_expertise.some(
-        (s: string) =>
-          s.toLowerCase() === intent.service_type.toLowerCase() ||
-          s.toLowerCase().startsWith(intent.service_type.toLowerCase().split("_")[0])
-      );
-      return !isAlreadyIncluded && matchesService;
+      return !isAlreadyIncluded && matchesServiceType(p.service_expertise, intent.service_type);
     });
 
     // Mark them as waitlisted and append
@@ -268,12 +310,16 @@ export async function matchProviders(intent: ParsedIntent, excludedIds: string[]
   }
 
   if (eligible.length === 0) {
+    const requestedFmt = new Date(requestedMs).toLocaleString("en-US", {
+      timeZone: "Asia/Karachi", weekday: "short", month: "short", day: "numeric",
+      hour: "numeric", minute: "2-digit", hour12: true,
+    });
     return {
       top_providers: [],
-      reasoning: `Hum maazrat chahte hain, is waqt ${intent.service_type} ke liye koi provider available nahi hai.`,
+      reasoning: `Is waqt ${intent.service_type} ke liye koi provider available nahi hai.`,
       fallback_used: true,
-      fallback_reason: "No providers matched.",
-      matching_trace: "0 eligible providers matched.",
+      fallback_reason: `no_providers_at_time:${requestedFmt}`,
+      matching_trace: "0 eligible providers within 4h of requested time.",
     };
   }
 
@@ -291,21 +337,17 @@ export async function matchProviders(intent: ParsedIntent, excludedIds: string[]
     const travel_mins = distance * 2; // assume 2 mins/km
     const travel_time_score = Math.max(0, 100 - (travel_mins / 60) * 100);
 
-    // 2. Availability Match (15%): Exact = 100, +/-1hr = 70, +/-2hr = 40
-    // We assume slot matches closely unless booked up
-    let availability_match_score = 100;
+    // 2. Availability Match (15%): exact = 100, delayed = scaled down, waitlisted = 40
+    const delayMin = p.slot_delay_min ?? 0;
+    let availability_match_score = delayMin === 0 ? 100 : Math.max(0, 100 - (delayMin / (MAX_WAIT_MS / 60000)) * 60);
     if (p.is_waitlisted) {
       availability_match_score = 40; // Penalty since offline/waitlisted
     }
 
-    // 3. Specialization (20%): Exact = 100, Related = 60, Generic = 30
-    const exactMatch = p.service_expertise.some((s: string) => s.toLowerCase() === intent.service_type.toLowerCase());
-    let specialization_score = 30;
-    if (exactMatch) {
-      specialization_score = 100;
-    } else if (p.service_expertise.some((s: string) => s.toLowerCase().startsWith(intent.service_type.toLowerCase().split("_")[0]))) {
-      specialization_score = 60;
-    }
+    // 3. Specialization (20%): Exact = 100, Alias/Related = 60, Generic = 30
+    const exactMatch  = p.service_expertise.some((s: string) => s.toLowerCase() === intent.service_type.toLowerCase());
+    const aliasMatch  = !exactMatch && matchesServiceType(p.service_expertise, intent.service_type);
+    const specialization_score = exactMatch ? 100 : aliasMatch ? 60 : 30;
 
     // 4. On-Time + Reliability (15%): Use live reliability_score if present, else on_time_score
     // reliability_score is a 0–100 EWMA composite — it captures recency better than static on_time_score

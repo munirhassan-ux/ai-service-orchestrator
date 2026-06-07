@@ -12,6 +12,7 @@ import { logScheduling, logStatusChange } from "../logger.js";
 import { logTraceEvent } from "../trace.js";
 import { applyEvent } from "./reliabilityEngine.js";
 import { generateAndSaveProgressMessage } from "./progressAgent.js";
+import { parseNaturalLanguageTime, formatPKTTime } from "../utils/timeParser.js";
 
 const bookingsFile = path.join(__dirname, "../../data/mock_bookings.json");
 const scheduleFile = path.join(__dirname, "../../data/mock_schedule.json");
@@ -54,6 +55,8 @@ export interface Booking {
     timestamp: string;
   }[];
   session_id?: string;
+  requested_time?: string;
+  time_note?: string;
   // GPS movement simulation fields
   current_lat?: number;
   current_lng?: number;
@@ -125,117 +128,6 @@ export function updateProviderInFile(providerId: string, updates: Partial<any>) 
   }
 }
 
-function parseNaturalLanguageTime(preferred: string): Date {
-  const pkt = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Karachi" }));
-  const pktHour = pkt.getHours();
-  const s = (preferred ?? "").toLowerCase().trim();
-
-  // Helper: get a Date set to a specific hour today (PKT)
-  function todayAt(h: number): Date {
-    const d = new Date(pkt);
-    d.setHours(h, 0, 0, 0);
-    return d;
-  }
-
-  // Helper: get a Date N days from today at hour h
-  function daysFromNow(n: number, h: number): Date {
-    const d = new Date(pkt);
-    d.setDate(d.getDate() + n);
-    d.setHours(h, 0, 0, 0);
-    return d;
-  }
-
-  // Helper: get next occurrence of a weekday (0=Sun … 6=Sat)
-  function nextWeekday(targetDay: number, h: number): Date {
-    const d = new Date(pkt);
-    const diff = ((targetDay - d.getDay()) + 7) % 7 || 7;
-    d.setDate(d.getDate() + diff);
-    d.setHours(h, 0, 0, 0);
-    return d;
-  }
-
-  // Extract explicit clock hour from string, e.g. "10 baje", "3pm", "14:00", "shaam 4"
-  function extractHour(text: string): number | null {
-    const m12 = text.match(/(\d{1,2})\s*(?:baje|am|pm|:00)/i);
-    const m24 = text.match(/\b([01]?\d|2[0-3]):([0-5]\d)\b/);
-    if (m24) return parseInt(m24[1]);
-    if (m12) {
-      let h = parseInt(m12[1]);
-      if (/pm/i.test(text) && h < 12) h += 12;
-      if (/am/i.test(text) && h === 12) h = 0;
-      // Contextual: if no am/pm, use time-of-day words
-      if (!/(am|pm)/i.test(text)) {
-        if (/shaam|evening/i.test(text) && h < 12) h += 12;
-        if (/raat|night/i.test(text) && h < 9) h += 12;
-        if (/dopahar|afternoon/i.test(text) && h < 12) h += 12;
-      }
-      return h;
-    }
-    return null;
-  }
-
-  // Time-of-day defaults when no exact hour given
-  function periodHour(text: string): number {
-    if (/subah|morning|صبح/.test(text)) return 10;
-    if (/dopahar|afternoon|دوپہر/.test(text)) return 14;
-    if (/shaam|evening|شام/.test(text)) return 18;
-    if (/raat|night|رات/.test(text)) return 21;
-    // Default based on current PKT hour
-    if (pktHour >= 6 && pktHour < 12) return 10;
-    if (pktHour >= 12 && pktHour < 17) return 14;
-    if (pktHour >= 17 && pktHour < 21) return 18;
-    return 10; // overnight → next morning default
-  }
-
-  const explicitHour = extractHour(s);
-  const baseHour = explicitHour ?? periodHour(s);
-
-  // asap / abhi
-  if (/^(asap|abhi|فوری|emergency)/.test(s)) {
-    return new Date(pkt.getTime() + 2 * 60 * 60 * 1000);
-  }
-
-  // today
-  if (/^(aaj|today|آج)/.test(s)) {
-    const h = explicitHour ?? (pktHour < 20 ? Math.max(pktHour + 2, 10) : 10);
-    const t = todayAt(h);
-    return t <= pkt ? daysFromNow(1, 10) : t;
-  }
-
-  // tomorrow
-  if (/^(kal|tomorrow|کل)/.test(s) && !/parson|پرسوں/.test(s)) {
-    return daysFromNow(1, baseHour);
-  }
-
-  // day after tomorrow
-  if (/parson|پرسوں/.test(s)) {
-    return daysFromNow(2, baseHour);
-  }
-
-  // named weekdays (Roman Urdu + English)
-  const dayMap: [RegExp, number][] = [
-    [/peer|پیر|monday/i,    1],
-    [/mangal|منگل|tuesday/i, 2],
-    [/budh|بدھ|wednesday/i,  3],
-    [/jumeraat|جمعرات|thursday/i, 4],
-    [/jummah|جمعہ|friday/i,  5],
-    [/hafta|ہفتہ|saturday/i, 6],
-    [/itwaar|اتوار|sunday/i, 0],
-  ];
-  for (const [re, day] of dayMap) {
-    if (re.test(s)) return nextWeekday(day, baseHour);
-  }
-
-  // legacy static keys (keep backwards compat)
-  if (s === "today_morning")    return todayAt(10);
-  if (s === "today_afternoon")  return todayAt(14);
-  if (s === "today_evening")    return todayAt(18);
-  if (s === "tomorrow_morning") return daysFromNow(1, 10);
-  if (s === "tomorrow_afternoon") return daysFromNow(1, 14);
-
-  // flexible / this_week / jab marzi / anytime → tomorrow morning
-  return daysFromNow(1, 10);
-}
 
 // Pakistani service worker defaults: Sun–Thu + Sat working, 08:00–20:00, no Fri after 13:00
 const AVAIL_WORKING_DAYS = new Set([0, 1, 2, 3, 4, 6]); // 5=Fri excluded as jummah
@@ -245,22 +137,42 @@ const JUMMAH_CUTOFF = 13;
 
 function snapToAvailability(d: Date): Date {
   for (let i = 0; i < 14; i++) {
-    const day  = d.getDay();
-    const hour = d.getHours();
+    // Always check availability using PKT hours, regardless of server timezone
+    const pktLocal = new Date(d.toLocaleString("en-US", { timeZone: "Asia/Karachi" }));
+    const day  = pktLocal.getDay();
+    const hour = pktLocal.getHours();
+    const pktY  = pktLocal.getFullYear();
+    const pktMo = String(pktLocal.getMonth() + 1).padStart(2, '0');
+    const pktD  = String(pktLocal.getDate()).padStart(2, '0');
+
+    const advanceToNextDayStart = () =>
+      new Date(`${pktY}-${pktMo}-${pktD}T00:00:00+05:00`).valueOf() + 24 * 3_600_000 + AVAIL_START * 3_600_000;
+
     if (!AVAIL_WORKING_DAYS.has(day) || (day === 5 && hour >= JUMMAH_CUTOFF)) {
-      d.setDate(d.getDate() + 1);
-      d.setHours(AVAIL_START, 0, 0, 0);
+      d = new Date(advanceToNextDayStart());
       continue;
     }
-    if (hour < AVAIL_START) { d.setHours(AVAIL_START, 0, 0, 0); break; }
-    if (hour >= AVAIL_END)  { d.setDate(d.getDate() + 1); d.setHours(AVAIL_START, 0, 0, 0); continue; }
+    if (hour < AVAIL_START) {
+      d = new Date(`${pktY}-${pktMo}-${pktD}T${String(AVAIL_START).padStart(2,'0')}:00:00+05:00`);
+      break;
+    }
+    if (hour >= AVAIL_END) {
+      d = new Date(advanceToNextDayStart());
+      continue;
+    }
     break;
   }
   return d;
 }
 
-function getScheduledTime(preferredTime: string, providerId: string, existingSchedule: Record<string, ScheduleSlot[]>): { time: string; collision: boolean } {
-  let baseTime = snapToAvailability(parseNaturalLanguageTime(preferredTime));
+function getScheduledTime(preferredTime: string, providerId: string, existingSchedule: Record<string, ScheduleSlot[]>): { time: string; collision: boolean; requested_time: string; time_note?: string } {
+  const rawDate = parseNaturalLanguageTime(preferredTime);
+  const _pktNow = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Karachi" }));
+  // If the parsed time is within 90 min of now it's effectively "abhi/asap" — skip working-hours snap
+  const isImmediate   = rawDate.getTime() - _pktNow.getTime() < 90 * 60 * 1000;
+  const requestedDate = isImmediate ? rawDate : snapToAvailability(rawDate);
+  const requestedIso  = requestedDate.toISOString();
+  let baseTime = requestedDate;
 
   const providerSlots = existingSchedule[providerId] || [];
   let finalTime = baseTime.toISOString();
@@ -268,12 +180,21 @@ function getScheduledTime(preferredTime: string, providerId: string, existingSch
 
   while (providerSlots.some(s => s.datetime === finalTime)) {
     collision = true;
-    baseTime = new Date(baseTime.getTime() + 2 * 60 * 60 * 1000);
-    snapToAvailability(baseTime);
+    baseTime = snapToAvailability(new Date(baseTime.getTime() + 2 * 60 * 60 * 1000));
     finalTime = baseTime.toISOString();
   }
 
-  return { time: finalTime, collision };
+  const delayMs = new Date(finalTime).getTime() - new Date(requestedIso).getTime();
+  const delayMin = Math.round(delayMs / 60000);
+
+  let time_note: string | undefined;
+  if (delayMin >= 15) {
+    const reqFmt = formatPKTTime(requestedIso);
+    const actFmt = formatPKTTime(finalTime);
+    time_note = `Requested ${reqFmt} — provider's next free slot is ${actFmt} (${delayMin < 60 ? `${delayMin} min` : `${Math.round(delayMin / 60)}h`} later)`;
+  }
+
+  return { time: finalTime, collision, requested_time: requestedIso, time_note };
 }
 
 export function softLockSlot(providerId: string, preferredTime: string, sessionId: string): string {
@@ -323,10 +244,14 @@ function getConfirmationMessage(
   booking: Booking,
   language: string
 ): string {
+  const timeNote = booking.time_note ? (language === "roman_urdu" || language === "mixed"
+    ? ` ⚠️ Note: ${booking.time_note}`
+    : ` ⚠️ Note: ${booking.time_note}`) : "";
+
   if (language === "roman_urdu" || language === "mixed") {
-    return `Booking confirm ho gayi! ${booking.provider_name} aap ke paas ${booking.location} mein ${new Date(booking.scheduled_time).toLocaleString("en-PK")} ko pohunchen ge. Booking ID: ${booking.booking_id}. Total: Rs. ${booking.final_price}.`;
+    return `Booking confirm ho gayi! ${booking.provider_name} aap ke paas ${booking.location} mein ${new Date(booking.scheduled_time).toLocaleString("en-PK")} ko pohunchen ge. Booking ID: ${booking.booking_id}. Total: Rs. ${booking.final_price}.${timeNote}`;
   }
-  return `Booking confirmed! ${booking.provider_name} will arrive at ${booking.location} on ${new Date(booking.scheduled_time).toLocaleString("en-PK")}. Booking ID: ${booking.booking_id}. Total: Rs. ${booking.final_price}.`;
+  return `Booking confirmed! ${booking.provider_name} will arrive at ${booking.location} on ${new Date(booking.scheduled_time).toLocaleString("en-PK")}. Booking ID: ${booking.booking_id}. Total: Rs. ${booking.final_price}.${timeNote}`;
 }
 
 function getChecklist(serviceType: string): { item: string; completed: boolean }[] {
@@ -358,7 +283,7 @@ export async function createBooking(
   const schedule = readSchedule();
   const before = { bookings_count: data.bookings.length };
 
-  const { time: scheduledTime, collision } = getScheduledTime(intent.preferred_time, provider.provider_id, schedule);
+  const { time: scheduledTime, collision, requested_time, time_note } = getScheduledTime(intent.preferred_time, provider.provider_id, schedule);
   const bookingId = generateBookingId();
 
   // Block the slot in schedule
@@ -402,6 +327,8 @@ export async function createBooking(
     updated_at: new Date().toISOString(),
     state_history: [{ status: "PENDING_PROVIDER", timestamp: new Date().toISOString() }],
     session_id: sessionId,
+    requested_time,
+    time_note,
     current_lat: startLat,
     current_lng: startLng,
     customer_lat: customerCoords.lat,
@@ -627,19 +554,22 @@ export function submitBookingRating(bookingId: string, stars: number, actualArri
 }
 
 // Complete checklist item
-export function completeChecklistItem(bookingId: string, itemIndex: number): Booking {
+export function toggleChecklistItem(bookingId: string, itemIndex: number): Booking {
   const data = readBookings();
   const booking = data.bookings.find((b) => b.booking_id === bookingId);
   if (!booking) throw new Error(`Booking ${bookingId} not found`);
 
   if (booking.checklist[itemIndex]) {
-    booking.checklist[itemIndex].completed = true;
+    booking.checklist[itemIndex].completed = !booking.checklist[itemIndex].completed;
   }
 
   booking.updated_at = new Date().toISOString();
   writeBookings(data);
   return booking;
 }
+
+// Keep old name as alias so any other callers don't break
+export const completeChecklistItem = toggleChecklistItem;
 
 export function getBooking(bookingId: string): Booking | undefined {
   return readBookings().bookings.find((b) => b.booking_id === bookingId);

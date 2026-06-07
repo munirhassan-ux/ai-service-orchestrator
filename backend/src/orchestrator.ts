@@ -109,7 +109,6 @@ export async function runOrchestration(
     // Persist strike against the customer across all sessions
     recordStrike(customerId);
     const currentStrike = safetyStrikes + 1;
-    const serviceChips = ["AC Repair", "Plumber", "Electrician", "Cleaning", "Carpenter"];
 
     // 3rd strike — 24-hr ban applied
     if (currentStrike >= 3) {
@@ -125,10 +124,10 @@ export async function runOrchestration(
       "Haazir ek respectful platform hai. Ek aur violation par aap ka account 24 ghante ke liye block ho jayega.",
     ];
     const warnMsg = warningMessages[currentStrike - 1];
+    // No chips — let the conversation resume naturally from where it was
     return {
       success: false, session_id: session.session_id, phase: "safety_warning",
       message: warnMsg,
-      chips: serviceChips,
       intent: null, match_result: null, price_quote: null, negotiation_thread_id: null, booking: null, trace,
     };
   }
@@ -229,9 +228,7 @@ export async function runOrchestration(
     if (intent.clarification_needed || intent.confidence < 0.75 || missingFields.length > 0) {
       updateSession(session.session_id, { parsed_intent: intent, phase: "intake" });
       const q = intent.clarification_question ||
-        (intent.language === "roman_urdu"
-          ? "Thori aur details chahiye — kya masla hai, kahan hain aur kab chahiye?"
-          : "Could you share what the issue is, your location, and when you need the service?");
+        "Zara batao — kya masla hai, aap kahan hain, aur kab chahiye?";
       logFallback("IntentParser", `Missing fields: ${missingFields.join(", ")} | confidence=${Math.round(intent.confidence * 100)}%`, q);
       logTraceEvent(session.session_id, {
         agent: "IntentParser",
@@ -299,11 +296,19 @@ export async function runOrchestration(
         phase_after: "waitlisted",
       });
       updateSession(session.session_id, { phase: "intake" });
+
+      // Check if this was a time-specific failure
+      const isTimeBusy = (matchResult.fallback_reason ?? "").startsWith("no_providers_at_time:");
+      const timePart   = isTimeBusy ? (matchResult.fallback_reason ?? "").replace("no_providers_at_time:", "") : "";
+      let message: string;
+      if (isTimeBusy) {
+        message = `Afsoos, ${timePart} par is waqt koi ${intent.service_type} provider free nahi — sabhi booked hain. Hum dhundte rahenge aur jaise hi koi available ho, aap ko pehle batayein ge. Koi doosra waqt try karna chahein ge?`;
+      } else {
+        message = "Afsoos, is waqt aap ke area mein koi provider available nahi hai. Hum aap ko waitlist mein shamil kar rahe hain — jaise hi koi free ho, pehle aap ko bata dein ge. 🙏";
+      }
       return {
         success: false, session_id: session.session_id, phase: "intake",
-        message: intent.language === "roman_urdu"
-          ? "Hum maazrat chahte hain. Is waqt aap ke area mein mazeed koi provider available nahi hai. Hum aap ko waitlist par shamil kar rahe hain. 📞 Call: 0300-HAAZIR."
-          : "We apologize. No further providers are available in your area at the moment. We are adding you to our waitlist. 📞 Support: 0300-HAAZIR.",
+        message,
         intent, match_result: null, price_quote: null, negotiation_thread_id: null, booking: null, trace,
       };
     }
@@ -352,7 +357,6 @@ export async function runOrchestration(
     const newlyShownIds = matchResult.top_providers.map((p) => p.provider_id);
     const updatedTried = [...excludedIds, ...newlyShownIds];
 
-    const isUrdu = intent.language !== "english";
     const budgetLabel = intent.budget_sensitivity === "low" ? "Price-Sensitive"
       : intent.budget_sensitivity === "flexible" ? "Flexible Budget"
         : "Standard Budget";
@@ -412,7 +416,7 @@ export async function runOrchestration(
     } catch { /* non-fatal */ }
 
     // Auto-launch a dedicated provider app instance for this booking
-    launchProviderApp(topProvider.name, booking.booking_id).catch(err =>
+    launchProviderApp(topProvider.name, booking.booking_id, topProvider.provider_id).catch(err =>
       console.warn("[Orchestrator] launchProviderApp error:", err?.message)
     );
 
@@ -463,9 +467,7 @@ export async function runOrchestration(
 
     return {
       success: true, session_id: session.session_id, phase: "booking_confirmed",
-      message: isUrdu
-        ? `Haazir AI ne aap ke liye best provider book kar diya hai!\n\nBooking ID: ${booking.booking_id}\nProvider: ${booking.provider_name}\nScheduled: ${new Date(booking.scheduled_time).toLocaleString("en-PK")}\nTotal: Rs. ${booking.final_price}\n\nAb provider ki confirmation ka intezaar karein. Confirm hone par tracking start ho gi! 🙏`
-        : `Haazir AI automatically booked the best provider for you!\n\nBooking ID: ${booking.booking_id}\nProvider: ${booking.provider_name}\nScheduled: ${new Date(booking.scheduled_time).toLocaleString("en-PK")}\nTotal: Rs. ${booking.final_price}\n\nWaiting for provider confirmation. Tracking will start once confirmed! 🙏`,
+      message: `Haazir AI ne aap ke liye best provider book kar diya hai!\n\nBooking ID: ${booking.booking_id}\nProvider: ${booking.provider_name}\nScheduled: ${new Date(booking.scheduled_time).toLocaleString("en-PK")}\nTotal: Rs. ${booking.final_price}\n\nAb provider ki confirmation ka intezaar karein. Confirm hone par tracking start ho gi! 🙏`,
       chips: [],
       thinking_steps: thinkingSteps,
       intent,

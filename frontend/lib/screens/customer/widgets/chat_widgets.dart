@@ -566,17 +566,6 @@ class SuccessBubble extends StatelessWidget {
         _row("Provider:", providerName),
         _row("Arrival:", scheduledTime),
         _row("Agreed Rate:", "Rs. $price", color: const Color(0xFF3A9010)),
-        const SizedBox(height: 8),
-        Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-              color: const Color(0xFFF7FAF5),
-              borderRadius: BorderRadius.circular(10)),
-          child: const Text(
-              "⚠️ Labour only. Parts extra — provider will discuss on-site.\n🔔 1 ghante pehle reminder milega.",
-              style: TextStyle(
-                  color: const Color(0xFF565955), fontSize: 11, height: 1.5)),
-        ),
         if (checklist.isNotEmpty) ...[
           const Divider(height: 24, color: const Color(0xFFE8EDE6)),
           const Text("JOB COMPLETION CHECKLIST",

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../services/api_service.dart';
+import '../../main_provider.dart' show kProviderDisplayName;
 import '../customer/widgets/negotiation_widget.dart';
 
 class ProviderChatScreen extends StatefulWidget {
@@ -136,6 +137,12 @@ class _ProviderChatScreenState extends State<ProviderChatScreen> {
               });
               // Poll while pending so we detect if customer cancels the search
               Future.microtask(_startStatusPolling);
+            } else if (status == 'SCHEDULED') {
+              _messages.add({
+                'text': null,
+                'isUser': false,
+                'type': 'scheduled_job',
+              });
             } else if (status == 'ACCEPTED' || status == 'ARRIVING') {
               _jobAccepted = true;
               _messages.add({
@@ -392,7 +399,6 @@ class _ProviderChatScreenState extends State<ProviderChatScreen> {
     if (widget.bookingId == null) return;
     final checklist = _bookingData?['checklist'] as List? ?? [];
     if (idx >= checklist.length) return;
-    if (checklist[idx]['completed'] == true) return; // already done
     try {
       final res = await ApiService.post('/booking/checklist', {
         'booking_id': widget.bookingId,
@@ -537,14 +543,16 @@ class _ProviderChatScreenState extends State<ProviderChatScreen> {
               borderRadius: BorderRadius.circular(20),
               border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
             ),
-            child: const Row(children: [
-              Icon(Icons.handyman_rounded, size: 16, color: Colors.white),
-              SizedBox(width: 4),
-              Text('Provider',
-                  style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white)),
+            child: Row(children: [
+              const Icon(Icons.handyman_rounded, size: 16, color: Colors.white),
+              const SizedBox(width: 4),
+              Text(
+                kProviderDisplayName.isNotEmpty ? kProviderDisplayName : 'Provider',
+                style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white),
+              ),
             ]),
           ),
         ],
@@ -580,6 +588,7 @@ class _ProviderChatScreenState extends State<ProviderChatScreen> {
         ),
       );
     }
+    if (msg['type'] == 'scheduled_job') return _scheduledJobCard();
     if (msg['type'] == 'job_offer')
       return _jobOfferCard(msg['job'] as Map<String, dynamic>);
     if (msg['type'] == 'agent_messages')
@@ -722,6 +731,89 @@ class _ProviderChatScreenState extends State<ProviderChatScreen> {
     );
   }
 
+  Future<void> _startJobFromScheduled() async {
+    if (widget.bookingId == null) return;
+    try {
+      await ApiService.post('/booking/simulate-step', {'booking_id': widget.bookingId!});
+      setState(() => _messages.clear());
+      await _fetchBooking();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.redAccent),
+        );
+      }
+    }
+  }
+
+  Widget _scheduledJobCard() {
+    final b = _bookingData ?? {};
+    final raw = b['scheduled_time'] as String?;
+    String formattedTime = 'TBD';
+    if (raw != null && raw.isNotEmpty) {
+      try {
+        final dt = DateTime.parse(raw).toLocal();
+        const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        final h = dt.hour > 12 ? dt.hour - 12 : (dt.hour == 0 ? 12 : dt.hour);
+        final ampm = dt.hour >= 12 ? 'PM' : 'AM';
+        final min = dt.minute.toString().padLeft(2, '0');
+        formattedTime = '${days[dt.weekday - 1]}, ${dt.day} ${months[dt.month - 1]} · $h:$min $ampm';
+      } catch (_) {
+        formattedTime = raw;
+      }
+    }
+
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 10),
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: const Color(0xFFE8F0FE),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFF1565C0).withValues(alpha: 0.4)),
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        const Row(children: [
+          Icon(Icons.calendar_today_rounded, color: Color(0xFF1565C0), size: 18),
+          SizedBox(width: 8),
+          Text("Scheduled Job",
+              style: TextStyle(
+                  color: Color(0xFF1565C0),
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold)),
+        ]),
+        const SizedBox(height: 14),
+        _jobRow("Service:", b['service_type'] as String? ?? '—'),
+        _jobRow("Location:", b['location'] as String? ?? '—'),
+        _jobRow("Scheduled:", formattedTime),
+        _jobRow("Amount:", "Rs. ${b['final_price'] ?? '—'}"),
+        _jobRow("Customer:", b['customer_id'] as String? ?? '—'),
+        const SizedBox(height: 12),
+        const Text(
+          "This job is confirmed and scheduled. Press 'Start Job' when you're ready to begin.",
+          style: TextStyle(color: Color(0xFF555E8A), fontSize: 11, height: 1.4),
+        ),
+        const SizedBox(height: 14),
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            onPressed: _startJobFromScheduled,
+            icon: const Icon(Icons.play_arrow_rounded, size: 18),
+            label: const Text("Start Job",
+                style: TextStyle(fontWeight: FontWeight.bold)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF1565C0),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+              padding: const EdgeInsets.symmetric(vertical: 12),
+            ),
+          ),
+        ),
+      ]),
+    );
+  }
+
   Widget _jobOfferCard(Map<String, dynamic> job) {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 10),
@@ -845,8 +937,7 @@ class _ProviderChatScreenState extends State<ProviderChatScreen> {
             final item = e.value as Map;
             final done = item['completed'] == true;
             return GestureDetector(
-              onTap:
-                  (!done && !isCompleted) ? () => _tapChecklistItem(idx) : null,
+              onTap: !isCompleted ? () => _tapChecklistItem(idx) : null,
               child: Container(
                 margin: const EdgeInsets.only(bottom: 8),
                 padding:
@@ -884,9 +975,6 @@ class _ProviderChatScreenState extends State<ProviderChatScreen> {
                       ),
                     ),
                   ),
-                  if (!done && !isCompleted)
-                    const Icon(Icons.touch_app_rounded,
-                        size: 14, color: const Color(0xFFB0B5AE)),
                 ]),
               ),
             );
