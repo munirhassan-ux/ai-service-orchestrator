@@ -24,17 +24,37 @@ const EMAIL_RE = /\b[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}\b/g;
 const HOUSE_RE = /\b(house|makan|h\.?no\.?|plot|flat|apartment|apt)\s*[#\s]*\d+\b/gi;
 
 const ABUSE_WORDS = [
-  'bastard', 'fuck', 'shit', 'bitch', 'asshole',
-  'haramzada', 'harami', 'chutiya', 'madarchod', 'bhenchod', 'gaand',
+  // English
+  'bastard', 'fuck', 'shit', 'bitch', 'asshole', 'cunt', 'dick', 'piss',
+  // Urdu/Hindi — strong
+  'haramzada', 'haramzadi', 'harami', 'chutiya', 'madarchod', 'bhenchod', 'gaand', 'gandu',
+  // Urdu/Hindi — mild but abusive in context
+  'kaminey', 'kamina', 'kamini', 'suar', 'soor', 'kutte', 'kutta', 'kutiya',
+  'sala', 'salay', 'ullu', 'gadha',
 ];
+
+// Normalize leet speak and punctuation tricks so "sh!t", "f.u.c.k", "h4ramzada" are caught.
+function normalizeLeet(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[@]/g,  'a')
+    .replace(/[0]/g,  'o')
+    .replace(/[1!|]/g, 'i')
+    .replace(/[3]/g,  'e')
+    .replace(/[4]/g,  'a')
+    .replace(/[$5]/g, 's')
+    .replace(/[7]/g,  't')
+    // Remove punctuation/spaces injected between letters (f.u.c.k → fuck, f u c k → fuck)
+    .replace(/([a-z])[.\-_*\s]+(?=[a-z])/g, '$1');
+}
 
 export function redact(text: string): GuardrailResult {
   let out = text;
   const redactions: RedactionEntry[] = [];
   const now = new Date().toISOString();
 
-  // Safety scan (before redaction so we see the original wording)
-  const lower = text.toLowerCase();
+  // Safety scan — normalize leet speak first so "sh!t", "f.u.c.k", "h4ramzada" are caught
+  const lower = normalizeLeet(text);
   const flaggedCategories: string[] = [];
   if (ABUSE_WORDS.some(w => lower.includes(w))) flaggedCategories.push('profanity');
 

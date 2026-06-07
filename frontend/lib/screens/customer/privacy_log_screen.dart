@@ -33,6 +33,35 @@ class _PrivacyLogScreenState extends State<PrivacyLogScreen> {
     }
   }
 
+  String _bannerTitle() {
+    const labels = {
+      'phone': 'phone number',
+      'email': 'email address',
+      'cnic': 'CNIC',
+      'address': 'address',
+    };
+    final seen = <String>{};
+    final types = _log
+        .map((e) => labels[e['type'] as String? ?? ''] ?? (e['type'] as String? ?? ''))
+        .where((t) => t.isNotEmpty && seen.add(t))
+        .toList();
+    if (types.isEmpty) return 'Your info is safe with us';
+    if (types.length == 1) return 'Your ${types[0]} is safe with us';
+    final last = types.last;
+    final rest = types.sublist(0, types.length - 1).join(', ');
+    return 'Your $rest and $last are safe with us';
+  }
+
+  static String _friendlyTitle(String type) {
+    const titles = {
+      'phone': 'Your phone number is safe with us',
+      'cnic': 'Your CNIC is safe with us',
+      'email': 'Your email address is safe with us',
+      'address': 'Your address is safe with us',
+    };
+    return titles[type] ?? 'Your info is safe with us';
+  }
+
   static const _typeIcon = {
     'phone': Icons.phone_outlined,
     'cnic': Icons.badge_outlined,
@@ -116,8 +145,8 @@ class _PrivacyLogScreenState extends State<PrivacyLogScreen> {
               children: [
                 Text(
                   _log.isEmpty
-                      ? 'No personal data detected'
-                      : '${_log.length} field${_log.length == 1 ? '' : 's'} masked before AI',
+                      ? 'Your info is safe with us'
+                      : _bannerTitle(),
                   style: const TextStyle(
                     fontFamily: 'Satoshi Variable',
                     fontSize: 14,
@@ -127,7 +156,7 @@ class _PrivacyLogScreenState extends State<PrivacyLogScreen> {
                 ),
                 const SizedBox(height: 2),
                 const Text(
-                  'Your personal details are never sent to AI models.',
+                  'We never share your personal info with AI.',
                   style: TextStyle(
                     fontFamily: 'Satoshi Variable',
                     fontSize: 12,
@@ -162,7 +191,6 @@ class _PrivacyLogScreenState extends State<PrivacyLogScreen> {
 
   Widget _buildLogEntry(dynamic entry) {
     final type = entry['type'] as String? ?? 'unknown';
-    final token = entry['token'] as String? ?? '';
     final ts = entry['timestamp'] as String? ?? '';
     final icon = _typeIcon[type] ?? Icons.lock_outline;
     final color = _typeColor[type] ?? const Color(0xFF697586);
@@ -192,7 +220,7 @@ class _PrivacyLogScreenState extends State<PrivacyLogScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '${type[0].toUpperCase()}${type.substring(1)} detected and masked',
+                  _friendlyTitle(type),
                   style: const TextStyle(
                     fontFamily: 'Satoshi Variable',
                     fontSize: 13,
@@ -201,9 +229,9 @@ class _PrivacyLogScreenState extends State<PrivacyLogScreen> {
                   ),
                 ),
                 const SizedBox(height: 2),
-                Text(
-                  'Replaced with $token',
-                  style: const TextStyle(
+                const Text(
+                  'Never shared with AI',
+                  style: TextStyle(
                     fontFamily: 'Satoshi Variable',
                     fontSize: 12,
                     color: Color(0xFF697586),
@@ -233,7 +261,7 @@ class _PrivacyLogScreenState extends State<PrivacyLogScreen> {
           Icon(Icons.verified_user_outlined, size: 48, color: Colors.grey.shade300),
           const SizedBox(height: 16),
           const Text(
-            'No personal data detected\nin this session.',
+            'Nothing to show yet.\nWe\'ll let you know if we\nprotect anything.',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontFamily: 'Satoshi Variable',

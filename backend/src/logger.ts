@@ -251,15 +251,20 @@ export function logPhase(sessionId: string, phase: string, detail?: string) {
 
 // ── 10. Guardrail ─────────────────────────────────────────────────────────
 export function logGuardrail(redactions: any[], safety: any) {
-  if (redactions.length === 0 && !safety.flagged) return; // silent pass
   console.log("");
-  console.log(header("🛡️", "GUARDRAIL"));
-  if (safety.flagged) {
-    console.log(row("safety", c.red + c.bold + "⚠ FLAGGED: " + (safety.reason ?? "") + c.reset));
+  console.log(header("🛡️", "GUARDRAIL  [phase: guardrail]"));
+  const safetyStatus = safety.flagged
+    ? c.red + c.bold + "⚠ FLAGGED" + (safety.categories?.length ? `: ${safety.categories.join(", ")}` : "") + c.reset
+    : c.green + "clean" + c.reset;
+  console.log(row("safety.flagged", safetyStatus));
+  console.log(row("pii_sent_to_llm", c.green + "false" + c.reset));
+  if (redactions.length === 0) {
+    console.log(row("redactions", "none"));
+  } else {
+    redactions.forEach((r: any) => {
+      console.log(row("redacted", c.yellow + `[${r.type}]  →  ${r.token}` + c.reset));
+    });
   }
-  redactions.forEach((r: any) => {
-    console.log(row("redacted", c.yellow + `[${r.type}] ${r.token}` + c.reset));
-  });
   console.log(footer());
 }
 

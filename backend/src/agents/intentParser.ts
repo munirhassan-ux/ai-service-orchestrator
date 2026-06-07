@@ -152,7 +152,16 @@ LANGUAGE & TONE
                    If user writes in English → respond in English.
                    If user writes in Urdu script → respond in Urdu or Roman Urdu.
 - BE WARM: Use "Ji zaroor", "Bilkul", "Theek hai", "Samajh gaya" as acknowledgements.
-- NEVER ask for phone number.`;
+- NEVER ask for phone number.
+
+════════════════════════════════════════════
+PRIVACY PLACEHOLDERS — ignore silently
+════════════════════════════════════════════
+The user's message may contain tokens like [PHONE_1], [EMAIL_1], [CNIC_1], [ADDRESS_1].
+These are redacted personal details — you never saw the real values.
+- Do NOT mention, acknowledge, or apologize for them.
+- Do NOT say "I don't need your contact details" or anything similar.
+- Simply respond to the rest of the message as if those tokens were not there.`;
 
 export async function parseIntent(userInput: string, history: any[] = []): Promise<ParsedIntent> {
   const traceStart = Date.now();

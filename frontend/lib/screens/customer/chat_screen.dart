@@ -110,6 +110,7 @@ class _ChatScreenState extends State<ChatScreen> {
   final Set<String> _actedMessages = {};
   Future<void> Function()? _cancelBookingFn;
   int _privacyRedactionCount = 0;
+  final List<String> _redactedTypes = [];
   String _formatTitle(String? raw) {
     if (raw == null || raw.isEmpty) return 'New Booking';
     return raw
@@ -332,8 +333,40 @@ class _ChatScreenState extends State<ChatScreen> {
   List<Map<String, String>> _buildHistory() {
     return _messages
         .where((m) => m.type == 'text' && m.text.isNotEmpty)
-        .map((m) => {'role': m.isUser ? 'user' : 'model', 'content': m.text})
+        .map((m) => {
+              'role': m.isUser ? 'user' : 'model',
+              'content': m.isUser ? _redactForHistory(m.text) : m.text,
+            })
         .toList();
+  }
+
+  // Strips Pakistani phone numbers and emails from history before sending to backend.
+  static String _privacyNoticeText(List<String> types) {
+    const labels = {
+      'phone': 'phone number',
+      'email': 'email address',
+      'cnic': 'CNIC',
+      'address': 'address',
+    };
+    final named = types.map((t) => labels[t] ?? t).toList();
+    final joined = named.length == 1
+        ? named[0]
+        : '${named.sublist(0, named.length - 1).join(', ')} and ${named.last}';
+    return 'Your $joined is safe. We never share your personal information with AI.';
+  }
+
+  // The user still sees the original text in their own chat bubble.
+  static String _redactForHistory(String text) {
+    var out = text;
+    out = out.replaceAllMapped(
+      RegExp(r'(\+92|0092|0)([-\s]?)(3\d{2})([-\s]?)\d{7}'),
+      (_) => '[PHONE]',
+    );
+    out = out.replaceAllMapped(
+      RegExp(r'\b[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}\b'),
+      (_) => '[EMAIL]',
+    );
+    return out;
   }
 
   Future<void> _send([String? override]) async {
@@ -382,6 +415,28 @@ class _ChatScreenState extends State<ChatScreen> {
     final msg = res['message'] as String? ?? '';
     final chips = (res['chips'] as List?)?.cast<String>();
 
+    // Always track guardrail redactions regardless of phase
+    final guardrailStep = (res['trace'] as List?)?.firstWhere(
+      (s) => s is Map && s['agent'] == 'Guardrail', orElse: () => null);
+    final redactionList = (guardrailStep?['output']?['redactions'] as List?) ?? [];
+    if (redactionList.isNotEmpty) {
+      final types = <String>[];
+      for (final r in redactionList) {
+        final t = (r as Map?)?['type'] as String?;
+        if (t != null) {
+          if (!_redactedTypes.contains(t)) _redactedTypes.add(t);
+          if (!types.contains(t)) types.add(t);
+        }
+      }
+      setState(() => _privacyRedactionCount += redactionList.length);
+      // Show inline privacy notice in the chat
+      _addMsg(Message(
+        text: _privacyNoticeText(types),
+        isUser: false,
+        type: 'privacy_notice',
+      ));
+    }
+
     if (phase == 'booking_confirmed') {
       final bookingId = res['booking']?['booking_id'] as String?;
       final steps = (res['thinking_steps'] as List?)?.cast<String>();
@@ -391,13 +446,6 @@ class _ChatScreenState extends State<ChatScreen> {
             _formatTitle(res['booking']?['service_type'] as String?);
       });
 
-      // Track how many fields the guardrail redacted in this request
-      final guardrailStep = (res['trace'] as List?)?.firstWhere(
-        (s) => s['agent'] == 'Guardrail', orElse: () => null);
-      final redactions = (guardrailStep?['output']?['redactions'] as List?)?.length ?? 0;
-      if (redactions > 0) setState(() => _privacyRedactionCount += redactions);
-
-      final bookingReason = res['booking_reason'] as String?;
       final negotiationTrace = res['negotiation_trace'] as Map<String, dynamic>?;
       final contractId = res['contract_id'] as String?;
 
@@ -442,6 +490,9 @@ class _ChatScreenState extends State<ChatScreen> {
       } else {
         showSuccess();
       }
+    } else if (phase == 'safety_warning' || phase == 'session_blocked' || phase == 'account_suspended') {
+      _addMsg(Message(text: msg, isUser: false, type: 'safety_warning',
+          data: {'severity': phase}, chips: chips));
     } else {
       _addMsg(Message(text: msg, isUser: false, chips: chips));
     }
@@ -498,6 +549,26 @@ class _ChatScreenState extends State<ChatScreen> {
     }
 
     switch (msg.type) {
+      case 'privacy_notice':
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.lock_outline, size: 12, color: Color(0xFF079455)),
+              const SizedBox(width: 5),
+              Text(
+                msg.text,
+                style: const TextStyle(
+                  fontSize: 11.5,
+                  color: Color(0xFF079455),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        );
+
       case 'thinking':
         final steps = (msg.data?['steps'] as List?)?.cast<String>();
         return ThinkingBubble(steps: steps);
@@ -512,6 +583,55 @@ class _ChatScreenState extends State<ChatScreen> {
             contractId: msg.data?['contract_id'] as String?,
           ),
         );
+
+      case 'safety_warning':
+        final severity = msg.data?['severity'] as String? ?? 'safety_warning';
+        final isBlocked = severity == 'session_blocked' || severity == 'account_suspended';
+        return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          _SafetyWarningBubble(message: msg.text, isBlocked: isBlocked),
+          if (msg.chips != null && msg.chips!.isNotEmpty && !isBlocked) ...[
+            const SizedBox(height: 4),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
+                constraints: BoxConstraints(
+                    maxWidth: MediaQuery.of(context).size.width * 0.82),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(4),
+                    topRight: Radius.circular(18),
+                    bottomLeft: Radius.circular(18),
+                    bottomRight: Radius.circular(18),
+                  ),
+                  border: Border.all(color: const Color(0xFFE8EDE6)),
+                ),
+                child: const Text(
+                  'Agar aapko koi home service chahiye ho toh inn mein se select karein:',
+                  style: TextStyle(
+                      fontSize: 13, color: Color(0xFF3E3F3B), height: 1.45)),
+              ),
+            ),
+            Wrap(
+              spacing: 8, runSpacing: 6,
+              children: msg.chips!.map((c) => GestureDetector(
+                onTap: () => _send(c),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: const Color(0xFF3A9010).withValues(alpha: 0.4)),
+                  ),
+                  child: Text(c, style: const TextStyle(
+                      color: Color(0xFF3A9010), fontSize: 12, fontWeight: FontWeight.w600)),
+                ),
+              )).toList(),
+            ),
+          ],
+        ]);
 
       case 'booking_success':
         final bk = msg.data ?? {};
@@ -690,10 +810,7 @@ class _ChatScreenState extends State<ChatScreen> {
         if (_sessionId != null)
           Padding(
             padding: const EdgeInsets.only(right: 6),
-            child: PrivacyBadgeWidget(
-              sessionId: _sessionId,
-              redactionCount: _privacyRedactionCount,
-            ),
+            child: const PrivacyBadgeWidget(),
           ),
         Container(
           margin: const EdgeInsets.only(right: 12),
@@ -811,6 +928,63 @@ class _ChatScreenState extends State<ChatScreen> {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+// ── Safety warning bubble ─────────────────────────────────────────────────────
+class _SafetyWarningBubble extends StatelessWidget {
+  final String message;
+  final bool isBlocked; // true = session/account blocked, false = single warning
+
+  const _SafetyWarningBubble({required this.message, this.isBlocked = false});
+
+  @override
+  Widget build(BuildContext context) {
+    final color = isBlocked ? const Color(0xFFda2721) : const Color(0xFFe67e00);
+    final icon  = isBlocked ? Icons.block_rounded : Icons.warning_amber_rounded;
+    final label = isBlocked ? 'Access Blocked' : 'Content Warning';
+
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        constraints: BoxConstraints(
+            maxWidth: MediaQuery.of(context).size.width * 0.82),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.07),
+          borderRadius: const BorderRadius.only(
+            topLeft:     Radius.circular(4),
+            topRight:    Radius.circular(18),
+            bottomLeft:  Radius.circular(18),
+            bottomRight: Radius.circular(18),
+          ),
+          border: Border.all(color: color.withValues(alpha: 0.35)),
+        ),
+        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Container(
+            margin: const EdgeInsets.only(top: 1, right: 10),
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.12),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, size: 16, color: color),
+          ),
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(label,
+                style: TextStyle(
+                    fontSize: 11, fontWeight: FontWeight.w700,
+                    color: color, letterSpacing: 0.3)),
+            const SizedBox(height: 3),
+            Text(message,
+                style: TextStyle(
+                    fontSize: 13, height: 1.45,
+                    color: color.withValues(alpha: 0.85))),
+          ])),
+        ]),
       ),
     );
   }

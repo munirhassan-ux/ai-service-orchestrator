@@ -1,20 +1,21 @@
 import { parseIntent, ParsedIntent } from "./agents/intentParser.js";
 import { matchProviders, MatchResult, RankedProvider } from "./agents/providerMatcher.js";
 import { calculatePrice, PriceQuote } from "./agents/pricingEngine.js";
-import { createBooking, updateBookingStatus, getBooking, setCancellationShield } from "./agents/bookingSimulator.js";
+import { createBooking, getBooking, setCancellationShield } from "./agents/bookingSimulator.js";
 import { getSession, updateSession, createSession, appendPrivacyLog, CustomerSession } from "./session.js";
 import { logTraceEvent } from "./trace.js";
 import { logAction, logFallback, logNegotiation, logBookingCreated, logPhase, logGuardrail } from "./logger.js";
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import { redact, checkOutput } from "./middleware/guardrail.js";
+import { redact } from "./middleware/guardrail.js";
 import { runNegotiation, linkBookingToContract } from "./agents/negotiationEngine.js";
 import { geocodeLocation } from "./agents/providerMatcher.js";
 import { loadPreferences, updatePreferences, buildPersonalizedGreeting } from "./agents/preferenceEngine.js";
+import { recordStrike, isCustomerBlocked, getBanExpiryMessage } from "./agents/abuseTracker.js";
 import { exec } from "child_process";
 
 export interface AgentTraceStep {
   step: number;
   agent: string;
+  phase?: string;
   input: any;
   output: any;
   duration_ms: number;
@@ -60,6 +61,28 @@ export async function runOrchestration(
     session = createSession(customerId);
   }
 
+  // ── Block before doing anything else ─────────────────────────────────────
+  // 1. Permanently banned customer (10+ cumulative strikes across all sessions)
+  if (isCustomerBlocked(customerId)) {
+    const banMsg = getBanExpiryMessage(customerId);
+    return {
+      success: false, session_id: session.session_id, phase: "account_suspended",
+      message: `Aap ne platform policies baar baar violate ki hain. ${banMsg} Is ke baad dobara koshish karein.`,
+      intent: null, match_result: null, price_quote: null,
+      negotiation_thread_id: null, booking: null, trace: [],
+    };
+  }
+  // 2. Session locked after 3 in-session strikes (even for clean messages)
+  const sessionStrikes = (session as any).safety_strikes ?? 0;
+  if (sessionStrikes >= 3) {
+    return {
+      success: false, session_id: session.session_id, phase: "session_blocked",
+      message: "Aap ka session block ho gaya hai. Naya session shuru karne ke liye refresh karein — lekin dobara policy ki khilaf warzi par account suspend ho ga.",
+      intent: null, match_result: null, price_quote: null,
+      negotiation_thread_id: null, booking: null, trace: [],
+    };
+  }
+
   const rawInput = userInput.trim();
   logPhase(session.session_id, session.phase, rawInput ? `"${rawInput.slice(0, 40)}"` : "empty input");
 
@@ -70,7 +93,7 @@ export async function runOrchestration(
   }
   logGuardrail(guardrailResult.redactions, guardrailResult.safety);
   trace.push({
-    step: 0, agent: "Guardrail",
+    step: 0, agent: "Guardrail", phase: "guardrail",
     input: { raw_length: rawInput.length },
     output: {
       redactions: guardrailResult.redactions.map(r => ({ type: r.type, token: r.token })),
@@ -83,14 +106,46 @@ export async function runOrchestration(
   if (guardrailResult.safety.flagged) {
     const safetyStrikes = (session as any).safety_strikes ?? 0;
     updateSession(session.session_id, { safety_strikes: safetyStrikes + 1 } as any);
+    // Persist strike against the customer across all sessions
+    recordStrike(customerId);
+    const currentStrike = safetyStrikes + 1;
+    const serviceChips = ["AC Repair", "Plumber", "Electrician", "Cleaning", "Carpenter"];
+
+    // 3rd strike — 24-hr ban applied
+    if (currentStrike >= 3) {
+      return {
+        success: false, session_id: session.session_id, phase: "session_blocked",
+        message: "Aap ne baar baar esi language use ki hai. Aap ka account 24 ghante ke liye block kar diya gaya hai.",
+        intent: null, match_result: null, price_quote: null,
+        negotiation_thread_id: null, booking: null, trace,
+      };
+    }
+    const warningMessages = [
+      "Yeh zabaan Haazir par allowed nahi. Please respectfully baat karein.",
+      "Haazir ek respectful platform hai. Ek aur violation par aap ka account 24 ghante ke liye block ho jayega.",
+    ];
+    const warnMsg = warningMessages[currentStrike - 1];
     return {
-      success: false, session_id: session.session_id, phase: session.phase,
-      message: "Maazrat, aap ka paigham hamari policy ke khilaf hai. Meherbani farma kar dobara koshish karein.",
+      success: false, session_id: session.session_id, phase: "safety_warning",
+      message: warnMsg,
+      chips: serviceChips,
       intent: null, match_result: null, price_quote: null, negotiation_thread_id: null, booking: null, trace,
     };
   }
 
-  const cleanInput = guardrailResult.text; // redacted text goes to all downstream agents
+  // Strip placeholder tokens so Gemini never sees a hint that PII was shared
+  const cleanInput = guardrailResult.text
+    .replace(/\[(PHONE|EMAIL|CNIC|ADDRESS)_\d+\]/g, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+
+  // Redact PII from every history entry so prior turns never leak to Gemini
+  const cleanHistory = history.map(h => ({
+    ...h,
+    content: redact(String(h.content ?? '')).text
+      .replace(/\[(PHONE|EMAIL|CNIC|ADDRESS)_\d+\]/g, '')
+      .trim(),
+  }));
   console.log(`[Orchestrator] Session: ${session.session_id} | Phase: ${session.phase} | Input: "${cleanInput}"`);
 
   // ── 1. GREETING & INTAKE PHASE ─────────────────────────────────────
@@ -117,7 +172,7 @@ export async function runOrchestration(
     const tStart = Date.now();
     let intent: ParsedIntent;
     try {
-      intent = await parseIntent(cleanInput, history);
+      intent = await parseIntent(cleanInput, cleanHistory);
 
       // Merge with previously established fields from the session — never lose what the user already told us
       const prev = session.parsed_intent;
@@ -452,7 +507,7 @@ export async function runOrchestration(
       price_quote: null, negotiation_thread_id: null, equipment_acknowledged: false,
       restart_count: 0, negotiation_round: 1, budget_floor_warned: false, active_booking_id: null,
     });
-    return runOrchestration(cleanInput, customerId, userJobCount, history, session.session_id);
+    return runOrchestration(cleanInput, customerId, userJobCount, cleanHistory, session.session_id);
   }
 
   return {
@@ -465,8 +520,6 @@ export async function runOrchestration(
 
 export async function triggerWarmRestart(session: CustomerSession, trace: AgentTraceStep[]): Promise<OrchestrationResult> {
   const nextIndex = session.current_provider_index + 1;
-  const failedProvider = session.matched_providers[session.current_provider_index];
-
   if (session.restart_count >= 2 || nextIndex >= session.matched_providers.length) {
     logFallback("WarmRestart", `No more providers (restart_count=${session.restart_count}, nextIndex=${nextIndex})`, "Returning helpline message");
     updateSession(session.session_id, { phase: "intake" });
@@ -487,7 +540,7 @@ export async function confirmBookingAfterNegotiation(intent: ParsedIntent, provi
   return { booking, trace: [] };
 }
 
-export async function rerouteToNextProvider(intent: ParsedIntent, matchResult: MatchResult, failedProviderId: string, customerId: string = "customer_001", userJobCount: number = 0): Promise<OrchestrationResult> {
+export async function rerouteToNextProvider(intent: ParsedIntent, matchResult: MatchResult, failedProviderId: string, userJobCount: number = 0): Promise<OrchestrationResult> {
   const failedIndex = matchResult.top_providers.findIndex(p => p.provider_id === failedProviderId);
   const nextProvider = matchResult.top_providers[failedIndex + 1];
   if (!nextProvider) {
