@@ -13,8 +13,9 @@ import { processDispute, raiseDispute, getDispute, listDisputes, respondToDisput
 import { getReliabilitySnapshot, applyEvent } from "../agents/reliabilityEngine.js";
 import { getContract, appendEventToContract } from "../agents/negotiationEngine.js";
 import { createSession, getSession, updateSession } from "../session.js";
-import { redact } from "../middleware/guardrail.js";
+import { redact, checkOutput } from "../middleware/guardrail.js";
 import { logTraceEvent } from "../trace.js";
+import { logOutputSafety } from "../logger.js";
 import { pushNotification, notificationsQueue } from "../notifications.js";
 
 const router = Router();
@@ -83,6 +84,18 @@ router.post("/orchestrate", async (req: Request, res: Response) => {
 
   try {
     const result = await runOrchestration(input || "", customerId, userJobCount, history || [], session_id);
+
+    // Output safety: scan Gemini's reply before it reaches the client
+    if (result.message) {
+      const outputCheck = checkOutput(result.message);
+      logOutputSafety(outputCheck.safe, outputCheck.reason);
+      if (!outputCheck.safe) {
+        result.message = "Maafi chahta hoon, ek masla aa gaya. Dobara try karein.";
+        (result as any).output_safety_violation = true;
+        (result as any).output_safety_reason = outputCheck.reason;
+      }
+    }
+
     return res.json(result);
   } catch (err: any) {
     console.error("[API] /orchestrate error:", err);

@@ -4,6 +4,7 @@ dotenv.config();
 import express from "express";
 import cors from "cors";
 import * as path from "path";
+import * as fs from "fs";
 import { fileURLToPath } from "url";
 import apiRoutes from "./routes/routes.js";
 
@@ -36,6 +37,15 @@ app.listen(PORT, () => {
   console.log(`\n🚀 Haazir backend running on http://localhost:${PORT}`);
   console.log(`📋 Health check: http://localhost:${PORT}/health`);
   console.log(`🤖 Orchestrate: POST http://localhost:${PORT}/api/orchestrate\n`);
+
+  // On every restart: clear all active bans and reset strikes so demo testing is never blocked
+  try {
+    const abuseFile = path.join(__dirname, "../data/customer_abuse.json");
+    if (fs.existsSync(abuseFile)) {
+      fs.writeFileSync(abuseFile, JSON.stringify({}, null, 2));
+      console.log("🔓 Abuse bans cleared on startup (demo mode)\n");
+    }
+  } catch { /* non-critical */ }
 });
 
 export default app;

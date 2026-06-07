@@ -16,12 +16,12 @@ export interface GuardrailResult {
 
 // Pakistani phone: 03xx-xxxxxxx / +92-3xx-xxxxxxx / 0092-3xx-xxxxxxx
 const PK_PHONE_RE = /(\+92|0092|0)([-\s]?)(3\d{2})([-\s]?)\d{7}/g;
-// CNIC: 42101-1234567-8
-const CNIC_RE = /\b\d{5}-\d{7}-\d\b/g;
+// CNIC: 42101-1234567-8 / 42101 1234567 8 / 4210112345678 (13 digits, optional separators)
+const CNIC_RE = /\b\d{5}[-\s]?\d{7}[-\s]?\d\b/g;
 // Standard email
 const EMAIL_RE = /\b[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}\b/g;
 // House / plot / flat number (not area codes like G-13)
-const HOUSE_RE = /\b(house|makan|h\.?no\.?|plot|flat|apartment|apt)\s*[#\s]*\d+\b/gi;
+const HOUSE_RE = /\b(house|makan|h\.?no\.?|plot|flat|apartment|apt)\s*(no\.?\s*|number\s*|#\s*)?\d+\b/gi;
 
 const ABUSE_WORDS = [
   // English
@@ -103,7 +103,9 @@ export function redact(text: string): GuardrailResult {
 export function checkOutput(text: string): { safe: boolean; reason?: string } {
   PK_PHONE_RE.lastIndex = 0;
   CNIC_RE.lastIndex = 0;
+  EMAIL_RE.lastIndex = 0;
   if (PK_PHONE_RE.test(text)) return { safe: false, reason: 'Output echoed a phone number' };
-  if (CNIC_RE.test(text)) return { safe: false, reason: 'Output echoed a CNIC' };
+  if (CNIC_RE.test(text))     return { safe: false, reason: 'Output echoed a CNIC' };
+  if (EMAIL_RE.test(text))    return { safe: false, reason: 'Output echoed an email address' };
   return { safe: true };
 }

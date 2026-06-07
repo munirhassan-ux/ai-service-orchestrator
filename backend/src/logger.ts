@@ -268,7 +268,19 @@ export function logGuardrail(redactions: any[], safety: any) {
   console.log(footer());
 }
 
-// ── 11. Fallback / Error ──────────────────────────────────────────────────
+// ── 11. Output Safety ────────────────────────────────────────────────────
+export function logOutputSafety(safe: boolean, reason?: string) {
+  console.log("");
+  console.log(header("🛡️", "OUTPUT SAFETY  [phase: guardrail]"));
+  const status = safe
+    ? c.green + "clean — no PII echoed in response" + c.reset
+    : c.red + c.bold + "⚠ BLOCKED: " + (reason ?? "PII detected") + c.reset;
+  console.log(row("output.safe", status));
+  console.log(row("pii_in_reply", safe ? c.green + "false" + c.reset : c.red + "true" + c.reset));
+  console.log(footer());
+}
+
+// ── 12. Fallback / Error ──────────────────────────────────────────────────
 export function logFallback(agent: string, reason: string, action: string) {
   console.log("");
   console.log(header("⚠", `FALLBACK  [${agent}]`));
