@@ -98,12 +98,41 @@ STEP 3 — LOCATION
   Ask for specific area / neighbourhood only after problem_description is set.
   If location is missing or too vague (just "Lahore" / "Karachi" with no area) → ask for specific area.
 
-STEP 4 — TIME
-  After location is set, ALWAYS ask when the user needs the service.
+STEP 4 — TIME (collect day AND exact hour — two sub-steps)
+  After location is set, ALWAYS collect a complete appointment time.
   Never skip this. Never assume or default without asking.
-  Ask: "Aur kab chahiye? Aaj, kal subah, ya koi aur waqt?"
-  Set time_explicitly_provided = true as soon as the user gives ANY time answer, including:
-    "aaj", "kal", "abhi", "anytime", "flexible", "jab marzi", "subah", specific dates, etc.
+
+  The current Pakistan time (PKT) is injected at call time — use it to form a sensible question.
+
+  SUB-STEP 4a — DAY
+    Use the current PKT time window to offer relevant options:
+      6am–12pm  → "Subah (abhi), dopahar, shaam, ya kal?"
+      12pm–5pm  → "Dopahar (abhi), shaam, ya kal subah?"
+      5pm–9pm   → "Shaam (abhi), raat, ya kal subah?"
+      9pm–6am   → "Kal subah, kal dopahar, ya koi aur din?"
+    Keep time_explicitly_provided = false until an exact hour is also known.
+
+  SUB-STEP 4b — EXACT HOUR (REQUIRED before proceeding)
+    After the user gives a day OR a vague time-of-day ("kal subah", "aaj shaam", "kal dopahar"),
+    ask for the specific hour UNLESS they already included one.
+
+    Vague inputs that STILL need a follow-up:
+      "kal subah"     → ask "Subah kis time? Jaise 9 baje, 10 baje, ya 11 baje?"
+      "aaj shaam"     → ask "Shaam kitne baje? 4 baje, 5 baje, ya 6 baje?"
+      "kal"           → ask "Kal kitne baje chahiye? Subah 10 baje, dopahar 12 baje, ya shaam 4 baje?"
+      "parson"        → ask "Parson kitne baje? Subah ya shaam mein?"
+      "aaj"           → ask "Aaj kitne baje chahiye?"
+      "jummah"        → ask "Jummah subah, dopahar, ya shaam?"
+      (any day name)  → ask for time-of-day before asking for exact hour
+
+    Set time_explicitly_provided = true ONLY when user gives a specific clock hour:
+      "9 baje", "10am", "2 baje", "dopahar 12 baje", "shaam 5 baje", "raat 8 baje",
+      "morning 9", "3 pm", "11 o'clock", "shaam 4", "subah 9 baje", etc.
+      OR when user explicitly says they are fully flexible:
+      "flexible", "jab marzi", "anytime", "koi bhi waqt", "whenever", "no preference".
+
+    preferred_time must capture the full combined string, e.g.:
+      "kal subah 10 baje", "aaj shaam 4 baje", "jummah dopahar 2 baje", "flexible"
 
 STEP 5 — PROCEED
   Set clarification_needed = false ONLY when ALL four fields are collected:
@@ -177,7 +206,13 @@ export async function parseIntent(userInput: string, history: any[] = []): Promi
     generationConfig: { responseMimeType: "application/json" }
   });
 
+  const pktNow = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Karachi" }));
+  const pktHour = pktNow.getHours();
+  const pktLabel = pktNow.toLocaleTimeString("en-PK", { hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "Asia/Karachi" });
+
   const result = await model.generateContent(`
+    CURRENT PKT TIME: ${pktLabel} (hour ${pktHour}) — use this to form a context-aware time question in STEP 4.
+
     CONVERSATION HISTORY:
     ${historyText}
 
