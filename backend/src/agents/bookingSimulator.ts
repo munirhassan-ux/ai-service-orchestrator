@@ -19,6 +19,7 @@ const scheduleFile = path.join(__dirname, "../../data/mock_schedule.json");
 export type BookingStatus =
   | "PENDING_PROVIDER"
   | "ACCEPTED"
+  | "SCHEDULED"
   | "ARRIVING"
   | "ARRIVED"
   | "IN_PROGRESS"
@@ -73,15 +74,32 @@ function writeBookings(data: { bookings: Booking[] }) {
   fs.writeFileSync(bookingsFile, JSON.stringify(data, null, 2));
 }
 
-function readSchedule(): Record<string, string[]> {
+interface ScheduleSlot {
+  datetime: string;
+  booking_id?: string | null;
+  status: "confirmed" | "soft_locked";
+  session_id?: string;
+}
+
+function readSchedule(): Record<string, ScheduleSlot[]> {
   try {
-    return JSON.parse(fs.readFileSync(scheduleFile, "utf-8"));
+    const raw = JSON.parse(fs.readFileSync(scheduleFile, "utf-8"));
+    // Migrate legacy flat-string arrays on first read
+    const out: Record<string, ScheduleSlot[]> = {};
+    for (const [id, slots] of Object.entries(raw)) {
+      out[id] = (slots as any[]).map((s: any) =>
+        typeof s === "string"
+          ? { datetime: s.split("::")[0], booking_id: null, status: s.includes("soft_locked") ? "soft_locked" as const : "confirmed" as const }
+          : (s as ScheduleSlot)
+      );
+    }
+    return out;
   } catch {
     return {};
   }
 }
 
-function writeSchedule(data: Record<string, string[]>) {
+function writeSchedule(data: Record<string, ScheduleSlot[]>) {
   fs.writeFileSync(scheduleFile, JSON.stringify(data, null, 2));
 }
 
@@ -107,31 +125,151 @@ export function updateProviderInFile(providerId: string, updates: Partial<any>) 
   }
 }
 
-function getScheduledTime(preferredTime: string, providerId: string, existingSchedule: Record<string, string[]>): { time: string; collision: boolean } {
-  const now = new Date();
-  const tomorrow = new Date(now);
-  tomorrow.setDate(now.getDate() + 1);
+function parseNaturalLanguageTime(preferred: string): Date {
+  const pkt = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Karachi" }));
+  const pktHour = pkt.getHours();
+  const s = (preferred ?? "").toLowerCase().trim();
 
-  const timeMap: Record<string, Date> = {
-    asap: new Date(now.getTime() + 2 * 60 * 60 * 1000),
-    today_morning: new Date(new Date(now).setHours(10, 0, 0, 0)),
-    today_afternoon: new Date(new Date(now).setHours(14, 0, 0, 0)),
-    today_evening: new Date(new Date(now).setHours(18, 0, 0, 0)),
-    tomorrow_morning: new Date(new Date(tomorrow).setHours(10, 0, 0, 0)),
-    tomorrow_afternoon: new Date(new Date(tomorrow).setHours(14, 0, 0, 0)),
-    this_week: new Date(new Date(tomorrow).setHours(10, 0, 0, 0)),
-    flexible: new Date(new Date(tomorrow).setHours(10, 0, 0, 0)),
-  };
+  // Helper: get a Date set to a specific hour today (PKT)
+  function todayAt(h: number): Date {
+    const d = new Date(pkt);
+    d.setHours(h, 0, 0, 0);
+    return d;
+  }
 
-  let baseTime = (timeMap[preferredTime] || timeMap.tomorrow_morning);
+  // Helper: get a Date N days from today at hour h
+  function daysFromNow(n: number, h: number): Date {
+    const d = new Date(pkt);
+    d.setDate(d.getDate() + n);
+    d.setHours(h, 0, 0, 0);
+    return d;
+  }
+
+  // Helper: get next occurrence of a weekday (0=Sun … 6=Sat)
+  function nextWeekday(targetDay: number, h: number): Date {
+    const d = new Date(pkt);
+    const diff = ((targetDay - d.getDay()) + 7) % 7 || 7;
+    d.setDate(d.getDate() + diff);
+    d.setHours(h, 0, 0, 0);
+    return d;
+  }
+
+  // Extract explicit clock hour from string, e.g. "10 baje", "3pm", "14:00", "shaam 4"
+  function extractHour(text: string): number | null {
+    const m12 = text.match(/(\d{1,2})\s*(?:baje|am|pm|:00)/i);
+    const m24 = text.match(/\b([01]?\d|2[0-3]):([0-5]\d)\b/);
+    if (m24) return parseInt(m24[1]);
+    if (m12) {
+      let h = parseInt(m12[1]);
+      if (/pm/i.test(text) && h < 12) h += 12;
+      if (/am/i.test(text) && h === 12) h = 0;
+      // Contextual: if no am/pm, use time-of-day words
+      if (!/(am|pm)/i.test(text)) {
+        if (/shaam|evening/i.test(text) && h < 12) h += 12;
+        if (/raat|night/i.test(text) && h < 9) h += 12;
+        if (/dopahar|afternoon/i.test(text) && h < 12) h += 12;
+      }
+      return h;
+    }
+    return null;
+  }
+
+  // Time-of-day defaults when no exact hour given
+  function periodHour(text: string): number {
+    if (/subah|morning|صبح/.test(text)) return 10;
+    if (/dopahar|afternoon|دوپہر/.test(text)) return 14;
+    if (/shaam|evening|شام/.test(text)) return 18;
+    if (/raat|night|رات/.test(text)) return 21;
+    // Default based on current PKT hour
+    if (pktHour >= 6 && pktHour < 12) return 10;
+    if (pktHour >= 12 && pktHour < 17) return 14;
+    if (pktHour >= 17 && pktHour < 21) return 18;
+    return 10; // overnight → next morning default
+  }
+
+  const explicitHour = extractHour(s);
+  const baseHour = explicitHour ?? periodHour(s);
+
+  // asap / abhi
+  if (/^(asap|abhi|فوری|emergency)/.test(s)) {
+    return new Date(pkt.getTime() + 2 * 60 * 60 * 1000);
+  }
+
+  // today
+  if (/^(aaj|today|آج)/.test(s)) {
+    const h = explicitHour ?? (pktHour < 20 ? Math.max(pktHour + 2, 10) : 10);
+    const t = todayAt(h);
+    return t <= pkt ? daysFromNow(1, 10) : t;
+  }
+
+  // tomorrow
+  if (/^(kal|tomorrow|کل)/.test(s) && !/parson|پرسوں/.test(s)) {
+    return daysFromNow(1, baseHour);
+  }
+
+  // day after tomorrow
+  if (/parson|پرسوں/.test(s)) {
+    return daysFromNow(2, baseHour);
+  }
+
+  // named weekdays (Roman Urdu + English)
+  const dayMap: [RegExp, number][] = [
+    [/peer|پیر|monday/i,    1],
+    [/mangal|منگل|tuesday/i, 2],
+    [/budh|بدھ|wednesday/i,  3],
+    [/jumeraat|جمعرات|thursday/i, 4],
+    [/jummah|جمعہ|friday/i,  5],
+    [/hafta|ہفتہ|saturday/i, 6],
+    [/itwaar|اتوار|sunday/i, 0],
+  ];
+  for (const [re, day] of dayMap) {
+    if (re.test(s)) return nextWeekday(day, baseHour);
+  }
+
+  // legacy static keys (keep backwards compat)
+  if (s === "today_morning")    return todayAt(10);
+  if (s === "today_afternoon")  return todayAt(14);
+  if (s === "today_evening")    return todayAt(18);
+  if (s === "tomorrow_morning") return daysFromNow(1, 10);
+  if (s === "tomorrow_afternoon") return daysFromNow(1, 14);
+
+  // flexible / this_week / jab marzi / anytime → tomorrow morning
+  return daysFromNow(1, 10);
+}
+
+// Pakistani service worker defaults: Sun–Thu + Sat working, 08:00–20:00, no Fri after 13:00
+const AVAIL_WORKING_DAYS = new Set([0, 1, 2, 3, 4, 6]); // 5=Fri excluded as jummah
+const AVAIL_START = 8;
+const AVAIL_END   = 20;
+const JUMMAH_CUTOFF = 13;
+
+function snapToAvailability(d: Date): Date {
+  for (let i = 0; i < 14; i++) {
+    const day  = d.getDay();
+    const hour = d.getHours();
+    if (!AVAIL_WORKING_DAYS.has(day) || (day === 5 && hour >= JUMMAH_CUTOFF)) {
+      d.setDate(d.getDate() + 1);
+      d.setHours(AVAIL_START, 0, 0, 0);
+      continue;
+    }
+    if (hour < AVAIL_START) { d.setHours(AVAIL_START, 0, 0, 0); break; }
+    if (hour >= AVAIL_END)  { d.setDate(d.getDate() + 1); d.setHours(AVAIL_START, 0, 0, 0); continue; }
+    break;
+  }
+  return d;
+}
+
+function getScheduledTime(preferredTime: string, providerId: string, existingSchedule: Record<string, ScheduleSlot[]>): { time: string; collision: boolean } {
+  let baseTime = snapToAvailability(parseNaturalLanguageTime(preferredTime));
 
   const providerSlots = existingSchedule[providerId] || [];
   let finalTime = baseTime.toISOString();
   let collision = false;
 
-  while (providerSlots.some(s => s === finalTime || s.startsWith(finalTime))) {
+  while (providerSlots.some(s => s.datetime === finalTime)) {
     collision = true;
     baseTime = new Date(baseTime.getTime() + 2 * 60 * 60 * 1000);
+    snapToAvailability(baseTime);
     finalTime = baseTime.toISOString();
   }
 
@@ -141,11 +279,9 @@ function getScheduledTime(preferredTime: string, providerId: string, existingSch
 export function softLockSlot(providerId: string, preferredTime: string, sessionId: string): string {
   const schedule = readSchedule();
   const { time: slotTime } = getScheduledTime(preferredTime, providerId, schedule);
-  
   if (!schedule[providerId]) schedule[providerId] = [];
-  schedule[providerId].push(`${slotTime}::soft_locked::${sessionId}`);
+  schedule[providerId].push({ datetime: slotTime, booking_id: null, status: "soft_locked", session_id: sessionId });
   writeSchedule(schedule);
-  
   console.log(`[BookingSimulator] Soft-locked slot ${slotTime} for provider ${providerId}, session ${sessionId}`);
   return slotTime;
 }
@@ -154,13 +290,9 @@ export function releaseSoftLock(sessionId: string) {
   const schedule = readSchedule();
   let modified = false;
   for (const providerId in schedule) {
-    const originalLen = schedule[providerId].length;
-    schedule[providerId] = schedule[providerId].filter(
-      (slot) => !slot.includes(`::soft_locked::${sessionId}`)
-    );
-    if (schedule[providerId].length !== originalLen) {
-      modified = true;
-    }
+    const before = schedule[providerId].length;
+    schedule[providerId] = schedule[providerId].filter(s => !(s.status === "soft_locked" && s.session_id === sessionId));
+    if (schedule[providerId].length !== before) modified = true;
   }
   if (modified) {
     writeSchedule(schedule);
@@ -172,12 +304,13 @@ export function convertSoftLockToHardLock(sessionId: string) {
   const schedule = readSchedule();
   let modified = false;
   for (const providerId in schedule) {
-    schedule[providerId] = schedule[providerId].map((slot) => {
-      if (slot.includes(`::soft_locked::${sessionId}`)) {
+    schedule[providerId] = schedule[providerId].map(s => {
+      if (s.status === "soft_locked" && s.session_id === sessionId) {
         modified = true;
-        return slot.split("::")[0];
+        const { session_id: _, ...rest } = s;
+        return { ...rest, status: "confirmed" as const };
       }
-      return slot;
+      return s;
     });
   }
   if (modified) {
@@ -230,7 +363,7 @@ export async function createBooking(
 
   // Block the slot in schedule
   if (!schedule[provider.provider_id]) schedule[provider.provider_id] = [];
-  schedule[provider.provider_id].push(scheduledTime);
+  schedule[provider.provider_id].push({ datetime: scheduledTime, booking_id: bookingId, status: "confirmed" });
   writeSchedule(schedule);
 
   // Reminder = 1 hour before
@@ -298,8 +431,15 @@ export async function createBooking(
   }
   console.log(`[BookingSimulator] Created: ${bookingId} | Provider: ${provider.name} | Price: Rs. ${finalPrice}`);
 
-  // Agent auto-accepts on behalf of provider — no manual confirmation needed
-  const acceptedBooking = updateBookingStatus(bookingId, "ACCEPTED");
+  // Agent auto-accepts on behalf of provider
+  updateBookingStatus(bookingId, "ACCEPTED");
+
+  // If booking is >3 hours away, set SCHEDULED — GPS tracking not needed yet
+  const pktNow = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Karachi" }));
+  const hoursAway = (new Date(scheduledTime).getTime() - pktNow.getTime()) / 3_600_000;
+  if (hoursAway > 3) updateBookingStatus(bookingId, "SCHEDULED");
+
+  const finalBooking = getBooking(bookingId)!;
 
   pushNotification(
     "PROVIDER",
@@ -309,7 +449,7 @@ export async function createBooking(
     `${intent.service_type} job ${intent.location} mein schedule ho gaya. Rs. ${finalPrice} — koi action nahi chahiye.`
   );
 
-  return { booking: acceptedBooking, before, after };
+  return { booking: finalBooking, before, after };
 }
 
 // Update booking status (state machine)
@@ -363,6 +503,9 @@ export function updateBookingStatus(bookingId: string, newStatus: BookingStatus)
 
   if (newStatus === "ACCEPTED") {
     pushNotification("CUSTOMER", bookingId, "accepted", "Kaam Accept Ho Gaya! ✅", `${booking.provider_name} ne aap ka request accept kar liya hai.`);
+  } else if (newStatus === "SCHEDULED") {
+    const d = new Date(booking.scheduled_time).toLocaleString("en-PK", { timeZone: "Asia/Karachi", dateStyle: "medium", timeStyle: "short" });
+    pushNotification("CUSTOMER", bookingId, "scheduled", "Booking Schedule Ho Gayi! 📅", `${booking.provider_name} ${d} ko aayein ge.`);
   } else if (newStatus === "ARRIVING") {
     pushNotification("CUSTOMER", bookingId, "on_the_way", "Provider Raste Mein Hai! 🛵", `${booking.provider_name} raste mein hai.`);
   } else if (newStatus === "COMPLETED") {

@@ -452,6 +452,13 @@ router.post("/booking/simulate-step", (req: Request, res: Response) => {
     const booking = getBooking(booking_id);
     if (!booking) return res.status(404).json({ error: "Booking not found" });
 
+    // SCHEDULED: simulate "day has arrived" — flip to ARRIVING and begin GPS
+    if (booking.status === "SCHEDULED") {
+      updateBookingStatus(booking_id, "ARRIVING");
+      const updated = getBooking(booking_id);
+      return res.json({ status: "simulated", booking: updated });
+    }
+
     // Only run GPS simulation for bookings actively in transit
     if (booking.status !== "ACCEPTED" && booking.status !== "ARRIVING") {
       return res.json({ status: "skipped", booking });

@@ -1233,7 +1233,9 @@ class _LiveTrackingWidgetState extends State<LiveTrackingWidget> {
     });
     final status = _booking['status'] as String? ?? '';
     final reassignedTo = _booking['reassigned_to'] as String?;
-    if (status == 'ACCEPTED' || status == 'ARRIVING') {
+    if (status == 'SCHEDULED') {
+      _startPolling(); // keep polling in case provider starts early
+    } else if (status == 'ACCEPTED' || status == 'ARRIVING') {
       _startPolling();
       Future.delayed(const Duration(milliseconds: 600), _startSimulation);
     } else if ((status == 'CANCELLED_PROVIDER' || status == 'CANCELLED_TIMEOUT') &&
@@ -1261,6 +1263,8 @@ class _LiveTrackingWidgetState extends State<LiveTrackingWidget> {
           final latestStatus = res['status'] as String? ?? '';
           if (latestStatus == 'CANCELLED_PROVIDER' || latestStatus == 'CANCELLED_TIMEOUT') {
             _autoReassign();
+          } else if (latestStatus == 'SCHEDULED') {
+            _startPolling();
           } else if (latestStatus == 'ACCEPTED' || latestStatus == 'ARRIVING') {
             _startPolling();
             Future.delayed(const Duration(milliseconds: 600), _startSimulation);
@@ -1306,9 +1310,9 @@ class _LiveTrackingWidgetState extends State<LiveTrackingWidget> {
         } else if (newStatus == 'CANCELLED_PROVIDER' || newStatus == 'CANCELLED_TIMEOUT') {
           widget.onCancelReady?.call(_cancelAndEnd); // show during reassignment
         }
-        // Provider just accepted — auto-start GPS simulation
+        // Start GPS simulation when provider goes active (from any pre-transit status)
         if ((newStatus == 'ACCEPTED' || newStatus == 'ARRIVING') &&
-            prevStatus == 'PENDING_PROVIDER' &&
+            (prevStatus == 'PENDING_PROVIDER' || prevStatus == 'SCHEDULED') &&
             !_simulating) {
           _startSimulation();
         }
@@ -1403,6 +1407,21 @@ class _LiveTrackingWidgetState extends State<LiveTrackingWidget> {
       }
     } catch (_) {
       if (mounted) setState(() => _summaryLoading = false);
+    }
+  }
+
+  String _formatScheduledTime(String? raw) {
+    if (raw == null || raw.isEmpty) return 'Date TBD';
+    try {
+      final dt = DateTime.parse(raw.length < 20 ? '${raw}:00' : raw).toLocal();
+      const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      final h = dt.hour > 12 ? dt.hour - 12 : (dt.hour == 0 ? 12 : dt.hour);
+      final ampm = dt.hour >= 12 ? 'PM' : 'AM';
+      final min = dt.minute.toString().padLeft(2, '0');
+      return '${days[dt.weekday - 1]}, ${dt.day} ${months[dt.month - 1]} at $h:$min $ampm';
+    } catch (_) {
+      return raw;
     }
   }
 
@@ -1812,6 +1831,47 @@ class _LiveTrackingWidgetState extends State<LiveTrackingWidget> {
                     onTap: _refreshStatus,
                     child: const Icon(Icons.refresh_rounded,
                         color: Color(0xFF3A9010), size: 18),
+                  ),
+                ],
+              ),
+            ),
+          ] else if (status == 'SCHEDULED') ...[
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1565C0).withValues(alpha: 0.07),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFF1565C0).withValues(alpha: 0.22)),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(Icons.calendar_today_rounded, color: Color(0xFF1565C0), size: 18),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Booking Scheduled',
+                          style: TextStyle(
+                              color: Color(0xFF1565C0),
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600),
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          _formatScheduledTime(_booking['scheduled_time'] as String?),
+                          style: const TextStyle(color: Color(0xFF3E3F3B), fontSize: 12),
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          '${_booking['provider_name'] ?? 'Provider'} will arrive at the scheduled time.',
+                          style: const TextStyle(color: Color(0xFF767773), fontSize: 11),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
