@@ -1,1 +1,126 @@
-[]
+[
+  {
+    "dispute_id": "DSP-1780893559640",
+    "booking_id": "SVC-20260608-0001",
+    "contract_id": null,
+    "provider_id": "p49510",
+    "type": "late_arrival",
+    "raised_by": "customer",
+    "evidence": {
+      "booking_id": "SVC-20260608-0001",
+      "service_type": "plumber",
+      "booking_status": "COMPLETED",
+      "scheduled_time": "2026-06-08T13:00:00.000Z",
+      "is_future_scheduled": false,
+      "minutes_past_scheduled": -500,
+      "final_price": 1271,
+      "agreed_price": 1271,
+      "overcharge_amount": 0,
+      "state_history": [
+        {
+          "status": "PENDING_PROVIDER",
+          "timestamp": "2026-06-08T04:37:21.374Z"
+        },
+        {
+          "status": "ACCEPTED",
+          "timestamp": "2026-06-08T04:37:21.378Z"
+        },
+        {
+          "status": "SCHEDULED",
+          "timestamp": "2026-06-08T04:37:21.836Z"
+        },
+        {
+          "status": "ARRIVING",
+          "timestamp": "2026-06-08T04:38:01.776Z"
+        },
+        {
+          "status": "ARRIVED",
+          "timestamp": "2026-06-08T04:38:06.323Z"
+        },
+        {
+          "status": "IN_PROGRESS",
+          "timestamp": "2026-06-08T04:38:06.324Z"
+        },
+        {
+          "status": "COMPLETED",
+          "timestamp": "2026-06-08T04:39:37.478Z"
+        }
+      ],
+      "arrived_timestamp": "2026-06-08T04:38:06.323Z",
+      "promised_eta_min": null,
+      "checklist_total": 4,
+      "checklist_completed": 4,
+      "checklist_completion_pct": 100,
+      "cfp_log": null,
+      "late_by_minutes": -502
+    },
+    "agent_reasoning": "Provider arrived 502 minutes early — no late arrival occurred.",
+    "proposed_action": "dismiss",
+    "confidence": 0.95,
+    "status": "resolved",
+    "reliability_impact": 0,
+    "created_at": "2026-06-08T04:39:19.640Z",
+    "resolved_at": "2026-06-08T04:40:11.173Z"
+  },
+  {
+    "dispute_id": "DSP-1780899106483",
+    "booking_id": "SVC-20260608-0002",
+    "contract_id": null,
+    "provider_id": "p49715",
+    "type": "poor_quality",
+    "raised_by": "customer",
+    "evidence": {
+      "booking_id": "SVC-20260608-0002",
+      "service_type": "plumber",
+      "booking_status": "COMPLETED",
+      "scheduled_time": "2026-06-09T13:00:00.000Z",
+      "is_future_scheduled": false,
+      "minutes_past_scheduled": -1848,
+      "final_price": 1045,
+      "agreed_price": 1045,
+      "overcharge_amount": 0,
+      "state_history": [
+        {
+          "status": "PENDING_PROVIDER",
+          "timestamp": "2026-06-08T06:07:50.811Z"
+        },
+        {
+          "status": "ACCEPTED",
+          "timestamp": "2026-06-08T06:07:50.812Z"
+        },
+        {
+          "status": "SCHEDULED",
+          "timestamp": "2026-06-08T06:07:51.284Z"
+        },
+        {
+          "status": "ARRIVING",
+          "timestamp": "2026-06-08T06:08:24.764Z"
+        },
+        {
+          "status": "ARRIVED",
+          "timestamp": "2026-06-08T06:08:28.505Z"
+        },
+        {
+          "status": "IN_PROGRESS",
+          "timestamp": "2026-06-08T06:08:28.506Z"
+        },
+        {
+          "status": "COMPLETED",
+          "timestamp": "2026-06-08T06:08:50.867Z"
+        }
+      ],
+      "arrived_timestamp": "2026-06-08T06:08:28.505Z",
+      "promised_eta_min": null,
+      "checklist_total": 4,
+      "checklist_completed": 4,
+      "checklist_completion_pct": 100,
+      "cfp_log": null
+    },
+    "agent_reasoning": "100% checklist completion — quality concern noted, escalating for review.",
+    "proposed_action": "provider_warning",
+    "confidence": 0.55,
+    "status": "escalated",
+    "reliability_impact": -2,
+    "created_at": "2026-06-08T06:11:46.483Z"
+  }
+]

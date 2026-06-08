@@ -1,1 +1,14 @@
-{"schedule":{}}
+{
+  "p49715": [
+    {
+      "datetime": "2026-06-09T12:00:00.000Z",
+      "booking_id": "SVC-20260608-0001",
+      "status": "confirmed"
+    },
+    {
+      "datetime": "2026-06-09T03:00:00.000Z",
+      "booking_id": "SVC-20260608-0002",
+      "status": "confirmed"
+    }
+  ]
+}

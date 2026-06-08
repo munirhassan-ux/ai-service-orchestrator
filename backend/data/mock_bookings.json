@@ -1,1 +1,217 @@
-{"bookings":[]}
+{
+  "bookings": [
+    {
+      "booking_id": "SVC-20260608-0001",
+      "provider_id": "p49715",
+      "provider_name": "Kashif Abbasi",
+      "customer_id": "customer_001",
+      "service_type": "plumber",
+      "location": "g11 islamabad",
+      "scheduled_time": "2026-06-09T12:00:00.000Z",
+      "status": "COMPLETED",
+      "final_price": 1045,
+      "price_quote": {
+        "base_rate": 417,
+        "distance_fee": 60,
+        "urgency_surcharge": 0,
+        "complexity_premium": 0,
+        "loyalty_discount": 0,
+        "surge_multiplier": 1,
+        "surge_active": false,
+        "visit_fee": 150,
+        "hours_min": 2,
+        "hours_max": 2,
+        "min_total": 990,
+        "max_total": 1090,
+        "total": 1040,
+        "min_rate_total": 990,
+        "floor_min": 940,
+        "floor_max": 1140,
+        "industry_standard_min": 660,
+        "industry_standard_max": 1080,
+        "currency": "PKR",
+        "breakdown_text": "Visit Fee (non-refundable): Rs. 150\nLabour (Rs. 417/hr × 2hrs): Rs. 830\nTravel (3.1km): Rs. 60\n─────────────────────────────\nTotal: Rs. 1040",
+        "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
+      },
+      "negotiation_thread_id": null,
+      "confirmation_message": "Booking confirm ho gayi! Kashif Abbasi aap ke paas g11 islamabad mein 09/06/2026, 5:00:00 pm ko pohunchen ge. Booking ID: SVC-20260608-0001. Total: Rs. 1045.",
+      "reminder_scheduled_at": "2026-06-09T11:00:00.000Z",
+      "checklist": [
+        {
+          "item": "Diagnose leak/blockage",
+          "completed": true
+        },
+        {
+          "item": "Complete repair",
+          "completed": true
+        },
+        {
+          "item": "Test water flow",
+          "completed": true
+        },
+        {
+          "item": "Clean up area",
+          "completed": true
+        }
+      ],
+      "created_at": "2026-06-08T06:18:26.707Z",
+      "updated_at": "2026-06-08T06:19:38.500Z",
+      "state_history": [
+        {
+          "status": "PENDING_PROVIDER",
+          "timestamp": "2026-06-08T06:18:26.707Z"
+        },
+        {
+          "status": "ACCEPTED",
+          "timestamp": "2026-06-08T06:18:26.708Z"
+        },
+        {
+          "status": "SCHEDULED",
+          "timestamp": "2026-06-08T06:18:27.201Z"
+        },
+        {
+          "status": "ARRIVING",
+          "timestamp": "2026-06-08T06:19:05.927Z"
+        },
+        {
+          "status": "ARRIVED",
+          "timestamp": "2026-06-08T06:19:09.771Z"
+        },
+        {
+          "status": "IN_PROGRESS",
+          "timestamp": "2026-06-08T06:19:09.772Z"
+        },
+        {
+          "status": "COMPLETED",
+          "timestamp": "2026-06-08T06:19:28.140Z"
+        },
+        {
+          "status": "COMPLETED",
+          "timestamp": "2026-06-08T06:19:38.500Z"
+        }
+      ],
+      "session_id": "SESS-1780899450168-952",
+      "requested_time": "2026-06-09T12:00:00.000Z",
+      "current_lat": 33.693447875000004,
+      "current_lng": 73.05539987499999,
+      "customer_lat": 33.6938,
+      "customer_lng": 73.0551,
+      "distance_meters": 48,
+      "agent_messages": [
+        {
+          "from": "provider_agent",
+          "to": "customer_agent",
+          "status": "ARRIVING",
+          "message": "Raste mein hun! g11 islamabad tak pohonchne mein thodi der lagay gi — abhi approximately 3.1 km door hun. Tayar rahein 🛵",
+          "timestamp": "2026-06-08T06:19:05.928Z"
+        },
+        {
+          "from": "provider_agent",
+          "to": "customer_agent",
+          "status": "ARRIVED",
+          "message": "g11 islamabad par pohonch gaya hun — plumber ka kaam shuru karne ke liye tayar hun. Please andar aanay dein 📍",
+          "timestamp": "2026-06-08T06:19:09.771Z"
+        },
+        {
+          "from": "provider_agent",
+          "to": "customer_agent",
+          "status": "IN_PROGRESS",
+          "message": "plumber ka kaam shuru kar diya hai 🔧 Mukammal hone par update karunga.",
+          "timestamp": "2026-06-08T06:19:09.772Z"
+        },
+        {
+          "from": "provider_agent",
+          "to": "customer_agent",
+          "status": "COMPLETED",
+          "message": "Kaam mukammal ho gaya ✅ Tamam checklist items complete hain. Meherbani kar ke payment Rs. 1045 confirm karein aur rating dein taakay funds release ho sakain.",
+          "timestamp": "2026-06-08T06:19:28.141Z"
+        },
+        {
+          "from": "customer_agent",
+          "to": "provider_agent",
+          "status": "PAYMENT_CONFIRMED",
+          "message": "Rs. 1045 — tamam checklist items complete hain aur rating submit ho gayi. Payment release ho gayi. Shukriya! ⭐5",
+          "timestamp": "2026-06-08T06:19:38.501Z"
+        }
+      ]
+    },
+    {
+      "booking_id": "SVC-20260608-0002",
+      "provider_id": "p49715",
+      "provider_name": "Kashif Abbasi",
+      "customer_id": "customer_001",
+      "service_type": "plumber",
+      "location": "g11",
+      "scheduled_time": "2026-06-09T03:00:00.000Z",
+      "status": "SCHEDULED",
+      "final_price": 1045,
+      "price_quote": {
+        "base_rate": 417,
+        "distance_fee": 60,
+        "urgency_surcharge": 0,
+        "complexity_premium": 0,
+        "loyalty_discount": 0,
+        "surge_multiplier": 1,
+        "surge_active": false,
+        "visit_fee": 150,
+        "hours_min": 2,
+        "hours_max": 2,
+        "min_total": 990,
+        "max_total": 1090,
+        "total": 1040,
+        "min_rate_total": 990,
+        "floor_min": 940,
+        "floor_max": 1140,
+        "industry_standard_min": 660,
+        "industry_standard_max": 1080,
+        "currency": "PKR",
+        "breakdown_text": "Visit Fee (non-refundable): Rs. 150\nLabour (Rs. 417/hr × 2hrs): Rs. 830\nTravel (3.1km): Rs. 60\n─────────────────────────────\nTotal: Rs. 1040",
+        "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
+      },
+      "negotiation_thread_id": null,
+      "confirmation_message": "Booking confirm ho gayi! Kashif Abbasi aap ke paas g11 mein 09/06/2026, 8:00:00 am ko pohunchen ge. Booking ID: SVC-20260608-0002. Total: Rs. 1045.",
+      "reminder_scheduled_at": "2026-06-09T02:00:00.000Z",
+      "checklist": [
+        {
+          "item": "Diagnose leak/blockage",
+          "completed": false
+        },
+        {
+          "item": "Complete repair",
+          "completed": false
+        },
+        {
+          "item": "Test water flow",
+          "completed": false
+        },
+        {
+          "item": "Clean up area",
+          "completed": false
+        }
+      ],
+      "created_at": "2026-06-08T06:20:39.085Z",
+      "updated_at": "2026-06-08T06:20:39.532Z",
+      "state_history": [
+        {
+          "status": "PENDING_PROVIDER",
+          "timestamp": "2026-06-08T06:20:39.086Z"
+        },
+        {
+          "status": "ACCEPTED",
+          "timestamp": "2026-06-08T06:20:39.086Z"
+        },
+        {
+          "status": "SCHEDULED",
+          "timestamp": "2026-06-08T06:20:39.532Z"
+        }
+      ],
+      "session_id": "SESS-1780899619471-227",
+      "requested_time": "2026-06-09T03:00:00.000Z",
+      "current_lat": 33.671264,
+      "current_lng": 73.074292,
+      "customer_lat": 33.6938,
+      "customer_lng": 73.0551,
+      "distance_meters": 3100
+    }
+  ]
+}

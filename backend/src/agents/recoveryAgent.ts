@@ -9,7 +9,6 @@ import { fileURLToPath } from "url";
 import { matchProviders } from "./providerMatcher.js";
 import { runNegotiation } from "./negotiationEngine.js";
 import { createBooking } from "./bookingSimulator.js";
-import { applyEvent } from "./reliabilityEngine.js";
 import { geocodeLocation } from "./providerMatcher.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -105,12 +104,6 @@ export async function handle(
   console.log(`${tag} Canceller: ${C.red}${cancelledProvider?.name ?? booking.provider_id}${C.reset}  (attempt ${chainLength + 1})`);
   console.log(`${tag} Cause   : ${C.bold}${cause}${C.reset}`);
   console.log(`${tag} Compensation: ${compensation.type} — ${compensation.description}`);
-
-  // Apply reliability penalty to the canceller
-  try {
-    applyEvent(booking.provider_id, "cancel_after_accept", cancelledBookingId);
-    console.log(`${tag} ${C.dim}Reliability penalty applied to ${cancelledProvider?.name ?? booking.provider_id}${C.reset}`);
-  } catch { /* non-fatal */ }
 
   console.log(`${tag} Generating apology (${language})...`);
   const apologyMessage = await generateApology(cause, language, compensation);

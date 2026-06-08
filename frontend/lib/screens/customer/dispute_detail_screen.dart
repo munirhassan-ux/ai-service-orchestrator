@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../services/api_service.dart';
 
@@ -13,6 +14,7 @@ class _DisputeDetailScreenState extends State<DisputeDetailScreen> {
   Map<String, dynamic>? _dispute;
   bool _loading = true;
   bool _responding = false;
+  Timer? _pollTimer;
 
   @override
   void initState() {
@@ -20,13 +22,28 @@ class _DisputeDetailScreenState extends State<DisputeDetailScreen> {
     _load();
   }
 
+  @override
+  void dispose() {
+    _pollTimer?.cancel();
+    super.dispose();
+  }
+
   Future<void> _load() async {
     try {
       final data = await ApiService.get('/dispute/${widget.disputeId}');
+      if (!mounted) return;
+      final d = Map<String, dynamic>.from(data as Map);
       setState(() {
-        _dispute = Map<String, dynamic>.from(data as Map);
+        _dispute = d;
         _loading = false;
       });
+      // Poll while awaiting completion; stop once resolved/proposed
+      if (d['status'] == 'awaiting_completion') {
+        _pollTimer ??= Timer.periodic(const Duration(seconds: 8), (_) => _load());
+      } else {
+        _pollTimer?.cancel();
+        _pollTimer = null;
+      }
     } catch (_) {
       setState(() => _loading = false);
     }
@@ -35,12 +52,26 @@ class _DisputeDetailScreenState extends State<DisputeDetailScreen> {
   Future<void> _respond(String decision) async {
     setState(() => _responding = true);
     try {
-      await ApiService.post('/dispute/${widget.disputeId}/respond', {
+      final res = await ApiService.post('/dispute/${widget.disputeId}/respond', {
         'party': 'customer',
         'decision': decision,
       });
-      await _load();
-    } catch (_) {
+      if (res['error'] != null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error: ${res['error']}'), backgroundColor: Colors.redAccent),
+          );
+        }
+      } else {
+        await _load();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to submit response. Please try again.'),
+              backgroundColor: Colors.redAccent),
+        );
+      }
     } finally {
       if (mounted) setState(() => _responding = false);
     }
@@ -92,6 +123,12 @@ class _DisputeDetailScreenState extends State<DisputeDetailScreen> {
     final conf    = ((d['confidence'] as num?) ?? 0) * 100;
     final canAct  = status == 'proposed';
     final evidence = d['evidence'] as Map? ?? {};
+    final reasoning = (d['agent_reasoning'] as String? ?? '').trim();
+    final reasoningText = reasoning.isNotEmpty
+        ? reasoning
+        : status == 'awaiting_completion'
+            ? 'Dispute logged. Resolution will be determined once the job is completed.'
+            : 'No reasoning available.';
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -111,7 +148,7 @@ class _DisputeDetailScreenState extends State<DisputeDetailScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  d['agent_reasoning'] as String? ?? '',
+                  reasoningText,
                   style: const TextStyle(
                     fontFamily: 'Satoshi Variable',
                     fontSize: 13,
@@ -201,6 +238,23 @@ class _DisputeDetailScreenState extends State<DisputeDetailScreen> {
     );
   }
 
+  static String _formatEvidenceValue(String key, dynamic value) {
+    if (value is num) {
+      final n = value.toInt();
+      if (key == 'late_by_minutes') {
+        if (n < 0) return '${-n} min early';
+        if (n == 0) return 'on time';
+        return '$n min late';
+      }
+      if (key == 'minutes_past_scheduled') {
+        if (n < 0) return '${-n} min before scheduled';
+        if (n == 0) return 'exactly on time';
+        return '$n min past scheduled';
+      }
+    }
+    return '$value';
+  }
+
   Widget _evidenceTable(Map evidence) {
     final rows = <MapEntry<String, dynamic>>[];
     for (final key in evidence.keys) {
@@ -218,6 +272,8 @@ class _DisputeDetailScreenState extends State<DisputeDetailScreen> {
       child: Column(
         children: rows.asMap().entries.map((e) {
           final isLast = e.key == rows.length - 1;
+          final key = e.value.key;
+          final val = _formatEvidenceValue(key, e.value.value);
           return Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(
@@ -230,7 +286,7 @@ class _DisputeDetailScreenState extends State<DisputeDetailScreen> {
                 Expanded(
                   flex: 4,
                   child: Text(
-                    e.value.key.replaceAll('_', ' '),
+                    key.replaceAll('_', ' '),
                     style: const TextStyle(
                       fontFamily: 'Satoshi Variable',
                       fontSize: 12,
@@ -241,7 +297,7 @@ class _DisputeDetailScreenState extends State<DisputeDetailScreen> {
                 Expanded(
                   flex: 5,
                   child: Text(
-                    '${e.value.value}',
+                    val,
                     style: const TextStyle(
                       fontFamily: 'Satoshi Variable',
                       fontSize: 12,
@@ -307,7 +363,9 @@ class _DisputeDetailScreenState extends State<DisputeDetailScreen> {
         ? const Color(0xFF079455)
         : status == 'escalated'
             ? const Color(0xFFf59e0b)
-            : const Color(0xFF697586);
+            : status == 'awaiting_completion'
+                ? const Color(0xFF1570ef)
+                : const Color(0xFF697586);
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -319,13 +377,15 @@ class _DisputeDetailScreenState extends State<DisputeDetailScreen> {
         children: [
           Icon(Icons.info_outline, color: color, size: 16),
           const SizedBox(width: 8),
-          Text(
-            _statusMessage(status),
-            style: TextStyle(
-              fontFamily: 'Satoshi Variable',
-              fontSize: 13,
-              color: color,
-              fontWeight: FontWeight.w500,
+          Expanded(
+            child: Text(
+              _statusMessage(status),
+              style: TextStyle(
+                fontFamily: 'Satoshi Variable',
+                fontSize: 13,
+                color: color,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
         ],
@@ -335,10 +395,11 @@ class _DisputeDetailScreenState extends State<DisputeDetailScreen> {
 
   static String _statusMessage(String status) {
     switch (status) {
-      case 'resolved': return 'This dispute has been resolved.';
-      case 'accepted': return 'Resolution accepted by both parties.';
-      case 'escalated': return 'Escalated for human review.';
-      case 'rejected': return 'Resolution rejected — escalating to human review.';
+      case 'resolved':             return 'This dispute has been resolved.';
+      case 'accepted':             return 'Resolution accepted by both parties.';
+      case 'escalated':            return 'Escalated for human review.';
+      case 'rejected':             return 'Resolution rejected — escalating to human review.';
+      case 'awaiting_completion':  return 'Dispute logged. Resolution will be determined once the job is completed.';
       default: return 'Status: $status';
     }
   }

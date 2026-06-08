@@ -6,8 +6,9 @@ import cors from "cors";
 import * as path from "path";
 import * as fs from "fs";
 import { fileURLToPath } from "url";
-import { spawn } from "child_process";
+import { spawn, execSync } from "child_process";
 import apiRoutes from "./routes/routes.js";
+import { startSlaMonitor } from "./agents/slaMonitor.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -34,7 +35,7 @@ app.get("/health", (req, res) => {
   });
 });
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`\n🚀 Haazir backend running on http://localhost:${PORT}`);
   console.log(`📋 Health check: http://localhost:${PORT}/health`);
   console.log(`🤖 Orchestrate: POST http://localhost:${PORT}/api/orchestrate\n`);
@@ -90,6 +91,20 @@ app.listen(PORT, () => {
 
     console.log("🧹 Job listings cleared on startup (clean demo slate)\n");
   } catch (e) { console.warn("⚠️  Startup reset partial:", (e as Error).message); }
+
+  startSlaMonitor();
+});
+
+server.on("error", (err: NodeJS.ErrnoException) => {
+  if (err.code === "EADDRINUSE") {
+    console.warn(`\n⚠️  Port ${PORT} already in use — killing stale process and retrying...\n`);
+    try {
+      execSync(`lsof -ti :${PORT} | xargs kill -9`, { stdio: "ignore" });
+    } catch { /* nothing was there */ }
+    setTimeout(() => server.listen(PORT), 800);
+  } else {
+    throw err;
+  }
 });
 
 export default app;

@@ -12,6 +12,7 @@ import 'widgets/negotiation_widget.dart';
 import 'widgets/privacy_badge_widget.dart';
 import 'widgets/reliability_badge_widget.dart';
 import 'widgets/recovery_widget.dart';
+import 'dispute_detail_screen.dart';
 class ActiveSessionService {
   static String? _sessionId;
   static String? _bookingId;
@@ -1243,24 +1244,39 @@ class LiveTrackingWidget extends StatefulWidget {
   State<LiveTrackingWidget> createState() => _LiveTrackingWidgetState();
 }
 
-class _LiveTrackingWidgetState extends State<LiveTrackingWidget> {
+class _LiveTrackingWidgetState extends State<LiveTrackingWidget>
+    with AutomaticKeepAliveClientMixin {
+  // Session-scoped guard: once a booking triggers auto-reassign, never repeat it
+  // even if the widget scrolls off-screen and is recreated.
+  static final _handledReassignments = <String>{};
+
+  @override
+  bool get wantKeepAlive => true;
+
   late Map<String, dynamic> _booking;
   Timer? _gpsTimer;
   Timer? _pollTimer;
   bool _simulating = false;
   int _starsSubmitted = 0;
-  bool _disputeSubmitted = false;
-  String? _disputeResolution;
+  String? _activeDisputeId;
   Map<String, dynamic>? _summary;
   bool _summaryLoading = false;
   bool _autoRetrying = false;
   bool _noProviderFound = false;
   int _retryAttempt = 0;
 
+  void _syncDisputeId() {
+    final id = _booking['dispute_id'] as String?;
+    if (id != null && _activeDisputeId == null && mounted) {
+      _activeDisputeId = id;
+    }
+  }
+
   @override
   void initState() {
     super.initState();
     _booking = widget.booking;
+    _syncDisputeId();
     // Defer so we don't call setState on the parent during its own build phase
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
@@ -1283,7 +1299,11 @@ class _LiveTrackingWidgetState extends State<LiveTrackingWidget> {
         reassignedTo != null) {
       Future.microtask(_resumeFromChain);
     } else if (status == 'CANCELLED_PROVIDER' || status == 'CANCELLED_TIMEOUT') {
-      Future.microtask(_autoReassign);
+      final bookingId = _booking['booking_id'] as String? ?? '';
+      if (bookingId.isNotEmpty && !_handledReassignments.contains(bookingId)) {
+        _handledReassignments.add(bookingId);
+        Future.microtask(_autoReassign);
+      }
     } else {
       _startPolling();
     }
@@ -1300,7 +1320,7 @@ class _LiveTrackingWidgetState extends State<LiveTrackingWidget> {
         if (chainNext != null && chainNext.isNotEmpty) {
           nextId = chainNext;
         } else {
-          setState(() => _booking = res);
+          setState(() { _booking = res; _syncDisputeId(); });
           final latestStatus = res['status'] as String? ?? '';
           if (latestStatus == 'CANCELLED_PROVIDER' || latestStatus == 'CANCELLED_TIMEOUT') {
             _autoReassign();
@@ -1343,7 +1363,7 @@ class _LiveTrackingWidgetState extends State<LiveTrackingWidget> {
       if (res is Map<String, dynamic> && res['booking_id'] != null) {
         final prevStatus = _booking['status'] as String? ?? '';
         final newStatus = res['status'] as String? ?? '';
-        setState(() => _booking = res);
+        setState(() { _booking = res; _syncDisputeId(); });
         // Manage cancel button visibility based on new status
         if (newStatus == 'ACCEPTED' || newStatus == 'ARRIVING' ||
             newStatus == 'ARRIVED' || newStatus == 'IN_PROGRESS') {
@@ -1371,7 +1391,11 @@ class _LiveTrackingWidgetState extends State<LiveTrackingWidget> {
           if ((newStatus == 'CANCELLED_PROVIDER' || newStatus == 'CANCELLED_TIMEOUT') &&
               !_noProviderFound &&
               !_autoRetrying) {
-            _autoReassign();
+            final cancelledId = bId as String? ?? '';
+            if (cancelledId.isNotEmpty && !_handledReassignments.contains(cancelledId)) {
+              _handledReassignments.add(cancelledId);
+              _autoReassign();
+            }
           }
         }
       }
@@ -1485,7 +1509,7 @@ class _LiveTrackingWidgetState extends State<LiveTrackingWidget> {
       if (!mounted) return;
       final bookingData = res['booking'] as Map<String, dynamic>?;
       if (bookingData != null) {
-        setState(() => _booking = bookingData);
+        setState(() { _booking = bookingData; _syncDisputeId(); });
         final status = _booking['status'] as String? ?? '';
         final dist = _booking['distance_meters'] as num? ?? 1000;
         // Stop GPS if arrived, already in progress/completed, or step was skipped
@@ -1524,92 +1548,275 @@ class _LiveTrackingWidgetState extends State<LiveTrackingWidget> {
     }
   }
 
-  Future<void> _submitDispute(String issueType) async {
-    final bId = _booking['booking_id'];
-    final pId = _booking['provider_id'];
-    if (bId == null || pId == null) return;
+  // Returns the dispute_id on success, null on failure.
+  Future<String?> _doRaiseDispute(String bookingId, String type, String comment) async {
     try {
-      final res = await ApiService.post('/dispute', {
-        'booking_id': bId,
-        'provider_id': pId,
-        'issue_type': issueType,
-        'comment': '',
+      final res = await ApiService.post('/dispute/raise', {
+        'booking_id': bookingId,
+        'type': type,
+        'comment': comment,
       });
-      if (!mounted) return;
-      setState(() {
-        _disputeSubmitted = true;
-        _disputeResolution = res['result']?['resolution'] as String? ??
-            'Dispute logged. Our team will contact you within 24 hours.';
-      });
+      if (res['error'] != null) {
+        debugPrint('Dispute API error: ${res['error']}');
+        return null;
+      }
+      final id = res['dispute_id'] as String?;
+      if (id != null && mounted) setState(() => _activeDisputeId = id);
+      return id;
     } catch (e) {
       debugPrint('Dispute error: $e');
+      return null;
     }
   }
 
-  void _showDisputeModal() {
-    showModalBottomSheet(
+  Future<void> _showDisputeModal() async {
+    // Build provider chain (fetch previous booking if this was reassigned)
+    final chain = <Map<String, dynamic>>[
+      {
+        'booking_id': _booking['booking_id'],
+        'provider_name': _booking['provider_name'] ?? 'Provider',
+        'status': _booking['status'] as String? ?? '',
+      }
+    ];
+
+    final reassignedFrom = _booking['reassigned_from'] as String?;
+    if (reassignedFrom != null) {
+      try {
+        final prev = await ApiService.get('booking/$reassignedFrom') as Map<String, dynamic>?;
+        if (prev != null) {
+          chain.insert(0, {
+            'booking_id': prev['booking_id'],
+            'provider_name': prev['provider_name'] ?? 'Provider',
+            'status': prev['status'] as String? ?? '',
+          });
+        }
+      } catch (_) {}
+    }
+
+    if (!mounted) return;
+
+    String providerStatusLabel(String s) {
+      switch (s) {
+        case 'CANCELLED_PROVIDER': return 'Cancelled after accepting';
+        case 'CANCELLED_TIMEOUT':  return 'No-show (auto cancelled)';
+        case 'COMPLETED':          return 'Completed job';
+        case 'IN_PROGRESS':        return 'In progress';
+        case 'ARRIVED':            return 'Arrived on site';
+        case 'ARRIVING':           return 'En route';
+        default: return s.replaceAll('_', ' ').toLowerCase();
+      }
+    }
+
+    var selectedIdx = chain.length - 1;
+    String? selectedType;
+    final commentCtrl = TextEditingController();
+    bool submitting = false;
+
+    await showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (ctx) => Padding(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text("Report an Issue",
-                style: TextStyle(
-                    color: const Color(0xFF21231D),
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold)),
-            const SizedBox(height: 4),
-            const Text("What went wrong?",
-                style: TextStyle(color: const Color(0xFF565955), fontSize: 13)),
-            const SizedBox(height: 12),
-            ...[
-              (
-                'quality_complaint',
-                'Quality Issue',
-                Icons.thumb_down_outlined,
-                'Work was not done properly'
-              ),
-              (
-                'price_dispute',
-                'Price Dispute',
-                Icons.money_off_outlined,
-                'Charged more than quoted'
-              ),
-              (
-                'no_show',
-                'Provider No-Show',
-                Icons.person_off_outlined,
-                'Provider never arrived'
-              ),
-              (
-                'cancellation',
-                'Unfair Cancellation',
-                Icons.cancel_outlined,
-                'Cancelled without a valid reason'
-              ),
-            ].map((t) => ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: Icon(t.$3, color: Colors.redAccent, size: 20),
-                  title: Text(t.$2,
-                      style: const TextStyle(
-                          color: const Color(0xFF21231D), fontSize: 13)),
-                  subtitle: Text(t.$4,
-                      style: const TextStyle(
-                          color: const Color(0xFF767773), fontSize: 11)),
-                  onTap: () {
-                    Navigator.pop(ctx);
-                    _submitDispute(t.$1);
-                  },
-                )),
-          ],
-        ),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setModal) {
+          final selStatus = chain[selectedIdx]['status'] as String;
+          final isCompleted = selStatus == 'COMPLETED';
+
+          final types = [
+            ('overcharge',    'Overcharge',   Icons.money_off_outlined,   isCompleted),
+            ('no_show',       'No-Show',      Icons.person_off_outlined,  true),
+            ('late_arrival',  'Late Arrival', Icons.timer_off_outlined,   true),
+            ('poor_quality',  'Poor Quality', Icons.thumb_down_outlined,  isCompleted),
+          ];
+
+          return Padding(
+            padding: EdgeInsets.fromLTRB(
+                20, 20, 20, MediaQuery.of(ctx).viewInsets.bottom + 28),
+            child: SingleChildScrollView(
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Center(
+                  child: Container(
+                    width: 36, height: 4,
+                    decoration: BoxDecoration(
+                        color: const Color(0xFFCDD5DF),
+                        borderRadius: BorderRadius.circular(2)),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Text('Raise a Dispute',
+                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold,
+                        color: Color(0xFF21231D))),
+                const SizedBox(height: 4),
+                const Text('Select the provider and issue — AI will investigate.',
+                    style: TextStyle(fontSize: 12, color: Color(0xFF697586))),
+
+                // Provider selector (only when chain has multiple)
+                if (chain.length > 1) ...[
+                  const SizedBox(height: 20),
+                  const Text('Which provider?',
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600,
+                          color: Color(0xFF3E3F3B))),
+                  const SizedBox(height: 8),
+                  ...List.generate(chain.length, (i) {
+                    final c = chain[i];
+                    final isSel = i == selectedIdx;
+                    return GestureDetector(
+                      onTap: () => setModal(() { selectedIdx = i; selectedType = null; }),
+                      child: Container(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: isSel
+                              ? const Color(0xFF6938ef).withValues(alpha: 0.07)
+                              : Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: isSel ? const Color(0xFF6938ef) : const Color(0xFFCDD5DF),
+                            width: isSel ? 1.5 : 1,
+                          ),
+                        ),
+                        child: Row(children: [
+                          Icon(Icons.person_rounded, size: 16,
+                              color: isSel ? const Color(0xFF6938ef) : const Color(0xFF697586)),
+                          const SizedBox(width: 10),
+                          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                            Text(c['provider_name'] as String,
+                                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600,
+                                    color: isSel ? const Color(0xFF6938ef) : const Color(0xFF21231D))),
+                            Text(providerStatusLabel(c['status'] as String),
+                                style: const TextStyle(fontSize: 11, color: Color(0xFF697586))),
+                          ])),
+                          if (isSel)
+                            const Icon(Icons.check_circle_rounded, size: 18,
+                                color: Color(0xFF6938ef)),
+                        ]),
+                      ),
+                    );
+                  }),
+                ],
+
+                // Dispute type grid
+                const SizedBox(height: 20),
+                const Text('What happened?',
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600,
+                        color: Color(0xFF3E3F3B))),
+                const SizedBox(height: 8),
+                GridView.count(
+                  crossAxisCount: 2,
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  crossAxisSpacing: 10,
+                  mainAxisSpacing: 10,
+                  childAspectRatio: 2.6,
+                  children: types.map((t) {
+                    final (typeKey, typeLabel, icon, enabled) = t;
+                    final isSel = selectedType == typeKey;
+                    return GestureDetector(
+                      onTap: enabled ? () => setModal(() => selectedType = typeKey) : null,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: !enabled
+                              ? const Color(0xFFF8FAFC)
+                              : isSel
+                                  ? Colors.redAccent.withValues(alpha: 0.1)
+                                  : Colors.white,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: !enabled
+                                ? const Color(0xFFE8EDE6)
+                                : isSel
+                                    ? Colors.redAccent
+                                    : const Color(0xFFCDD5DF),
+                          ),
+                        ),
+                        child: Row(children: [
+                          Icon(icon, size: 14,
+                              color: !enabled
+                                  ? const Color(0xFFB0B5AE)
+                                  : isSel ? Colors.redAccent : const Color(0xFF565955)),
+                          const SizedBox(width: 6),
+                          Expanded(child: Text(typeLabel,
+                              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600,
+                                  color: !enabled
+                                      ? const Color(0xFFB0B5AE)
+                                      : isSel ? Colors.redAccent : const Color(0xFF21231D)))),
+                        ]),
+                      ),
+                    );
+                  }).toList(),
+                ),
+
+                // Comment field
+                const SizedBox(height: 20),
+                const Text('Additional details (optional)',
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600,
+                        color: Color(0xFF3E3F3B))),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: commentCtrl,
+                  maxLines: 3,
+                  style: const TextStyle(fontSize: 13, color: Color(0xFF21231D)),
+                  decoration: InputDecoration(
+                    hintText: 'Describe what went wrong...',
+                    hintStyle: const TextStyle(fontSize: 12, color: Color(0xFFB0B5AE)),
+                    contentPadding: const EdgeInsets.all(12),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(color: Color(0xFFCDD5DF))),
+                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(color: Color(0xFFCDD5DF))),
+                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(color: Color(0xFF6938ef))),
+                  ),
+                ),
+
+                // Submit
+                const SizedBox(height: 20),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: (selectedType == null || submitting)
+                        ? null
+                        : () async {
+                            setModal(() => submitting = true);
+                            final bId = chain[selectedIdx]['booking_id'] as String;
+                            final id = await _doRaiseDispute(bId, selectedType!, commentCtrl.text.trim());
+                            if (!ctx.mounted) return;
+                            if (id != null) {
+                              Navigator.pop(ctx);
+                            } else {
+                              setModal(() => submitting = false);
+                              ScaffoldMessenger.of(ctx).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Dispute submission failed. Please try again.'),
+                                  backgroundColor: Colors.redAccent,
+                                ),
+                              );
+                            }
+                          },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.redAccent,
+                      disabledBackgroundColor: const Color(0xFFE8EDE6),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      elevation: 0,
+                    ),
+                    child: submitting
+                        ? const SizedBox(width: 16, height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                        : const Text('Submit Dispute',
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                  ),
+                ),
+              ]),
+            ),
+          );
+        },
       ),
     );
+    commentCtrl.dispose();
   }
 
   Widget _buildSummaryCard(Map<String, dynamic> summary) {
@@ -1699,9 +1906,15 @@ class _LiveTrackingWidgetState extends State<LiveTrackingWidget> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context); // required by AutomaticKeepAliveClientMixin
     final status = _booking['status'] as String? ?? 'PENDING_PROVIDER';
     final dist = _booking['distance_meters'] as num? ?? 2000;
     final checklist = _booking['checklist'] as List? ?? [];
+
+    final scheduledStr = _booking['scheduled_time'] as String?;
+    final isFutureScheduled = status == 'SCHEDULED' &&
+        scheduledStr != null &&
+        (DateTime.tryParse(scheduledStr)?.isAfter(DateTime.now()) ?? false);
 
     final displayStatus = _noProviderFound
         ? 'NO PROVIDER'
@@ -2004,6 +2217,8 @@ class _LiveTrackingWidgetState extends State<LiveTrackingWidget> {
               const Divider(color: Color(0xFFE8EDE6)),
               const SizedBox(height: 10),
             ],
+            AgentMessagesWidget(bookingId: _booking['booking_id'] as String? ?? ''),
+            const SizedBox(height: 10),
             if (_starsSubmitted == 0) ...[
               const Text(
                 "How was your experience?",
@@ -2042,66 +2257,44 @@ class _LiveTrackingWidgetState extends State<LiveTrackingWidget> {
                   ),
                 ],
               ),
-              if (_starsSubmitted <= 2 && !_disputeSubmitted) ...[
-                const SizedBox(height: 10),
-                GestureDetector(
-                  onTap: _showDisputeModal,
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(vertical: 9),
-                    decoration: BoxDecoration(
-                      color: Colors.redAccent.withValues(alpha: 0.08),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                          color: Colors.redAccent.withValues(alpha: 0.3)),
-                    ),
-                    child: const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.report_outlined,
-                              color: Colors.redAccent, size: 14),
-                          SizedBox(width: 6),
-                          Text("Report an Issue",
-                              style: TextStyle(
-                                  color: Colors.redAccent,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold)),
-                        ]),
-                  ),
-                ),
-              ] else if (_disputeSubmitted && _disputeResolution != null) ...[
-                const SizedBox(height: 10),
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.blueAccent.withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                        color: Colors.blueAccent.withValues(alpha: 0.25)),
-                  ),
-                  child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Row(children: [
-                          Icon(Icons.shield_outlined,
-                              color: Colors.blueAccent, size: 14),
-                          SizedBox(width: 6),
-                          Text("Dispute Filed",
-                              style: TextStyle(
-                                  color: Colors.blueAccent,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold)),
-                        ]),
-                        const SizedBox(height: 6),
-                        Text(_disputeResolution!,
-                            style: const TextStyle(
-                                color: const Color(0xFF3E3F3B),
-                                fontSize: 11,
-                                height: 1.4)),
-                      ]),
-                ),
-              ],
             ],
+          ],
+
+          // ── Dispute section — available from ACCEPTED onwards ────────────
+          if (!_autoRetrying && !_noProviderFound &&
+              status != 'PENDING_PROVIDER' && !status.startsWith('CANCELLED') &&
+              !isFutureScheduled) ...[
+            const SizedBox(height: 10),
+            const Divider(color: Color(0xFFE8EDE6)),
+            const SizedBox(height: 4),
+            if (_activeDisputeId == null)
+              GestureDetector(
+                onTap: _showDisputeModal,
+                child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                  Icon(Icons.balance_outlined, size: 13,
+                      color: Colors.redAccent.withValues(alpha: 0.75)),
+                  const SizedBox(width: 6),
+                  Text('Raise a Dispute',
+                      style: TextStyle(
+                          color: Colors.redAccent.withValues(alpha: 0.85),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600)),
+                ]),
+              )
+            else
+              GestureDetector(
+                onTap: () => Navigator.push(context, MaterialPageRoute(
+                    builder: (_) => DisputeDetailScreen(disputeId: _activeDisputeId!))),
+                child: const Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                  Icon(Icons.balance_outlined, size: 13, color: Color(0xFF6938ef)),
+                  SizedBox(width: 6),
+                  Text('View My Dispute →',
+                      style: TextStyle(
+                          color: Color(0xFF6938ef),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600)),
+                ]),
+              ),
           ],
         ],
       ),
@@ -2151,8 +2344,15 @@ class _AgentMessagesWidgetState extends State<AgentMessagesWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final updates = _messages.where((m) => (m as Map)['status'] != 'PAYMENT_CONFIRMED').toList();
-    final payment = _messages.cast<Map<String, dynamic>>().where((m) => m['status'] == 'PAYMENT_CONFIRMED').lastOrNull;
+    const disputeStatuses = {'DISPUTE_RESOLVED', 'DISPUTE_ESCALATED'};
+    final updates = _messages.where((m) {
+      final s = (m as Map)['status'] as String? ?? '';
+      return s != 'PAYMENT_CONFIRMED' && !disputeStatuses.contains(s);
+    }).toList();
+    final payment = _messages.cast<Map<String, dynamic>>()
+        .where((m) => m['status'] == 'PAYMENT_CONFIRMED').lastOrNull;
+    final disputeMsg = _messages.cast<Map<String, dynamic>>()
+        .where((m) => disputeStatuses.contains(m['status'])).lastOrNull;
     if (_messages.isEmpty) return const SizedBox.shrink();
 
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -2260,6 +2460,55 @@ class _AgentMessagesWidgetState extends State<AgentMessagesWidget> {
             ])),
           ]),
         ),
+
+      // Dispute resolution card
+      if (disputeMsg != null) ...[
+        const SizedBox(height: 8),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          decoration: BoxDecoration(
+            color: const Color(0xFF6938ef).withValues(alpha: 0.07),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFF6938ef).withValues(alpha: 0.25)),
+          ),
+          child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Container(
+              width: 38, height: 38,
+              decoration: BoxDecoration(
+                color: disputeMsg['status'] == 'DISPUTE_RESOLVED'
+                    ? const Color(0xFF6938ef)
+                    : const Color(0xFFf59e0b),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(
+                disputeMsg['status'] == 'DISPUTE_RESOLVED'
+                    ? Icons.balance_rounded
+                    : Icons.escalator_warning_rounded,
+                color: Colors.white, size: 18,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(
+                disputeMsg['status'] == 'DISPUTE_RESOLVED'
+                    ? 'Dispute Resolved'
+                    : 'Dispute Escalated',
+                style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                    color: disputeMsg['status'] == 'DISPUTE_RESOLVED'
+                        ? const Color(0xFF3b1fa8)
+                        : const Color(0xFF92400e)),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                disputeMsg['message'] as String? ?? '',
+                style: const TextStyle(fontSize: 12, color: Color(0xFF565955), height: 1.4),
+              ),
+            ])),
+          ]),
+        ),
+      ],
     ]);
   }
 }

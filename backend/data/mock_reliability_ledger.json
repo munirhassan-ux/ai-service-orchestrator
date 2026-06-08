@@ -106,5 +106,230 @@
     "booking_id": "SVC-20260606-0007",
     "new_score": 96.3,
     "ts": "2026-06-06T16:53:30.448Z"
+  },
+  {
+    "provider_id": "p49721",
+    "event": "job_completed_ontime",
+    "delta": 3,
+    "reason": "job completed ontime",
+    "booking_id": "SVC-20260608-0001",
+    "new_score": 96.4,
+    "ts": "2026-06-08T01:30:04.378Z"
+  },
+  {
+    "provider_id": "p49721",
+    "event": "job_completed_ontime",
+    "delta": 3,
+    "reason": "job completed ontime",
+    "booking_id": "SVC-20260608-0002",
+    "new_score": 96.5,
+    "ts": "2026-06-08T01:34:48.654Z"
+  },
+  {
+    "provider_id": "p49721",
+    "event": "job_completed_ontime",
+    "delta": 3,
+    "reason": "job completed ontime",
+    "booking_id": "SVC-20260608-0002",
+    "new_score": 96.6,
+    "ts": "2026-06-08T01:34:49.373Z"
+  },
+  {
+    "provider_id": "p49721",
+    "event": "cancel_after_accept",
+    "delta": -15,
+    "reason": "cancel after accept",
+    "booking_id": "SVC-20260608-0001",
+    "new_score": 92.1,
+    "ts": "2026-06-08T01:52:46.865Z"
+  },
+  {
+    "provider_id": "p49721",
+    "event": "cancel_after_accept",
+    "delta": -15,
+    "reason": "cancel after accept",
+    "booking_id": "SVC-20260608-0001",
+    "new_score": 88.9,
+    "ts": "2026-06-08T01:52:48.682Z"
+  },
+  {
+    "provider_id": "p49719",
+    "event": "cancel_after_accept",
+    "delta": -15,
+    "reason": "cancel after accept",
+    "booking_id": "SVC-20260608-0002",
+    "new_score": 82.9,
+    "ts": "2026-06-08T02:02:57.587Z"
+  },
+  {
+    "provider_id": "p49436",
+    "event": "cancel_after_accept",
+    "delta": -15,
+    "reason": "cancel after accept",
+    "booking_id": "SVC-20260608-0003",
+    "new_score": 86.6,
+    "ts": "2026-06-08T02:05:31.155Z"
+  },
+  {
+    "provider_id": "p13599",
+    "event": "cancel_after_accept",
+    "delta": -15,
+    "reason": "cancel after accept",
+    "booking_id": "SVC-20260608-0001",
+    "new_score": 86.1,
+    "ts": "2026-06-08T02:14:03.897Z"
+  },
+  {
+    "provider_id": "p13599",
+    "event": "cancel_after_accept",
+    "delta": -15,
+    "reason": "cancel after accept",
+    "booking_id": "SVC-20260608-0001",
+    "new_score": 83.2,
+    "ts": "2026-06-08T02:14:04.701Z"
+  },
+  {
+    "provider_id": "p49576",
+    "event": "job_completed_ontime",
+    "delta": 3,
+    "reason": "job completed ontime",
+    "booking_id": "SVC-20260608-0002",
+    "new_score": 85.9,
+    "ts": "2026-06-08T02:14:48.716Z"
+  },
+  {
+    "provider_id": "p49576",
+    "event": "cancel_after_accept",
+    "delta": -15,
+    "reason": "cancel after accept",
+    "booking_id": "SVC-20260608-0003",
+    "new_score": 81.8,
+    "ts": "2026-06-08T02:22:51.187Z"
+  },
+  {
+    "provider_id": "p49576",
+    "event": "cancel_after_accept",
+    "delta": -15,
+    "reason": "cancel after accept",
+    "booking_id": "SVC-20260608-0003",
+    "new_score": 78.9,
+    "ts": "2026-06-08T02:22:51.979Z"
+  },
+  {
+    "provider_id": "p49508",
+    "event": "cancel_after_accept",
+    "delta": -15,
+    "reason": "cancel after accept",
+    "booking_id": "SVC-20260608-0001",
+    "new_score": 76.4,
+    "ts": "2026-06-08T02:38:10.721Z"
+  },
+  {
+    "provider_id": "p49715",
+    "event": "job_completed_ontime",
+    "delta": 3,
+    "reason": "job completed ontime",
+    "booking_id": "SVC-20260608-0002",
+    "new_score": 86.5,
+    "ts": "2026-06-08T02:38:43.845Z"
+  },
+  {
+    "provider_id": "p49715",
+    "event": "job_completed_ontime",
+    "delta": 3,
+    "reason": "job completed ontime",
+    "booking_id": "SVC-20260608-0001",
+    "new_score": 89,
+    "ts": "2026-06-08T02:56:27.612Z"
+  },
+  {
+    "provider_id": "p49715",
+    "event": "dispute_lost_severe",
+    "delta": -12,
+    "reason": "dispute lost severe",
+    "booking_id": "SVC-20260608-0001",
+    "new_score": 81,
+    "ts": "2026-06-08T03:35:40.839Z"
+  },
+  {
+    "provider_id": "p49715",
+    "event": "dispute_won",
+    "delta": 4,
+    "reason": "dispute won",
+    "booking_id": "SVC-20260608-0001",
+    "new_score": 86,
+    "ts": "2026-06-08T03:51:01.620Z"
+  },
+  {
+    "provider_id": "p49715",
+    "event": "job_completed_ontime",
+    "delta": 3,
+    "reason": "job completed ontime",
+    "booking_id": "SVC-20260608-0001",
+    "new_score": 87.8,
+    "ts": "2026-06-08T03:51:57.818Z"
+  },
+  {
+    "provider_id": "p49510",
+    "event": "job_completed_ontime",
+    "delta": 3,
+    "reason": "job completed ontime",
+    "booking_id": "SVC-20260608-0004",
+    "new_score": 87.3,
+    "ts": "2026-06-08T03:58:24.011Z"
+  },
+  {
+    "provider_id": "p49510",
+    "event": "dispute_won",
+    "delta": 4,
+    "reason": "dispute won",
+    "booking_id": "SVC-20260608-0001",
+    "new_score": 89.3,
+    "ts": "2026-06-08T04:22:37.195Z"
+  },
+  {
+    "provider_id": "p49510",
+    "event": "job_completed_ontime",
+    "delta": 3,
+    "reason": "job completed ontime",
+    "booking_id": "SVC-20260608-0001",
+    "new_score": 91.6,
+    "ts": "2026-06-08T04:22:55.887Z"
+  },
+  {
+    "provider_id": "p49510",
+    "event": "job_completed_ontime",
+    "delta": 3,
+    "reason": "job completed ontime",
+    "booking_id": "SVC-20260608-0001",
+    "new_score": 93.2,
+    "ts": "2026-06-08T04:39:48.369Z"
+  },
+  {
+    "provider_id": "p49510",
+    "event": "dispute_won",
+    "delta": 4,
+    "reason": "dispute won",
+    "booking_id": "SVC-20260608-0001",
+    "new_score": 93.2,
+    "ts": "2026-06-08T04:40:11.449Z"
+  },
+  {
+    "provider_id": "p49510",
+    "event": "cancel_after_accept",
+    "delta": -15,
+    "reason": "cancel after accept",
+    "booking_id": "SVC-20260608-0001",
+    "new_score": 88.9,
+    "ts": "2026-06-08T06:07:45.971Z"
+  },
+  {
+    "provider_id": "p49715",
+    "event": "job_completed_ontime",
+    "delta": 3,
+    "reason": "job completed ontime",
+    "booking_id": "SVC-20260608-0001",
+    "new_score": 89,
+    "ts": "2026-06-08T06:19:38.500Z"
   }
 ]

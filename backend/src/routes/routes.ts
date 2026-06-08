@@ -9,7 +9,8 @@ import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-import { processDispute, raiseDispute, getDispute, listDisputes, respondToDispute } from "../agents/disputeAgent.js";
+import { processDispute, raiseDispute, getDispute, listDisputes, respondToDispute, resolveAwaitingDisputes } from "../agents/disputeAgent.js";
+import { handle as recoveryHandle } from "../agents/recoveryAgent.js";
 import { getReliabilitySnapshot, applyEvent } from "../agents/reliabilityEngine.js";
 import { launchProviderApp } from "../utils/providerAppLauncher.js";
 import { getContract, appendEventToContract } from "../agents/negotiationEngine.js";
@@ -264,6 +265,11 @@ router.post("/booking/status", (req: Request, res: Response) => {
 
   try {
     const booking = updateBookingStatus(booking_id, status);
+    if (status === "COMPLETED") {
+      resolveAwaitingDisputes(booking_id).catch((err: any) =>
+        console.error(`[DisputeAgent] resolveAwaiting error: ${err.message}`)
+      );
+    }
     return res.json({ status: "updated", booking });
   } catch (err: any) {
     return res.status(500).json({ error: err.message });
@@ -524,7 +530,7 @@ router.post("/booking/simulate-step", (req: Request, res: Response) => {
 });
 
 // ── POST /api/booking/submit-rating ───────────────────────────
-router.post("/booking/submit-rating", (req: Request, res: Response) => {
+router.post("/booking/submit-rating", async (req: Request, res: Response) => {
   const { booking_id, stars } = req.body;
   if (!booking_id || stars === undefined) {
     return res.status(400).json({ error: "booking_id and stars are required" });
@@ -532,7 +538,12 @@ router.post("/booking/submit-rating", (req: Request, res: Response) => {
 
   try {
     const booking = submitBookingRating(booking_id, stars, new Date().toISOString());
-    return res.json({ status: "rated", booking });
+    res.json({ status: "rated", booking });
+    // Resolve any disputes that were waiting for this job to finish
+    resolveAwaitingDisputes(booking_id).catch((err: any) =>
+      console.error(`[DisputeAgent] resolveAwaiting error: ${err.message}`)
+    );
+    return;
   } catch (err: any) {
     return res.status(500).json({ error: err.message });
   }
@@ -739,7 +750,22 @@ router.post("/dispute/raise", async (req: Request, res: Response) => {
   if (!booking_id || !type) return res.status(400).json({ error: "booking_id and type required" });
   try {
     const dispute = await raiseDispute(booking_id, type, comment ?? "");
-    return res.json(dispute);
+    res.json(dispute);
+
+    // No-show confirmed at booking time → cancel current booking + trigger recovery
+    if (dispute.needs_recovery) {
+      try {
+        applyEvent(dispute.provider_id, "no_show", booking_id);
+        handleProviderCancellation(booking_id);
+        console.log(`[DisputeRoute] No-show confirmed for ${booking_id} — triggering recovery`);
+        recoveryHandle(booking_id, []).catch((err: any) =>
+          console.error(`[DisputeRoute] Recovery failed: ${err.message}`)
+        );
+      } catch (err: any) {
+        console.error(`[DisputeRoute] Post-dispute side-effect error: ${err.message}`);
+      }
+    }
+    return;
   } catch (err: any) {
     return res.status(500).json({ error: err.message });
   }

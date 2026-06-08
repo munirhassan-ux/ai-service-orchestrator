@@ -5,7 +5,7 @@
   "description": "AI Service Orchestrator backend for Haazir",
   "main": "dist/index.js",
   "scripts": {
-    "dev": "tsx watch src/index.ts",
+    "dev": "lsof -ti :3000 | xargs kill -9 2>/dev/null; tsx watch src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js"
   },

@@ -50,19 +50,20 @@ function buildMessage(status: string, b: any): AgentMessage[] {
         timestamp: new Date().toISOString(),
       }];
 
-    case "COMPLETED":
-      return [
-        {
-          from: "provider_agent", to: "customer_agent", status,
-          message: `Kaam mukammal ho gaya ✅ Tamam checklist items done hain. Payment Rs. ${price} confirm karein taakay funds release ho sakain.`,
-          timestamp: new Date().toISOString(),
-        },
-        {
-          from: "customer_agent", to: "provider_agent", status: "PAYMENT_CONFIRMED",
-          message: `Rs. ${price}`,
-          timestamp: new Date(Date.now() + 500).toISOString(),
-        },
-      ];
+    case "COMPLETED": {
+      const allDone = !b.checklist || b.checklist.length === 0 || b.checklist.every((i: any) => i.completed);
+      const unpaid  = b.checklist?.filter((i: any) => !i.completed).map((i: any) => i.item) ?? [];
+
+      const providerMsg = allDone
+        ? `Kaam mukammal ho gaya ✅ Tamam checklist items complete hain. Meherbani kar ke payment Rs. ${price} confirm karein aur rating dein taakay funds release ho sakain.`
+        : `Kaam mukammal mark kar diya hai lekin ${unpaid.length} item(s) abhi incomplete hain: ${unpaid.join(", ")}. Payment abhi hold hai.`;
+
+      return [{
+        from: "provider_agent", to: "customer_agent", status,
+        message: providerMsg,
+        timestamp: new Date().toISOString(),
+      }];
+    }
 
     default:
       return [];

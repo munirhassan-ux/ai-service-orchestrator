@@ -1,1 +1,247 @@
-[]
+[
+  {
+    "contract_id": "DEAL-20260608-0001",
+    "booking_id": "SVC-20260608-0001",
+    "provider_id": "p49510",
+    "customer_id": "customer_001",
+    "agreed_price": 1271,
+    "agreed_slot": "2026-06-09T05:00:00.000Z",
+    "negotiation_rounds": 1,
+    "cfp_log": [
+      {
+        "provider_id": "p49715",
+        "price": 1045,
+        "eta_min": 14,
+        "slot": "2026-06-09T05:00:00.000Z",
+        "confidence": 0.84,
+        "reliability_snapshot": 87.8,
+        "accepted": true
+      },
+      {
+        "provider_id": "p49510",
+        "price": 1271,
+        "eta_min": 13,
+        "slot": "2026-06-09T05:00:00.000Z",
+        "confidence": 0.86,
+        "reliability_snapshot": 91.6,
+        "accepted": true
+      },
+      {
+        "provider_id": "p14016",
+        "price": 1567,
+        "eta_min": 42,
+        "slot": "2026-06-09T05:00:00.000Z",
+        "confidence": 0.82,
+        "reliability_snapshot": 88.8,
+        "accepted": true
+      }
+    ],
+    "signed_by": {
+      "customer_agent": true,
+      "provider_agent": true
+    },
+    "event_log": [
+      {
+        "event": "deal_locked",
+        "ts": "2026-06-08T04:37:21.370Z"
+      }
+    ],
+    "created_at": "2026-06-08T04:37:21.370Z"
+  },
+  {
+    "contract_id": "DEAL-20260608-0002",
+    "booking_id": "SVC-20260608-0001",
+    "provider_id": "p49510",
+    "customer_id": "customer_001",
+    "agreed_price": 1462,
+    "agreed_slot": "2026-06-09T05:00:00.000Z",
+    "negotiation_rounds": 1,
+    "cfp_log": [
+      {
+        "provider_id": "p49715",
+        "price": 1202,
+        "eta_min": 14,
+        "slot": "2026-06-09T05:00:00.000Z",
+        "confidence": 0.84,
+        "reliability_snapshot": 87.8,
+        "accepted": true
+      },
+      {
+        "provider_id": "p49510",
+        "price": 1462,
+        "eta_min": 13,
+        "slot": "2026-06-09T05:00:00.000Z",
+        "confidence": 0.89,
+        "reliability_snapshot": 93.2,
+        "accepted": true
+      },
+      {
+        "provider_id": "p14016",
+        "price": 1802,
+        "eta_min": 42,
+        "slot": "2026-06-09T05:00:00.000Z",
+        "confidence": 0.82,
+        "reliability_snapshot": 88.8,
+        "accepted": true
+      }
+    ],
+    "signed_by": {
+      "customer_agent": true,
+      "provider_agent": true
+    },
+    "event_log": [
+      {
+        "event": "deal_locked",
+        "ts": "2026-06-08T06:05:37.291Z"
+      }
+    ],
+    "created_at": "2026-06-08T06:05:37.291Z"
+  },
+  {
+    "contract_id": "DEAL-20260608-0003",
+    "booking_id": null,
+    "provider_id": "p49715",
+    "customer_id": "customer_001",
+    "agreed_price": 1045,
+    "agreed_slot": "2026-06-09T05:00:00.000Z",
+    "negotiation_rounds": 1,
+    "cfp_log": [
+      {
+        "provider_id": "p49715",
+        "price": 1045,
+        "eta_min": 14,
+        "slot": "2026-06-09T05:00:00.000Z",
+        "confidence": 0.84,
+        "reliability_snapshot": 87.8,
+        "accepted": true
+      },
+      {
+        "provider_id": "p14016",
+        "price": 1567,
+        "eta_min": 42,
+        "slot": "2026-06-09T05:00:00.000Z",
+        "confidence": 0.82,
+        "reliability_snapshot": 88.8,
+        "accepted": true
+      },
+      {
+        "provider_id": "p13946",
+        "price": 1390,
+        "eta_min": 45,
+        "slot": "2026-06-09T05:00:00.000Z",
+        "confidence": 0.83,
+        "reliability_snapshot": 89.7,
+        "accepted": true
+      }
+    ],
+    "signed_by": {
+      "customer_agent": true,
+      "provider_agent": true
+    },
+    "event_log": [
+      {
+        "event": "deal_locked",
+        "ts": "2026-06-08T06:07:50.809Z"
+      }
+    ],
+    "created_at": "2026-06-08T06:07:50.809Z"
+  },
+  {
+    "contract_id": "DEAL-20260608-0004",
+    "booking_id": "SVC-20260608-0001",
+    "provider_id": "p49715",
+    "customer_id": "customer_001",
+    "agreed_price": 1045,
+    "agreed_slot": "2026-06-09T05:00:00.000Z",
+    "negotiation_rounds": 1,
+    "cfp_log": [
+      {
+        "provider_id": "p49715",
+        "price": 1045,
+        "eta_min": 14,
+        "slot": "2026-06-09T05:00:00.000Z",
+        "confidence": 0.84,
+        "reliability_snapshot": 87.8,
+        "accepted": true
+      },
+      {
+        "provider_id": "p14016",
+        "price": 1567,
+        "eta_min": 42,
+        "slot": "2026-06-09T05:00:00.000Z",
+        "confidence": 0.82,
+        "reliability_snapshot": 88.8,
+        "accepted": true
+      },
+      {
+        "provider_id": "p13946",
+        "price": 1390,
+        "eta_min": 45,
+        "slot": "2026-06-09T05:00:00.000Z",
+        "confidence": 0.83,
+        "reliability_snapshot": 89.7,
+        "accepted": true
+      }
+    ],
+    "signed_by": {
+      "customer_agent": true,
+      "provider_agent": true
+    },
+    "event_log": [
+      {
+        "event": "deal_locked",
+        "ts": "2026-06-08T06:18:26.703Z"
+      }
+    ],
+    "created_at": "2026-06-08T06:18:26.703Z"
+  },
+  {
+    "contract_id": "DEAL-20260608-0005",
+    "booking_id": "SVC-20260608-0002",
+    "provider_id": "p49715",
+    "customer_id": "customer_001",
+    "agreed_price": 1045,
+    "agreed_slot": "2026-06-09T05:00:00.000Z",
+    "negotiation_rounds": 1,
+    "cfp_log": [
+      {
+        "provider_id": "p49715",
+        "price": 1045,
+        "eta_min": 14,
+        "slot": "2026-06-09T05:00:00.000Z",
+        "confidence": 0.86,
+        "reliability_snapshot": 89,
+        "accepted": true
+      },
+      {
+        "provider_id": "p14016",
+        "price": 1567,
+        "eta_min": 42,
+        "slot": "2026-06-09T05:00:00.000Z",
+        "confidence": 0.82,
+        "reliability_snapshot": 88.8,
+        "accepted": true
+      },
+      {
+        "provider_id": "p13946",
+        "price": 1390,
+        "eta_min": 45,
+        "slot": "2026-06-09T05:00:00.000Z",
+        "confidence": 0.83,
+        "reliability_snapshot": 89.7,
+        "accepted": true
+      }
+    ],
+    "signed_by": {
+      "customer_agent": true,
+      "provider_agent": true
+    },
+    "event_log": [
+      {
+        "event": "deal_locked",
+        "ts": "2026-06-08T06:20:39.083Z"
+      }
+    ],
+    "created_at": "2026-06-08T06:20:39.083Z"
+  }
+]

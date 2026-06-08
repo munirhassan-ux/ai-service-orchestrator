@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../services/api_service.dart';
 import '../../services/booking_events.dart';
-import '../../main_provider.dart' show kProviderDisplayName;
+import '../../main_provider.dart' show kProviderDisplayName, kProviderId;
 import 'chat_screen.dart';
 
 class JobsScreen extends StatefulWidget {
@@ -76,9 +76,10 @@ class _JobsScreenState extends State<JobsScreen>
   }
 
   List<dynamic> get _doneJobs {
+    // No _isChainTip filter here — each provider sees all their own terminal bookings,
+    // including ones that were cancelled and then reassigned to a different provider.
     final list = _jobs
         .where((j) =>
-            _isChainTip(j) &&
             j['status'] != 'SCHEDULED' &&
             !_activeStatuses.contains(j['status'] as String? ?? ''))
         .toList();
@@ -123,7 +124,13 @@ class _JobsScreenState extends State<JobsScreen>
     try {
       final res = await ApiService.get('bookings');
       if (mounted) {
-        final jobs = res is List ? List<dynamic>.from(res) : <dynamic>[];
+        final all = res is List ? List<dynamic>.from(res) : <dynamic>[];
+        // Only show this provider's own bookings
+        final jobs = all.where((j) {
+          if (kProviderId.isNotEmpty) return j['provider_id'] == kProviderId;
+          if (kProviderDisplayName.isNotEmpty) return j['provider_name'] == kProviderDisplayName;
+          return true;
+        }).toList();
         setState(() {
           _jobs = jobs;
           _isLoading = false;

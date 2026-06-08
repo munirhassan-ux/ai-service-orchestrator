@@ -162,23 +162,27 @@ class _ProviderChatScreenState extends State<ProviderChatScreen> {
             } else if (status == 'COMPLETED') {
               _jobAccepted = true;
               _messages.add({'text': null, 'isUser': false, 'type': 'job_history'});
-              // Show reliability dashboard after completed job
               _messages.add({'text': null, 'isUser': false, 'type': 'reliability_dashboard'});
             } else if (status == 'CANCELLED_PROVIDER') {
               _messages.add({
-                'text': 'Aapne yeh job decline/cancel kar diya tha.\n\nService: ${b['service_type'] ?? ''}\nLocation: ${b['location'] ?? ''}\nPrice: Rs. ${b['final_price'] ?? ''}',
-                'isUser': false,
+                'text': null, 'isUser': false, 'type': 'cancelled_job',
+                'cause': 'provider',
+                'penalty': '−15 pts (cancel after accept)',
               });
+              _messages.add({'text': null, 'isUser': false, 'type': 'reliability_dashboard'});
             } else if (status == 'CANCELLED_CUSTOMER') {
               _messages.add({
-                'text': 'Customer ne yeh booking cancel kar di thi.\n\nService: ${b['service_type'] ?? ''}\nLocation: ${b['location'] ?? ''}\nPrice: Rs. ${b['final_price'] ?? ''}',
-                'isUser': false,
+                'text': null, 'isUser': false, 'type': 'cancelled_job',
+                'cause': 'customer',
+                'penalty': null,
               });
             } else if (status == 'CANCELLED_TIMEOUT') {
               _messages.add({
-                'text': 'Yeh job timeout ho gayi thi — aapne waqt par jawab nahi diya.\n\nService: ${b['service_type'] ?? ''}\nLocation: ${b['location'] ?? ''}',
-                'isUser': false,
+                'text': null, 'isUser': false, 'type': 'cancelled_job',
+                'cause': 'timeout',
+                'penalty': '−25 pts (no-show)',
               });
+              _messages.add({'text': null, 'isUser': false, 'type': 'reliability_dashboard'});
             }
           });
         }
@@ -595,6 +599,12 @@ class _ProviderChatScreenState extends State<ProviderChatScreen> {
       return _agentMessagesCard(msg['messages'] as List<dynamic>);
     if (msg['type'] == 'checklist') return _checklistCard();
     if (msg['type'] == 'job_history') return _jobHistoryCard();
+    if (msg['type'] == 'cancelled_job') {
+      return _cancelledJobCard(
+        cause: msg['cause'] as String? ?? 'provider',
+        penalty: msg['penalty'] as String?,
+      );
+    }
     if (msg['type'] == 'reliability_dashboard') {
       final pid = _bookingData?['provider_id'] as String?;
       if (pid != null) return ReliabilityDashboard(providerId: pid);
@@ -691,8 +701,35 @@ class _ProviderChatScreenState extends State<ProviderChatScreen> {
         ...messages.map((m) {
           final msg = m as Map<String, dynamic>;
           final isProvider = msg['from'] == 'provider_agent';
-          final label = isProvider ? 'Sent to customer' : 'Customer confirmed ✅';
-          final labelColor = isProvider ? const Color(0xFF3A9010) : const Color(0xFF163300);
+          final msgStatus = msg['status'] as String? ?? '';
+          final String label;
+          final Color labelColor;
+          if (isProvider) {
+            label = 'Provider Agent → Customer';
+            labelColor = const Color(0xFF3A9010);
+          } else {
+            switch (msgStatus) {
+              case 'PAYMENT_CONFIRMED':
+                label = 'Payment Released ✅';
+                labelColor = const Color(0xFF079455);
+                break;
+              case 'PAYMENT_HELD':
+                label = 'Payment Held ⏸';
+                labelColor = const Color(0xFFf59e0b);
+                break;
+              case 'SLA_WARNING':
+                label = 'SLA Warning ⚠️';
+                labelColor = const Color(0xFFf59e0b);
+                break;
+              case 'SLA_BREACH':
+                label = 'SLA Breach — Auto Cancelled 🚫';
+                labelColor = Colors.redAccent;
+                break;
+              default:
+                label = 'Customer Agent';
+                labelColor = const Color(0xFF163300);
+            }
+          }
           final ts = msg['timestamp'] as String? ?? '';
           final time = ts.length >= 16 ? ts.substring(11, 16) : '';
           return Padding(
@@ -1095,6 +1132,109 @@ class _ProviderChatScreenState extends State<ProviderChatScreen> {
                         decorationColor: const Color(0xFFB0B5AE))),
               ]),
             )),
+      ]),
+    );
+  }
+
+  Widget _cancelledJobCard({required String cause, String? penalty}) {
+    final b = _bookingData ?? {};
+    final isProviderFault = cause == 'provider' || cause == 'timeout';
+
+    final String headline;
+    final String subtext;
+    final IconData icon;
+    switch (cause) {
+      case 'customer':
+        headline = 'Customer Ne Cancel Kiya';
+        subtext = 'Customer ne yeh booking cancel kar di. Koi penalty nahi — aap ka score safe hai.';
+        icon = Icons.person_off_rounded;
+        break;
+      case 'timeout':
+        headline = 'Job Timeout — No Response';
+        subtext = 'Aapne waqt par jawab nahi diya. Booking automatically cancel ho gayi.';
+        icon = Icons.timer_off_rounded;
+        break;
+      default:
+        headline = 'Aapne Yeh Job Cancel Kiya';
+        subtext = 'Customer ko notify kar diya gaya hai aur doosra provider dhundha gaya.';
+        icon = Icons.cancel_rounded;
+    }
+
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 10),
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.redAccent.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: Colors.redAccent.withValues(alpha: 0.35)),
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          Icon(icon, color: Colors.redAccent, size: 18),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(headline,
+                style: const TextStyle(
+                    color: Colors.redAccent,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold)),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+            decoration: BoxDecoration(
+                color: Colors.redAccent.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(8)),
+            child: Text(cause == 'customer' ? 'CANCELLED' : 'CANCELLED',
+                style: const TextStyle(
+                    color: Colors.redAccent,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold)),
+          ),
+        ]),
+        const Divider(color: Color(0xFFE8EDE6), height: 20),
+        _jobRow('Booking ID:', b['booking_id'] as String? ?? '—'),
+        _jobRow('Service:', b['service_type'] as String? ?? '—'),
+        _jobRow('Location:', b['location'] as String? ?? '—'),
+        _jobRow('Amount:', 'Rs. ${b['final_price'] ?? '—'}'),
+        _jobRow('Customer:', b['customer_id'] as String? ?? '—'),
+        const SizedBox(height: 10),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            color: isProviderFault
+                ? Colors.redAccent.withValues(alpha: 0.07)
+                : const Color(0xFF3A9010).withValues(alpha: 0.06),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: isProviderFault
+                  ? Colors.redAccent.withValues(alpha: 0.25)
+                  : const Color(0xFF3A9010).withValues(alpha: 0.25),
+            ),
+          ),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(subtext,
+                style: TextStyle(
+                    fontSize: 12,
+                    color: isProviderFault
+                        ? Colors.redAccent
+                        : const Color(0xFF3A9010),
+                    height: 1.4)),
+            if (penalty != null) ...[
+              const SizedBox(height: 6),
+              Row(children: [
+                const Icon(Icons.trending_down_rounded,
+                    size: 13, color: Colors.redAccent),
+                const SizedBox(width: 5),
+                Text('Reliability impact: $penalty',
+                    style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.redAccent)),
+              ]),
+            ],
+          ]),
+        ),
       ]),
     );
   }

@@ -1,0 +1,67 @@
+{
+  "customer_id": "customer_001",
+  "preferred_times": [
+    "evening",
+    "morning"
+  ],
+  "preferred_locations": [
+    "g11 islamabad",
+    "G-11",
+    "G-11, Islamabad",
+    "g11"
+  ],
+  "budget_ceiling": 1857,
+  "budget_floor": 1045,
+  "trusted_providers": [
+    {
+      "id": "p49721",
+      "name": "Rehan Rana",
+      "times_booked": 4
+    },
+    {
+      "id": "p13599",
+      "name": "Naveed Javed",
+      "times_booked": 1
+    },
+    {
+      "id": "p49576",
+      "name": "Irfan Chaudhry",
+      "times_booked": 1
+    },
+    {
+      "id": "p49508",
+      "name": "Saad Bhatti",
+      "times_booked": 1
+    },
+    {
+      "id": "p49715",
+      "name": "Kashif Abbasi",
+      "times_booked": 6
+    },
+    {
+      "id": "p14091",
+      "name": "Arif Bukhari",
+      "times_booked": 2
+    },
+    {
+      "id": "p13597",
+      "name": "Tahir Paracha",
+      "times_booked": 1
+    },
+    {
+      "id": "p49510",
+      "name": "Adnan Chaudhry",
+      "times_booked": 5
+    }
+  ],
+  "service_history": [
+    {
+      "service_type": "plumber",
+      "count": 21,
+      "last_date": "2026-06-08T06:20:39.535Z"
+    }
+  ],
+  "language": "roman_urdu",
+  "total_bookings": 21,
+  "updated_at": "2026-06-08T06:20:39.535Z"
+}

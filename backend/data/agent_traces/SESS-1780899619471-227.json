@@ -1,0 +1,276 @@
+[
+  {
+    "timestamp": "2026-06-08T06:20:21.921Z",
+    "step": 1,
+    "agent": "IntentParser",
+    "confidence": 0.95,
+    "input": "mujhe plumber chahaeeye g11 me and 5 baje kl \\",
+    "output": {
+      "service_type": "plumber",
+      "service_raw": "plumber",
+      "problem_description": null,
+      "location": "g11",
+      "urgency": "medium",
+      "preferred_time": "kal 5 baje",
+      "time_explicitly_provided": true,
+      "budget_sensitivity": "medium",
+      "job_complexity_hint": "basic",
+      "language": "roman_urdu",
+      "confidence": 0.95,
+      "clarification_needed": true,
+      "clarification_question": "Kya masla hai? Leak hai, nala band hai, ya kuch aur?",
+      "reasoning": "Service type, location, and time were provided. However, the problem description is missing, so I must ask for it before finalizing."
+    }
+  },
+  {
+    "timestamp": "2026-06-08T06:20:21.922Z",
+    "agent": "IntentParser",
+    "fallback_triggered": true,
+    "reason": "missing_fields=[problem_description], confidence=95%, clarification_needed=true",
+    "clarification_question": "Kya masla hai? Leak hai, nala band hai, ya kuch aur?"
+  },
+  {
+    "timestamp": "2026-06-08T06:20:36.788Z",
+    "step": 1,
+    "agent": "IntentParser",
+    "confidence": 0.95,
+    "input": "mujhe nahi pta",
+    "output": {
+      "service_type": "plumber",
+      "service_raw": "plumber",
+      "problem_description": "mujhe nahi pta",
+      "location": "g11",
+      "urgency": "medium",
+      "preferred_time": "kal 5 baje",
+      "time_explicitly_provided": true,
+      "budget_sensitivity": "medium",
+      "job_complexity_hint": "basic",
+      "language": "roman_urdu",
+      "confidence": 0.95,
+      "clarification_needed": false,
+      "clarification_question": null,
+      "reasoning": "The user confirmed they don't know the exact plumbing problem, which is accepted per instructions. Since all four requirements (service, problem, location, time) are now provided, the booking is ready."
+    }
+  },
+  {
+    "timestamp": "2026-06-08T06:20:37.178Z",
+    "step": 2,
+    "agent": "ProviderMatcher",
+    "output": {
+      "top_providers": [
+        {
+          "provider_id": "p49715",
+          "name": "Kashif Abbasi",
+          "shop_name": "Kashif Abbasi Plumber Center",
+          "location": {
+            "latitude": 33.671264,
+            "longitude": 73.074292
+          },
+          "city": "Islamabad (Urban)",
+          "city_area": "Ict",
+          "availability_status": "online",
+          "charges": {
+            "base_rate": 417,
+            "travel_rate": 20
+          },
+          "job_role": "Plumber",
+          "service_expertise": [
+            "plumber",
+            "pipe_fitting",
+            "drain_cleaning"
+          ],
+          "rating": 4.2,
+          "on_time_score": 0.9423759999999999,
+          "cancellation_risk": 0.03188382055215,
+          "capacity": 4,
+          "active_jobs": 0,
+          "total_reviews": 325,
+          "total_jobs": 497,
+          "distance_km": 3.1,
+          "score": 92.79,
+          "reliability_score": 89,
+          "completion_rate": 0.9759899999999997,
+          "score_breakdown": {
+            "travel_time": 90,
+            "availability_match": 100,
+            "specialization": 100,
+            "on_time": 89,
+            "review_sentiment": 67,
+            "rate": 96,
+            "cancellation_risk": 97,
+            "capacity": 100
+          },
+          "is_waitlisted": false
+        },
+        {
+          "provider_id": "p14016",
+          "name": "Furqan Ansari",
+          "shop_name": "Furqan Ansari Plumber Center",
+          "location": {
+            "latitude": 33.588661,
+            "longitude": 73.10223
+          },
+          "city": "Rawalpindi",
+          "city_area": "Rwp Cantt",
+          "availability_status": "online",
+          "charges": {
+            "base_rate": 403,
+            "travel_rate": 49
+          },
+          "job_role": "Plumber",
+          "service_expertise": [
+            "plumber",
+            "drain_cleaning"
+          ],
+          "rating": 4.6,
+          "on_time_score": 0.87,
+          "cancellation_risk": 0.08,
+          "capacity": 3,
+          "active_jobs": 0,
+          "total_reviews": 243,
+          "total_jobs": 337,
+          "distance_km": 12.5,
+          "score": 90.14,
+          "reliability_score": 88.8,
+          "completion_rate": null,
+          "score_breakdown": {
+            "travel_time": 58,
+            "availability_match": 100,
+            "specialization": 100,
+            "on_time": 87,
+            "review_sentiment": 92,
+            "rate": 99,
+            "cancellation_risk": 92,
+            "capacity": 100
+          },
+          "is_waitlisted": false
+        },
+        {
+          "provider_id": "p13946",
+          "name": "Noman Qureshi",
+          "shop_name": "Noman Qureshi Plumber Point",
+          "location": {
+            "latitude": 33.588239,
+            "longitude": 73.121775
+          },
+          "city": "Rawalpindi",
+          "city_area": "Rwp Cantt",
+          "availability_status": "online",
+          "charges": {
+            "base_rate": 481,
+            "travel_rate": 21
+          },
+          "job_role": "Plumber",
+          "service_expertise": [
+            "plumber",
+            "pipe_fitting",
+            "drain_cleaning"
+          ],
+          "rating": 4.7,
+          "on_time_score": 0.88,
+          "cancellation_risk": 0.07,
+          "capacity": 5,
+          "active_jobs": 0,
+          "total_reviews": 69,
+          "total_jobs": 85,
+          "distance_km": 13.3,
+          "score": 88.24,
+          "reliability_score": 89.7,
+          "completion_rate": null,
+          "score_breakdown": {
+            "travel_time": 56,
+            "availability_match": 100,
+            "specialization": 100,
+            "on_time": 88,
+            "review_sentiment": 94,
+            "rate": 80,
+            "cancellation_risk": 93,
+            "capacity": 100
+          },
+          "is_waitlisted": false
+        }
+      ],
+      "reasoning": "Kashif Abbasi selected: score 92.79%, 3.1km away, 94% on-time reliability.",
+      "fallback_used": false,
+      "matching_trace": "Matched 4092 eligible providers using 8 weighted factors and tiebreaker rules. Top Match: Kashif Abbasi"
+    }
+  },
+  {
+    "timestamp": "2026-06-08T06:20:37.179Z",
+    "agent": "PricingEngine",
+    "phase_after": "pricing_complete",
+    "budget_sensitivity": "medium",
+    "providers_priced": [
+      {
+        "provider_id": "p49715",
+        "name": "Kashif Abbasi",
+        "score": 92.79,
+        "is_budget_pick": true,
+        "quote": {
+          "visit_fee": 150,
+          "base_rate": 417,
+          "distance_fee": 60,
+          "urgency_surcharge": 0,
+          "total": 1040,
+          "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
+        }
+      },
+      {
+        "provider_id": "p14016",
+        "name": "Furqan Ansari",
+        "score": 90.14,
+        "is_budget_pick": false,
+        "quote": {
+          "visit_fee": 150,
+          "base_rate": 403,
+          "distance_fee": 610,
+          "urgency_surcharge": 0,
+          "total": 1570,
+          "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
+        }
+      },
+      {
+        "provider_id": "p13946",
+        "name": "Noman Qureshi",
+        "score": 88.24,
+        "is_budget_pick": false,
+        "quote": {
+          "visit_fee": 150,
+          "base_rate": 481,
+          "distance_fee": 280,
+          "urgency_surcharge": 0,
+          "total": 1390,
+          "fairness_note": "Standard flat-rate pricing applied, incorporating travel rate and urgency surge."
+        }
+      }
+    ]
+  },
+  {
+    "timestamp": "2026-06-08T06:20:39.086Z",
+    "agent": "BookingSimulator",
+    "phase_after": "PENDING_PROVIDER",
+    "booking_id": "SVC-20260608-0002",
+    "provider_id": "p49715",
+    "provider_name": "Kashif Abbasi",
+    "preferred_time_requested": "kal 5 baje",
+    "scheduled_time_assigned": "2026-06-09T03:00:00.000Z",
+    "scheduling_collision_detected": false,
+    "final_price": 1045
+  },
+  {
+    "timestamp": "2026-06-08T06:20:39.087Z",
+    "agent": "StatusMachine",
+    "phase_after": "ACCEPTED",
+    "booking_id": "SVC-20260608-0002",
+    "status_from": "PENDING_PROVIDER",
+    "status_to": "ACCEPTED"
+  },
+  {
+    "timestamp": "2026-06-08T06:20:39.533Z",
+    "agent": "StatusMachine",
+    "phase_after": "SCHEDULED",
+    "booking_id": "SVC-20260608-0002",
+    "status_from": "ACCEPTED",
+    "status_to": "SCHEDULED"
+  }
+]

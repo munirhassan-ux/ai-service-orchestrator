@@ -540,7 +540,46 @@ export function submitBookingRating(bookingId: string, stars: number, actualArri
   booking.updated_at = new Date().toISOString();
   booking.state_history.push({ status: "COMPLETED", timestamp: new Date().toISOString() });
   writeBookings(data);
+
+  // Customer Agent verifies checklist and releases payment
+  const allItemsDone = booking.checklist.every(c => c.completed);
+  const paymentMsg: any = allItemsDone
+    ? {
+        from: "customer_agent",
+        to: "provider_agent",
+        status: "PAYMENT_CONFIRMED",
+        message: `Rs. ${booking.final_price} — tamam checklist items complete hain aur rating submit ho gayi. Payment release ho gayi. Shukriya! ⭐${stars}`,
+        timestamp: new Date().toISOString(),
+      }
+    : {
+        from: "customer_agent",
+        to: "provider_agent",
+        status: "PAYMENT_HELD",
+        message: `Rs. ${booking.final_price} — payment abhi hold hai. Checklist mein kuch items incomplete hain. Please complete karein.`,
+        timestamp: new Date().toISOString(),
+      };
+
+  if (!booking.agent_messages) booking.agent_messages = [];
+  booking.agent_messages.push(paymentMsg);
+  writeBookings(data);
+
   if (booking.session_id) {
+    const incompleteItems = booking.checklist
+      .filter((c: any) => !c.completed)
+      .map((c: any) => c.item);
+
+    logTraceEvent(booking.session_id, {
+      agent: "CustomerAgent",
+      phase_after: paymentMsg.status,
+      booking_id: bookingId,
+      decision: allItemsDone ? "release_payment" : "hold_payment",
+      amount: booking.final_price,
+      checklist_complete: allItemsDone,
+      incomplete_items: incompleteItems.length > 0 ? incompleteItems : undefined,
+      stars_submitted: stars,
+      message_sent_to: "provider_agent",
+    });
+
     logTraceEvent(booking.session_id, {
       agent: "RatingEngine",
       phase_after: "COMPLETED",
@@ -548,6 +587,7 @@ export function submitBookingRating(bookingId: string, stars: number, actualArri
       provider_id: booking.provider_id,
       stars_submitted: stars,
       on_time: isOnTime,
+      payment_status: paymentMsg.status,
     });
   }
   return booking;
