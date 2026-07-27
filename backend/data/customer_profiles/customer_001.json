@@ -1,16 +1,18 @@
 {
   "customer_id": "customer_001",
   "preferred_times": [
+    "afternoon",
     "evening",
     "morning"
   ],
   "preferred_locations": [
-    "g11 islamabad",
-    "G-11",
-    "G-11, Islamabad",
-    "g11"
+    "Lahore Johar Town",
+    "johar town",
+    "G11",
+    "f6 islamabad",
+    "g11 islamabad"
   ],
-  "budget_ceiling": 1857,
+  "budget_ceiling": 2161,
   "budget_floor": 1045,
   "trusted_providers": [
     {
@@ -36,7 +38,7 @@
     {
       "id": "p49715",
       "name": "Kashif Abbasi",
-      "times_booked": 6
+      "times_booked": 11
     },
     {
       "id": "p14091",
@@ -52,16 +54,51 @@
       "id": "p49510",
       "name": "Adnan Chaudhry",
       "times_booked": 5
+    },
+    {
+      "id": "p49569",
+      "name": "Shoaib Javed",
+      "times_booked": 1
+    },
+    {
+      "id": "p49709",
+      "name": "Noman Shah",
+      "times_booked": 1
+    },
+    {
+      "id": "p49702",
+      "name": "Rizwan Saleem",
+      "times_booked": 1
+    },
+    {
+      "id": "p08201",
+      "name": "Rehan Raza",
+      "times_booked": 1
+    },
+    {
+      "id": "p07577",
+      "name": "Saad Gul",
+      "times_booked": 1
     }
   ],
   "service_history": [
     {
       "service_type": "plumber",
-      "count": 21,
-      "last_date": "2026-06-08T06:20:39.535Z"
+      "count": 27,
+      "last_date": "2026-07-27T10:15:39.379Z"
+    },
+    {
+      "service_type": "electrician",
+      "count": 3,
+      "last_date": "2026-06-18T11:29:14.746Z"
+    },
+    {
+      "service_type": "ac_repair",
+      "count": 1,
+      "last_date": "2026-06-08T11:16:32.000Z"
     }
   ],
   "language": "roman_urdu",
-  "total_bookings": 21,
-  "updated_at": "2026-06-08T06:20:39.535Z"
+  "total_bookings": 31,
+  "updated_at": "2026-07-27T10:15:39.379Z"
 }
